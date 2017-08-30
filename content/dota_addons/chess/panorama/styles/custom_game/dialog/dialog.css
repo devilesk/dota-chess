@@ -1,0 +1,104 @@
+.container {
+    width: 100%;
+    height: 100%;
+}
+.dialog-container {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 20);
+}
+.contents-container {
+    flow-children: right-wrap;
+    horizontal-align: middle;
+    vertical-align: middle;
+    background-color: #222;
+    padding: 20px;
+    box-shadow: fill black 1px 1px 4px 4px;
+    border-radius: 4px;
+}
+.control {
+    flow-children: down;
+    margin-bottom: 10px;
+}
+.horizontal-center {
+    horizontal-align: middle;
+}
+.horizontal-right {
+    horizontal-align: right;
+}
+.horizontal-center Label {
+    text-align: center;
+}
+TextEntry {
+    width: 100%;
+}
+.btn {
+    background-color: gradient( linear, 0% 0%, 0% 100%, from( #333333), to( #444444));
+    height: 36px;
+    width: 140px;
+    margin-top: 3px;
+    margin-bottom: 3px;
+    margin-left: 3px;
+    margin-right: 3px;
+    border-style: solid;
+    border-width: 1px;
+    border-top-color: #444444;
+    border-left-color: #494949;
+    border-bottom-color: #111111;
+    border-right-color: #404040;
+    transition-property: background-color;
+    transition-duration: 0.15s;
+    transition-timing-function: linear;
+}
+Label {
+    margin-top: 5px;
+    /*	padding: 6% 12% 6% 3%;*/
+    
+    color: #cccccc;
+    font-size: 16;
+    font-weight: thin;
+    vertical-align: middle;
+    text-transform: none;
+    letter-spacing: 0px;
+    margin-left: 0%;
+    margin-top: 2px;
+    font-size: 20;
+    color: #888888;
+    letter-spacing: 1px;
+    min-width: 100%;
+}
+.btn Label {
+    horizontal-align: middle;
+    text-align: center;
+}
+.btn:hover {
+    background-color: gradient( linear, 0% 0%, 0% 100%, from( #444444), to( #555555));
+}
+.btn:hover Label {
+    //color: #cccccc;
+}
+.btn:active {
+    background-color: gradient( linear, 0% 0%, 0% 100%, from( #888888), to( #aaaaaa));
+    pre-transform-scale2d: 1.02;
+}
+.btn:active Label {
+    //color: #eeeeee;
+}
+.btn:selected {
+    background-color: gradient( linear, 0% 0%, 0% 100%, from( #777777), to( #999999));
+}
+.btn:focus,
+TextEntry:focus {
+    border: 1px solid #aaa;
+}
+.promotion-dialog .btn {
+    width: 96px;
+    height: 96px;
+    margin: 5px;
+}
+.promotion-dialog .btn Label {
+    width: 100%;
+    text-align: center;
+    font-size: 64;
+    vertical-align: top;
+}

@@ -1,0 +1,11 @@
+<root>
+    <scripts>
+        <include src="file://{resources}/scripts/custom_game/util/util.js" />
+    </scripts>
+    <Panel>
+        <CustomUIElement type="Hud" layoutfile="file://{resources}/layout/custom_game/main.xml" />
+        <CustomUIElement type="Hud" layoutfile="file://{resources}/layout/custom_game/dialog/main.xml" />
+    </Panel>
+</root>
+
+

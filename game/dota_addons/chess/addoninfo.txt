@@ -1,0 +1,10 @@
+"AddonInfo"
+{
+  "TeamCount" "2"
+  "maps"			"chess"
+  "IsPlayable"  "1"
+  "chess"
+  {
+    "MaxPlayers"     "2"
+  }
+}

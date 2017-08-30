@@ -1,0 +1,12 @@
+<root>
+    <styles>
+        <include src="file://{resources}/styles/dotastyles.css" />
+        <include src="file://{resources}/styles/custom_game/main.css" />
+    </styles>
+    <scripts>
+        <include src="file://{resources}/scripts/custom_game/square.js" />
+    </scripts>
+    <Panel class="square">
+        <Label html="true" id="square-label" class="square-label" text="" hittest="false" />
+    </Panel>
+</root>

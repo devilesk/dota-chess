@@ -1,0 +1,38 @@
+.chat-container {
+    height: 100%;
+    flow-children: down;
+    border: 5px solid #222;
+}
+#chat-message-container {
+    flow-children: down;
+    overflow: squish scroll;
+    height: 982px;
+    width: 100%;
+    padding: 5px;
+    background-color: #222;
+}
+#chat-input-container {
+    vertical-align: bottom;
+    flow-children: right;
+}
+#chat-input {
+    width: 300px;
+}
+#chat-input-button {
+    background-color: #222;
+    width: 80px;
+    height: 36px;
+    border: 1px solid #333;
+}
+#chat-input-button-label {
+    color: #ccc;
+    width: 100%;
+    vertical-align: middle;
+    text-align: center;
+}
+#chat-input-button:hover {
+    border: 1px solid #aaa;
+}
+#chat-input-button:active {
+    border: 1px solid #333;
+}
