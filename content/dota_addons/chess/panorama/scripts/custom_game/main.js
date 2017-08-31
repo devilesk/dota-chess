@@ -1,4 +1,13 @@
-"use strict"
+/* exported OnFenSubmitted */
+/* exported OnOfferDrawPressed */
+/* exported OnResignPressed */
+/* exported OnCancelActionPressed */
+/* exported OnConfirmActionPressed */
+/* exported OnAcceptPressed */
+/* exported OnDeclinePressed */
+/* exported OnTogglePlayerPressed */
+
+"use strict";
 
 var _ = GameUI.CustomUIConfig().UtilLibrary;
 var DialogLibrary;
@@ -16,27 +25,28 @@ var currentSide = 8; // 0 == black, 0 != white
 var firstMove = {
     white: true,
     black: true
-}
+};
 var players = {
     white: null,
     black: null
-}
+};
 var mySide = Game.GetLocalPlayerInfo().player_team_id == DOTATeam_t.DOTA_TEAM_GOODGUYS ? 8 : 0;
 $.Msg("mySide ", mySide);
 var moves;
 var lastMove;
-var currentDraggingSquare;
-var currentDraggingSquareGhost;
 var selectedSquare;
 var paused = false;
 var lookupSquare = {};
-for (var i = 0; i < 8; i++) {
-    for (var j = 0; j < 8; j++) {
-        //$.Msg(i, ", ", j, " ", MakeSquare(i, j));
-        lookupSquare[MakeSquare(i, j)] = {
-            x: j,
-            y: i
-        };
+
+function InitLookupSquare() {
+    for (var i = 0; i < 8; i++) {
+        for (var j = 0; j < 8; j++) {
+            //$.Msg(i, ", ", j, " ", MakeSquare(i, j));
+            lookupSquare[MakeSquare(i, j)] = {
+                x: j,
+                y: i
+            };
+        }
     }
 }
 
@@ -79,7 +89,7 @@ var initialPositions = {
         g7: "pawn",
         h7: "pawn"
     }
-}
+};
 
 //var colorBlack = 0x10;
 //var colorWhite = 0x08;
@@ -92,10 +102,10 @@ var pieceRook = 0x04;
 var pieceQueen = 0x05;
 var pieceKing = 0x06;
 
-var moveflagPromotion = 0x10 << 16;
-var moveflagPromoteKnight = 0x20 << 16;
-var moveflagPromoteQueen = 0x40 << 16;
-var moveflagPromoteBishop = 0x80 << 16;
+//var moveflagPromotion = 0x10 << 16;
+//var moveflagPromoteKnight = 0x20 << 16;
+//var moveflagPromoteQueen = 0x40 << 16;
+//var moveflagPromoteBishop = 0x80 << 16;
 
 function pad(num, size) {
     var s = num + "";
@@ -117,7 +127,7 @@ function OnNewGame() {
 
 function OnPromote(data) {
     $.Msg("OnPromote");
-    var dialog = new DialogLibrary.Dialog({
+    new DialogLibrary.Dialog({
         parentPanel: DialogLibrary.contextPanel,
         layoutfile: "file://{resources}/layout/custom_game/dialog/dialog.xml",
         id: "dialog-container",
@@ -126,7 +136,8 @@ function OnPromote(data) {
             id: "contents-container",
             cssClasses: ["contents-container", "promotion-dialog"],
             style: {},
-            children: [{
+            children: [
+                {
                     cssClasses: ["control"],
                     id: "control-1",
                     children: [{
@@ -256,12 +267,12 @@ function OnDropPiece(data) {
     uiState.drawPressed = false;
     uiState.resignPressed = false;
     GameEvents.SendCustomGameEventToServer("drop_piece", data);
-    DeclineDraw()
+    DeclineDraw();
     UpdateUI();
 }
 
 function OnGameEnd(prompt) {
-    var dialog = new DialogLibrary.Dialog({
+    new DialogLibrary.Dialog({
         parentPanel: DialogLibrary.contextPanel,
         layoutfile: "file://{resources}/layout/custom_game/dialog/dialog.xml",
         id: "dialog-container",
@@ -272,7 +283,8 @@ function OnGameEnd(prompt) {
             style: {
                 width: 400
             },
-            children: [{
+            children: [
+                {
                     cssClasses: ["control", "horizontal-center"],
                     id: "control-1",
                     children: [{
@@ -331,20 +343,21 @@ function CreateChatPanel() {
 
 function CreateBoard() {
     var parentPanel = $("#board");
+    var i, j, rowPanel;
     if (mySide == 0) {
-        for (var i = 0; i < 8; i++) {
-            var rowPanel = $.CreatePanel("Panel", parentPanel, "rank-" + ranks[i]);
+        for (i = 0; i < 8; i++) {
+            rowPanel = $.CreatePanel("Panel", parentPanel, "rank-" + ranks[i]);
             rowPanel.SetHasClass("rank", true);
-            for (var j = 7; j >= 0; j--) {
+            for (j = 7; j >= 0; j--) {
                 m_Board.unshift(CreateSquare(rowPanel, i, j));
             }
         }
     }
     else {
-        for (var i = 7; i >= 0; i--) {
-            var rowPanel = $.CreatePanel("Panel", parentPanel, "rank-" + ranks[i]);
+        for (i = 7; i >= 0; i--) {
+            rowPanel = $.CreatePanel("Panel", parentPanel, "rank-" + ranks[i]);
             rowPanel.SetHasClass("rank", true);
-            for (var j = 0; j < 8; j++) {
+            for (j = 0; j < 8; j++) {
                 m_Board.push(CreateSquare(rowPanel, i, j));
             }
         }
@@ -529,7 +542,6 @@ _.extend(Square.prototype, {
         if (paused) return;
         if (players[this.pieceOwner()] != Players.GetLocalPlayer()) return;
 
-        currentDraggingSquare = square;
         //GameEvents.SendCustomGameEventToServer( "get_moves", {playerId: Players.GetLocalPlayer()} );
         $.Msg("OnDragStart", moves);
 
@@ -552,15 +564,12 @@ _.extend(Square.prototype, {
         // grey out the source panel while dragging
         this.panel.AddClass("dragging_from");
         this.panel.GetParent().AddClass("dragging_from");
-
-        currentDraggingSquareGhost = displayPanel;
     },
     OnDragEnd: function(panelId, draggedPanel, square) {
         //$.Msg("Square OnDragEnd");
         // kill the display panel
         draggedPanel.DeleteAsync(0);
 
-        currentDraggingSquare = null;
         ClearHighlight();
 
         // restore our look
@@ -653,8 +662,8 @@ function HighlightLastMove(_lastMove) {
 }
 
 function HighlightPlayerToMove(toMove) {
-    $('#timer-black').SetHasClass("highlight", toMove == 0);
-    $('#timer-white').SetHasClass("highlight", toMove != 0);
+    $("#timer-black").SetHasClass("highlight", toMove == 0);
+    $("#timer-white").SetHasClass("highlight", toMove != 0);
 }
 
 function OnBoardReset(data) {
@@ -686,7 +695,7 @@ function OnBoardReset(data) {
     firstMove = {
         white: true,
         black: true
-    }
+    };
     UpdateTimePanel();
 }
 
@@ -701,7 +710,7 @@ function OnBoardUpdate(data) {
     selectedSquare = null;
     HighlightLastMove(data.last_move);
     moves = data.moves;
-    RedrawPieces(data.board)
+    RedrawPieces(data.board);
 
     if (data.toMove == 0) {
         moveNum++;
@@ -712,7 +721,7 @@ function OnBoardUpdate(data) {
         var moveNumPanel = $.CreatePanel("Label", currentMovePanel, "");
         moveNumPanel.SetHasClass("history-move-num", true);
         moveNumPanel.text = moveNum;
-        $('#history').ScrollToBottom();
+        $("#history").ScrollToBottom();
 
     }
     var plyPanel = $.CreatePanel("Label", currentMovePanel, "");
@@ -723,11 +732,11 @@ function OnBoardUpdate(data) {
 
     HighlightPlayerToMove(data.toMove);
 
-    currentSide = data.toMove
+    currentSide = data.toMove;
     var color = currentSide != 0 ? "black" : "white";
     if (!firstMove[color]) timeRemaining[color] += increment;
     firstMove[color] = false;
-    $('#timer-label-' + color).text = formatTime(timeRemaining[color]);
+    $("#timer-label-" + color).text = formatTime(timeRemaining[color]);
 
     OnPauseChanged(data);
     //if (timer) $.CancelScheduled(timer);
@@ -759,7 +768,7 @@ function OnBoardStalemate() {
 }
 
 function OnFenSubmitted() {
-    var fen = $('#input-fen').text;
+    var fen = $("#input-fen").text;
     GameEvents.SendCustomGameEventToServer("submit_fen", {
         fen: fen
     });
@@ -790,7 +799,7 @@ function UpdateTime() {
 
 function UpdateTimePanel() {
     ["white", "black"].forEach(function(side) {
-        $('#timer-label-' + side).text = formatTime(timeRemaining[side]);
+        $("#timer-label-" + side).text = formatTime(timeRemaining[side]);
     });
 }
 
@@ -806,6 +815,9 @@ function RedrawPieces(g_board) {
             var pieceName = null;
 
             switch (piece & 0x7) {
+                case pieceEmpty:
+                    pieceName = null;
+                    break;
                 case piecePawn:
                     pieceName = "pawn";
                     break;
@@ -840,12 +852,11 @@ function RedrawPieces(g_board) {
 var uiStates = {
     0: new UIState(),
     8: new UIState()
-}
+};
 
 var uiState = uiStates[mySide];
 
 function UIState() {
-    var self = this;
     this.drawPressed = false;
     this.resignPressed = false;
     this.resignPressed = false;
@@ -914,7 +925,7 @@ function OnReceivedDrawClaimed() {
     OnDraw();
 }
 
-function OnReceivedResigned() {
+function OnReceivedResigned(data) {
     var prompt = data.playerSide == 0 ? "Black" : "White";
     prompt += " resigns. ";
     prompt += mySide == data.playerSide ? "You lose!" : "You win!";
@@ -922,10 +933,10 @@ function OnReceivedResigned() {
 }
 
 function UpdateUI() {
-    $('#btn-draw').SetHasClass("disabled", uiState.drawPressed);
-    $('#btn-confirm').SetHasClass("hidden", !uiState.resignPressed);
-    $('#btn-cancel').SetHasClass("hidden", !uiState.drawPressed && !uiState.resignPressed);
-    $('#action-message-container').SetHasClass("hidden", !uiState.pendingDraw);
+    $("#btn-draw").SetHasClass("disabled", uiState.drawPressed);
+    $("#btn-confirm").SetHasClass("hidden", !uiState.resignPressed);
+    $("#btn-cancel").SetHasClass("hidden", !uiState.drawPressed && !uiState.resignPressed);
+    $("#action-message-container").SetHasClass("hidden", !uiState.pendingDraw);
 }
 
 function Resign() {
@@ -938,7 +949,7 @@ function Resign() {
 function OnTogglePlayerPressed() {
     mySide = mySide == 0 ? 8 : 0;
     uiState = uiStates[mySide];
-    $('#btn-toggle-player-label').text = mySide == 0 ? "Black" : "White";
+    $("#btn-toggle-player-label").text = mySide == 0 ? "Black" : "White";
     UpdateUI();
     RedrawBoard();
 }
@@ -955,6 +966,7 @@ function OnTogglePlayerPressed() {
 
     DialogLibrary = GameUI.CustomUIConfig().DialogLibrary;
 
+    InitLookupSquare();
     CreateChatPanel();
     CreateBoard();
 
@@ -985,10 +997,9 @@ function OnTogglePlayerPressed() {
         }
     }
 
-
     ["white", "black"].forEach(function(side) {
-        $('#timer-label-' + side).text = formatTime(timeRemaining[side]);
+        $("#timer-label-" + side).text = formatTime(timeRemaining[side]);
     });
-    $('#timer-white').SetHasClass("highlight", true);
+    $("#timer-white").SetHasClass("highlight", true);
     $.Msg("main.js");
 })();
