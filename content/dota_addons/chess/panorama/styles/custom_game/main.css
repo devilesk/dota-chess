@@ -93,10 +93,10 @@
     width: 100%;
     vertical-align: middle;
 }
-.timer.white {
+.timer.bottom {
     border-top: 1px solid #ccc;
 }
-.timer.black {
+.timer.top {
     border-bottom: 1px solid #ccc;
 }
 .avatar {

@@ -17,8 +17,8 @@ var g_board;
 var currentMovePanel;
 var moveNum = 0;
 var timeRemaining = {
-    white: 110,
-    black: 110
+    8: 110,
+    0: 110
 };
 var increment = 20;
 var timer = null;
@@ -28,8 +28,8 @@ var firstMove = {
     black: true
 };
 var players = {
-    white: null,
-    black: null
+    8: null,
+    0: null
 };
 var mySide = Game.GetLocalPlayerInfo().player_team_id == DOTATeam_t.DOTA_TEAM_GOODGUYS ? 8 : 0;
 $.Msg("mySide ", mySide);
@@ -543,7 +543,7 @@ _.extend(Square.prototype, {
     OnDragStart: function(panelId, dragCallbacks, square) {
         if (!this.draggable() || !this.panel) return;
         if (paused) return;
-        if (players[this.pieceOwner()] != Players.GetLocalPlayer()) return;
+        if (players[this.pieceOwner() == "white" ? 8 : 0] != Players.GetLocalPlayer()) return;
 
         //GameEvents.SendCustomGameEventToServer( "get_moves", {playerId: Players.GetLocalPlayer()} );
         $.Msg("OnDragStart", moves);
@@ -665,8 +665,8 @@ function HighlightLastMove(_lastMove) {
 }
 
 function HighlightPlayerToMove(toMove) {
-    $("#timer-black").SetHasClass("highlight", toMove == 0);
-    $("#timer-white").SetHasClass("highlight", toMove != 0);
+    $("#timer-bottom").SetHasClass("highlight", toMove == mySide);
+    $("#timer-top").SetHasClass("highlight", toMove != mySide);
 }
 
 function OnBoardReset(data) {
@@ -685,17 +685,17 @@ function OnBoardReset(data) {
     g_board = data.board;
     RedrawPieces(g_board);
     $("#history").RemoveAndDeleteChildren();
-    HighlightPlayerToMove(data.toMove);
+    currentSide = data.toMove;
+    HighlightPlayerToMove(currentSide);
 
     moveNum = 0;
     timeRemaining = {
-        white: data.clock_time,
-        black: data.clock_time
+        8: data.clock_time,
+        0: data.clock_time
     };
     increment = data.clock_increment;
     if (timer) $.CancelScheduled(timer);
     timer = null;
-    currentSide = data.toMove;
     firstMove = {
         white: true,
         black: true
@@ -740,13 +740,14 @@ function OnBoardUpdate(data) {
     plyPanel.SetHasClass("black", data.toMove == 0);
     plyPanel.text = data.san;
 
-    HighlightPlayerToMove(data.toMove);
-
     currentSide = data.toMove;
+    HighlightPlayerToMove(currentSide);
+
+    
     var color = currentSide != 0 ? "black" : "white";
-    if (!firstMove[color]) timeRemaining[color] += increment;
+    if (!firstMove[color]) timeRemaining[1 - currentSide + 7] += increment;
     firstMove[color] = false;
-    $("#timer-label-" + color).text = formatTime(timeRemaining[color]);
+    $("#timer-label-" + (mySide != currentSide ? "top" : "bottom")).text = formatTime(timeRemaining[mySide != currentSide ? 0 : 8]);
 
     OnPauseChanged(data);
     //if (timer) $.CancelScheduled(timer);
@@ -794,11 +795,11 @@ function OnPauseChanged(data) {
 
 function UpdateTime() {
     var color = currentSide == 0 ? "black" : "white";
-    timeRemaining[color]--;
+    timeRemaining[currentSide]--;
     UpdateTimePanel();
 
     //$.Msg("timer ", color, " ", timeRemaining[color]);
-    if (timeRemaining[color] > 0) {
+    if (timeRemaining[currentSide] > 0) {
         timer = $.Schedule(0.1, UpdateTime);
     } else {
         GameEvents.SendCustomGameEventToServer("time_out", {
@@ -808,14 +809,14 @@ function UpdateTime() {
 }
 
 function UpdateTimePanel() {
-    ["white", "black"].forEach(function(side) {
-        $("#timer-label-" + side).text = formatTime(timeRemaining[side]);
-    });
+    $("#timer-label-top").text = formatTime(timeRemaining[1 - mySide + 7]);
+    $("#timer-label-bottom").text = formatTime(timeRemaining[mySide]);
 }
 
 var g_playerWhite = true;
 
 function RedrawPieces(g_board) {
+    if (!g_board) return;
     $.Msg("m_Board.length", m_Board.length);
     for (var y = 0; y < 8; ++y) {
         for (var x = 0; x < 8; ++x) {
@@ -902,7 +903,7 @@ function OnConfirmActionPressed() {
 
 function OnReceivedDrawOffer(data) {
     $.Msg("OnReceivedDrawOffer", data);
-    uiStates[data.playerSide == 0 ? 8 : 0].pendingDraw = true;
+    uiStates[1 - data.playerSide + 7].pendingDraw = true;
     UpdateUI();
 }
 
@@ -958,11 +959,29 @@ function Resign() {
 }
 
 function OnTogglePlayerPressed() {
-    mySide = mySide == 0 ? 8 : 0;
+    mySide = 1 - mySide + 7;
     uiState = uiStates[mySide];
     $("#btn-toggle-player-label").text = mySide == 0 ? "Black" : "White";
     UpdateUI();
     RedrawBoard();
+    UpdatePlayerPanel();
+}
+
+function UpdatePlayerPanel() {
+    [0, 8].forEach(function (side) {
+        if (players[side] != null) {
+            var playerInfo = Game.GetPlayerInfo(players[side]);
+            if (playerInfo) {
+                $("#player-" + (mySide == side ? "bottom" : "top")).steamid = playerInfo.player_steamid;
+                $("#player-" + (mySide == side ? "bottom" : "top")).SetHasClass("hidden", false);
+            }
+        }
+        else {
+            $("#player-" + (mySide == side ? "bottom" : "top")).steamid = 0;
+            $("#player-" + (mySide == side ? "bottom" : "top")).SetHasClass("hidden", true);
+        }
+    });
+    HighlightPlayerToMove(currentSide);
 }
 
 (function() {
@@ -992,25 +1011,16 @@ function OnTogglePlayerPressed() {
     GameEvents.Subscribe("resigned", OnReceivedResigned);
 
     if (Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_GOODGUYS).length) {
-        players.white = Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_GOODGUYS)[0];
+        players[8] = Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_GOODGUYS)[0];
     }
     if (Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_BADGUYS).length) {
-        players.black = Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_BADGUYS)[0];
+        players[0] = Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_BADGUYS)[0];
     }
     $.Msg("players ", players);
 
-    for (var side in players) {
-        if (players[side] || players[side] == 0) {
-            var playerInfo = Game.GetPlayerInfo(players[side]);
-            if (playerInfo) {
-                $("#player-" + side).steamid = playerInfo.player_steamid;
-            }
-        }
-    }
 
-    ["white", "black"].forEach(function(side) {
-        $("#timer-label-" + side).text = formatTime(timeRemaining[side]);
-    });
-    $("#timer-white").SetHasClass("highlight", true);
+    UpdatePlayerPanel();
+    UpdateTimePanel();
+    $("#timer-bottom").SetHasClass("highlight", true);
     $.Msg("main.js");
 })();

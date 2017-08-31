@@ -19,9 +19,9 @@
             <Panel class="center-container" hittest="false">
                 <Panel id="board" class="board" hittest="false" />
                 <Panel class="info-container" hittest="false">
-                    <Panel id="timer-black" class="timer black" hittest="false">
-                        <DOTAAvatarImage id="player-black" class="avatar black" />
-                        <Label id="timer-label-black" hittest="false" text="0:00" />
+                    <Panel id="timer-top" class="timer top" hittest="false">
+                        <DOTAAvatarImage id="player-top" class="avatar top" />
+                        <Label id="timer-label-top" hittest="false" text="0:00" />
                     </Panel>
                     <Panel id="history" class="history" hittest="false" />
                     <Panel id="action-container" class="" hittest="false">
@@ -54,9 +54,9 @@
                             </Panel>
                         </Panel>
                     </Panel>
-                    <Panel id="timer-white" class="timer white" hittest="false">
-                        <DOTAAvatarImage id="player-white" class="avatar white" />
-                        <Label id="timer-label-white" hittest="false" text="0:00" />
+                    <Panel id="timer-bottom" class="timer bottom" hittest="false">
+                        <DOTAAvatarImage id="player-bottom" class="avatar bottom" />
+                        <Label id="timer-label-bottom" hittest="false" text="0:00" />
                     </Panel>
                 </Panel>
             </Panel>
