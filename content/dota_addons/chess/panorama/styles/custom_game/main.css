@@ -2,9 +2,6 @@
     width: 1920px;
     height: 1080px;
     flow-children: down;
-    /*background-color: gradient( linear, 0% 0%, 0% 100%, from( #588c46 ), to( #1f3b08 ) );*/
-    /*opacity: .5;*/
-    
     background-color: gradient( linear, 0% 0%, 0% 100%, from( #588c46), to( #1f3b08));
 }
 .controls-container {
@@ -31,14 +28,14 @@
     width: 20%;
     /*flow-children: down;*/
 }
-#chat-container {
-    height: 1036px;
-    padding-top: 8px;
-}
 .info-container {
     width: 100%;
     vertical-align: middle;
     flow-children: down;
+}
+#chat-container {
+    height: 1036px;
+    padding-top: 8px;
 }
 #action-container {
     border-top: 1px solid #ccc;
@@ -77,12 +74,6 @@
     font-weight: bold;
     padding: 10px 15px 5px 15px;
 }
-.history-ply.white {
-    //border-right: 1px solid #888;
-}
-.history-ply.black {
-    
-}
 .timer {
     background-color: #eeeeee;
     width: 80%;
@@ -112,76 +103,6 @@
     width: 64px;
     height: 64px;
 }
-.board {
-    vertical-align: middle;
-    flow-children: down;
-    horizontal-align: middle;
-    margin: 0px 100px 0px 100px;
-}
-.rank {
-    flow-children: right;
-}
-.square {
-    width: 86px;
-    height: 86px;
-    margin: 5px;
-}
-.square.white,
-.square-wrapper.white {
-    background-color: #f0d9b5;
-}
-.square.black,
-.square-wrapper.black {
-    background-color: #b58863;
-}
-.square.white.last-move,
-.square-wrapper.white.last-move {
-    background-color: #ced26b;
-}
-.square.black.last-move,
-.square-wrapper.black.last-move {
-    background-color: #aaa23b;
-}
-.square.selected,
-.square-wrapper.selected {
-    background-color: #83976a;
-}
-.square.move-dest,
-.square-wrapper.move-dest {
-    background-image: url("file://{images}/dot.png");
-    background-position: center;
-    background-repeat: no-repeat;
-}
-.square.white.potential_drop_target,
-.square-wrapper.white.potential_drop_target {
-    background-color: #FFF0D6;
-}
-.square.black.potential_drop_target,
-.square-wrapper.black.potential_drop_target {
-    background-color: #C14D33;
-}
-.square-label {
-    width: 100%;
-    text-align: center;
-    font-size: 64;
-    vertical-align: top;
-}
-.square-label.white {
-    color: white;
-    text-shadow: 0px 0px 2px 3.0 black;
-}
-.square-label.black {
-    color: black;
-    text-shadow: 0px 0px 2px 1.0 #aaa;
-}
-.square:hover .square-label.white {
-    color: white;
-    text-shadow: 0px 0px 8px 6.0 green;
-}
-.square:hover .square-label.black {
-    color: black;
-    text-shadow: 0px 0px 8px 6.0 green;
-}
 .btn {
     border-radius: 4px;
     border: 1px solid #aaa;
@@ -203,24 +124,24 @@
     text-align: center;
     vertical-align: middle;
 }
-.action-btn {
+.btn-action {
     width: 55px;
     height: 45px;
     background-color: #eeeeee;
     border-radius: 0;
     border: 0;
 }
-.action-btn:hover {
+.btn-action:hover {
     background-color: rgba(56,147,232,0.8);
 }
-.action-btn:active > Image {
-    opacity: 0.5;
-}
-.action-btn > Image {
+.btn-action > Image {
     width: 100%;
     height: 100%;
     padding: 5px 10px;
     opacity: 0.9;
+}
+.btn-action:active > Image {
+    opacity: 0.5;
 }
 #action-message-container {
     width: 100%;
@@ -249,13 +170,13 @@
 #action-message-buttons .btn Label {
     font-size: 30px;
 }
-#accept-btn Label {
+#btn-accept Label {
     color: green;
 }
-#decline-btn Label {
+#btn-decline Label {
     color: red;
 }
-#accept-btn, #decline-btn {
+#btn-accept, #btn-decline {
     width: 50%;
     margin: 10px 0px;
     background-color: white;

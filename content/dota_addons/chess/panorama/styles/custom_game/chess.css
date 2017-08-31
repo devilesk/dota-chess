@@ -1,0 +1,70 @@
+.board {
+    vertical-align: middle;
+    flow-children: down;
+    horizontal-align: middle;
+    margin: 0px 100px 0px 100px;
+}
+.rank {
+    flow-children: right;
+}
+.square {
+    width: 86px;
+    height: 86px;
+    margin: 5px;
+}
+.square.white,
+.square-wrapper.white {
+    background-color: #f0d9b5;
+}
+.square.black,
+.square-wrapper.black {
+    background-color: #b58863;
+}
+.square.white.last-move,
+.square-wrapper.white.last-move {
+    background-color: #ced26b;
+}
+.square.black.last-move,
+.square-wrapper.black.last-move {
+    background-color: #aaa23b;
+}
+.square.selected,
+.square-wrapper.selected {
+    background-color: #83976a;
+}
+.square.move-dest,
+.square-wrapper.move-dest {
+    background-image: url("file://{images}/dot.png");
+    background-position: center;
+    background-repeat: no-repeat;
+}
+.square.white.potential_drop_target,
+.square-wrapper.white.potential_drop_target {
+    background-color: #FFF0D6;
+}
+.square.black.potential_drop_target,
+.square-wrapper.black.potential_drop_target {
+    background-color: #C14D33;
+}
+.square-label {
+    width: 100%;
+    text-align: center;
+    font-size: 64;
+    vertical-align: top;
+}
+.square-label.white {
+    color: white;
+    text-shadow: 0px 0px 2px 3.0 black;
+}
+.square-label.black {
+    color: black;
+    text-shadow: 0px 0px 2px 1.0 #aaa;
+}
+.square:hover .square-label.white {
+    color: white;
+    text-shadow: 0px 0px 8px 6.0 green;
+}
+.square:hover .square-label.black {
+    color: black;
+    text-shadow: 0px 0px 8px 6.0 green;
+}

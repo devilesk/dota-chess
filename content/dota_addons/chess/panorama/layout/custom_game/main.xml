@@ -2,6 +2,7 @@
     <styles>
         <include src="file://{resources}/styles/dotastyles.css" />
         <include src="file://{resources}/styles/custom_game/main.css" />
+        <include src="file://{resources}/styles/custom_game/chess.css" />
     </styles>
     <scripts>
         <include src="file://{resources}/scripts/custom_game/main.js" />
@@ -25,29 +26,29 @@
                     <Panel id="history" class="history" hittest="false" />
                     <Panel id="action-container" class="" hittest="false">
                         <Panel id="action-button-container">
-                            <Button id="undo-btn" class="btn action-btn" onmouseover="DOTAShowTextTooltip('Propose a takeback')" onmouseout="DOTAHideTextTooltip()">
+                            <Button id="btn-undo" class="btn btn-action" onmouseover="DOTAShowTextTooltip('Propose a takeback')" onmouseout="DOTAHideTextTooltip()">
                                 <Image src="file://{images}/undo5.png" />
                             </Button>
-                            <Button id="draw-btn" class="btn action-btn" onmouseover="DOTAShowTextTooltip('Offer Draw')" onmouseout="DOTAHideTextTooltip()">
+                            <Button id="btn-draw" class="btn btn-action" onmouseover="DOTAShowTextTooltip('Offer Draw')" onmouseout="DOTAHideTextTooltip()">
                                 <Image src="file://{images}/hand.png" />
                             </Button>
-                            <Button id="resign-btn" class="btn action-btn" onmouseover="DOTAShowTextTooltip('Resign')" onmouseout="DOTAHideTextTooltip()">
+                            <Button id="btn-resign" class="btn btn-action" onmouseover="DOTAShowTextTooltip('Resign')" onmouseout="DOTAHideTextTooltip()">
                                 <Image src="file://{images}/white66.png" />
                             </Button>
                         </Panel>
                         <Panel id="action-message-container">
-                            <Label id="action-message" hittest="false" html="true" text="Your opponent       proposes a takeback" />
+                            <Label id="action-message" hittest="false" html="true" text="Your opponent proposes a takeback" />
                             <Panel id="action-message-buttons">
-                                <Button id="accept-btn" class="btn">
-                                    <Label id="accept-btn-label" hittest="false" text="	&#10004;" />
+                                <Button id="btn-accept" class="btn">
+                                    <Label id="btn-accept-label" hittest="false" text="	&#10004;" />
                                 </Button>
-                                <Button id="decline-btn" class="btn">
-                                    <Label id="decline-btn-label" hittest="false" text="&#10006;" />
+                                <Button id="btn-decline" class="btn">
+                                    <Label id="btn-decline-label" hittest="false" text="&#10006;" />
                                 </Button>
                             </Panel>
                         </Panel>
-                        <Button id="claim-draw-btn" class="btn">
-                            <Label id="claim-draw-btn-label" hittest="false" text="Claim Draw" />
+                        <Button id="btn-claim-draw" class="btn">
+                            <Label id="btn-claim-draw-label" hittest="false" text="Claim Draw" />
                         </Button>
                     </Panel>
                     <Panel id="timer-white" class="timer white" hittest="false">
