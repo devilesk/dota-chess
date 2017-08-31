@@ -336,7 +336,7 @@ function CreateBoard() {
             var rowPanel = $.CreatePanel("Panel", parentPanel, "rank-" + ranks[i]);
             rowPanel.SetHasClass("rank", true);
             for (var j = 7; j >= 0; j--) {
-                m_Board.push(CreateSquare(rowPanel, i, j));
+                m_Board.unshift(CreateSquare(rowPanel, i, j));
             }
         }
     }
