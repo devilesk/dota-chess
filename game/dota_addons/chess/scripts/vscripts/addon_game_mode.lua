@@ -93,6 +93,8 @@ function GameMode:InitGameMode()
     CustomGameEventManager:RegisterListener( "new_game", OnNewGame )
     CustomGameEventManager:RegisterListener( "change_pause_state", OnChangePauseState )
     CustomGameEventManager:RegisterListener( "claim_draw", OnClaimDraw )
+    CustomGameEventManager:RegisterListener( "decline_draw", OnDeclineDraw )
+    CustomGameEventManager:RegisterListener( "resign", OnResign )
     CustomGameEventManager:RegisterListener( "time_out", OnTimeOut )
     CustomGameEventManager:RegisterListener( "request_undo", OnRequestUndo )
     CustomGameEventManager:RegisterListener( "decline_undo", OnDeclineUndo )
@@ -180,7 +182,8 @@ function OnDropPiece(eventSourceIndex, args)
         local data = {
             board=g_board,
             toMove=g_toMove,
-            san=san, moves=moves,
+            san=san,
+            moves=moves,
             last_move=move,
             check=g_inCheck,
             paused=paused,
@@ -188,6 +191,13 @@ function OnDropPiece(eventSourceIndex, args)
             repDraw=IsRepDraw()
         }
         CustomGameEventManager:Send_ServerToAllClients("board_update", data)
+        
+        if args.offerDraw then
+            CustomGameEventManager:Send_ServerToAllClients("draw_offer", {
+                playerId = args.playerId
+                playerSide = args.playerSide
+            })
+        end
 
         if #moves == 0 then
             -- checkmate
@@ -235,7 +245,25 @@ end
 function OnClaimDraw(eventSourceIndex, args)
     print ("OnClaimDraw", eventSourceIndex)
     PrintTable(args)
+    CustomGameEventManager:Send_ServerToAllClients("draw_claimed", {
+        playerId = args.playerId
+        playerSide = args.playerSide
+    })
     EmitGlobalSound("Chess.Stalemate")
+end
+
+function OnDeclineDraw(eventSourceIndex, args)
+    print ("OnDeclineDraw", eventSourceIndex)
+    PrintTable(args)
+end
+
+function OnResign(eventSourceIndex, args)
+    print ("OnResign", eventSourceIndex)
+    PrintTable(args)
+    CustomGameEventManager:Send_ServerToAllClients("resigned", {
+        playerId = args.playerId
+        playerSide = args.playerSide
+    })
 end
 
 function OnTimeOut(eventSourceIndex, args)

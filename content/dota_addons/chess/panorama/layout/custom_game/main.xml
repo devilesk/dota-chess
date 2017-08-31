@@ -29,27 +29,30 @@
                             <Button id="btn-undo" class="btn btn-action" onmouseover="DOTAShowTextTooltip('Propose a takeback')" onmouseout="DOTAHideTextTooltip()">
                                 <Image src="file://{images}/undo5.png" />
                             </Button>
-                            <Button id="btn-draw" class="btn btn-action" onmouseover="DOTAShowTextTooltip('Offer Draw')" onmouseout="DOTAHideTextTooltip()">
+                            <Button id="btn-draw" class="btn btn-action" onmouseover="DOTAShowTextTooltip('Offer Draw')" onmouseout="DOTAHideTextTooltip()" onactivate="OnOfferDrawPressed()">
                                 <Image src="file://{images}/hand.png" />
                             </Button>
-                            <Button id="btn-resign" class="btn btn-action" onmouseover="DOTAShowTextTooltip('Resign')" onmouseout="DOTAHideTextTooltip()">
+                            <Button id="btn-resign" class="btn btn-action" onmouseover="DOTAShowTextTooltip('Resign')" onmouseout="DOTAHideTextTooltip()" onactivate="OnResignPressed()">
                                 <Image src="file://{images}/white66.png" />
                             </Button>
+                            <Button id="btn-cancel" class="btn btn-action hidden" onmouseover="DOTAShowTextTooltip('Cancel')" onmouseout="DOTAHideTextTooltip()" onactivate="OnCancelActionPressed()">
+                                <Label id="btn-cancel-label" hittest="false" text="&#10006;" />
+                            </Button>
+                            <Button id="btn-confirm" class="btn btn-action hidden" onmouseover="DOTAShowTextTooltip('Confirm')" onmouseout="DOTAHideTextTooltip()" onactivate="OnConfirmActionPressed()">
+                                <Label id="btn-confirm-label" hittest="false" text="&#10004;" />
+                            </Button>
                         </Panel>
-                        <Panel id="action-message-container">
-                            <Label id="action-message" hittest="false" html="true" text="Your opponent proposes a takeback" />
+                        <Panel id="action-message-container" class="hidden">
+                            <Label id="action-message" hittest="false" html="true" text="Your opponent offers a draw" />
                             <Panel id="action-message-buttons">
-                                <Button id="btn-accept" class="btn">
+                                <Button id="btn-accept" class="btn" onactivate="OnAcceptPressed()">
                                     <Label id="btn-accept-label" hittest="false" text="	&#10004;" />
                                 </Button>
-                                <Button id="btn-decline" class="btn">
+                                <Button id="btn-decline" class="btn" onactivate="OnDeclinePressed()">
                                     <Label id="btn-decline-label" hittest="false" text="&#10006;" />
                                 </Button>
                             </Panel>
                         </Panel>
-                        <Button id="btn-claim-draw" class="btn">
-                            <Label id="btn-claim-draw-label" hittest="false" text="Claim Draw" />
-                        </Button>
                     </Panel>
                     <Panel id="timer-white" class="timer white" hittest="false">
                         <DOTAAvatarImage id="player-white" class="avatar white" />

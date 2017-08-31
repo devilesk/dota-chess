@@ -12,7 +12,7 @@ var timeRemaining = {
 };
 var increment = 20;
 var timer = null;
-var currentSide = 8;
+var currentSide = 8; // 0 == black, 0 != white
 var firstMove = {
     white: true,
     black: true
@@ -21,8 +21,8 @@ var players = {
     white: null,
     black: null
 }
-var isWhite = Game.GetLocalPlayerInfo().player_team_id == DOTATeam_t.DOTA_TEAM_GOODGUYS;
-$.Msg("isWhite ", isWhite);
+var mySide = Game.GetLocalPlayerInfo().player_team_id == DOTATeam_t.DOTA_TEAM_GOODGUYS ? 8 : 0;
+$.Msg("mySide ", mySide);
 var moves;
 var lastMove;
 var currentDraggingSquare;
@@ -249,160 +249,78 @@ function OnPromote(data) {
 
 function SendPromotionMove(data, promotionType) {
     data.promotionType = promotionType;
+    OnDropPiece(data);
+}
+
+function OnDropPiece(data) {
+    uiState.drawPressed = false;
+    uiState.resignPressed = false;
     GameEvents.SendCustomGameEventToServer("drop_piece", data);
+    DeclineDraw()
+    UpdateUI();
+}
+
+function OnGameEnd(prompt) {
+    var dialog = new DialogLibrary.Dialog({
+        parentPanel: DialogLibrary.contextPanel,
+        layoutfile: "file://{resources}/layout/custom_game/dialog/dialog.xml",
+        id: "dialog-container",
+        hittest: true,
+        children: [{
+            id: "contents-container",
+            cssClasses: ["contents-container"],
+            style: {
+                width: 400
+            },
+            children: [{
+                    cssClasses: ["control", "horizontal-center"],
+                    id: "control-1",
+                    children: [{
+                        id: "label-1",
+                        panelType: "Label",
+                        text: prompt
+                    }]
+                },
+                {
+                    cssClasses: ["control", "horizontal-center"],
+                    id: "control-2",
+                    children: [{
+                        events: {
+                            OnActivate: function() {
+                                OnNewGame();
+                                this.root.close();
+                            },
+                            OnTabForward: function() {
+                                this.root.focusNextInput(this);
+                            }
+                        },
+                        panelType: "Button",
+                        init: function() {
+                            this.root.controls.push(this);
+                        },
+                        cssClasses: ["btn"],
+                        children: [{
+                            panelType: "Label",
+                            text: "Play again",
+                            skipBindHandlers: true
+                        }]
+                    }]
+                }
+            ]
+        }]
+    });
 }
 
 function OnLose() {
-    var dialog = new DialogLibrary.Dialog({
-        parentPanel: DialogLibrary.contextPanel,
-        layoutfile: "file://{resources}/layout/custom_game/dialog/dialog.xml",
-        id: "dialog-container",
-        hittest: true,
-        children: [{
-            id: "contents-container",
-            cssClasses: ["contents-container"],
-            style: {
-                width: 400
-            },
-            children: [{
-                    cssClasses: ["control", "horizontal-center"],
-                    id: "control-1",
-                    children: [{
-                        id: "label-1",
-                        panelType: "Label",
-                        text: "Checkmate. You lose!"
-                    }]
-                },
-                {
-                    cssClasses: ["control", "horizontal-center"],
-                    id: "control-2",
-                    children: [{
-                        events: {
-                            OnActivate: function() {
-                                OnNewGame();
-                                this.root.close();
-                            },
-                            OnTabForward: function() {
-                                this.root.focusNextInput(this);
-                            }
-                        },
-                        panelType: "Button",
-                        init: function() {
-                            this.root.controls.push(this);
-                        },
-                        cssClasses: ["btn"],
-                        children: [{
-                            panelType: "Label",
-                            text: "Play again",
-                            skipBindHandlers: true
-                        }]
-                    }]
-                }
-            ]
-        }]
-    });
+    OnGameEnd("Stalemate. You draw!");
 }
 
 function OnDraw() {
-    var dialog = new DialogLibrary.Dialog({
-        parentPanel: DialogLibrary.contextPanel,
-        layoutfile: "file://{resources}/layout/custom_game/dialog/dialog.xml",
-        id: "dialog-container",
-        hittest: true,
-        children: [{
-            id: "contents-container",
-            cssClasses: ["contents-container"],
-            style: {
-                width: 400
-            },
-            children: [{
-                    cssClasses: ["control", "horizontal-center"],
-                    id: "control-1",
-                    children: [{
-                        id: "label-1",
-                        panelType: "Label",
-                        text: "Stalemate. You draw!"
-                    }]
-                },
-                {
-                    cssClasses: ["control", "horizontal-center"],
-                    id: "control-2",
-                    children: [{
-                        events: {
-                            OnActivate: function() {
-                                OnNewGame();
-                                this.root.close();
-                            },
-                            OnTabForward: function() {
-                                this.root.focusNextInput(this);
-                            }
-                        },
-                        panelType: "Button",
-                        init: function() {
-                            this.root.controls.push(this);
-                        },
-                        cssClasses: ["btn"],
-                        children: [{
-                            panelType: "Label",
-                            text: "Play again",
-                            skipBindHandlers: true
-                        }]
-                    }]
-                }
-            ]
-        }]
-    });
+    OnGameEnd("Checkmate. You lose!");
 }
 
 function OnWin() {
-    var dialog = new DialogLibrary.Dialog({
-        parentPanel: DialogLibrary.contextPanel,
-        layoutfile: "file://{resources}/layout/custom_game/dialog/dialog.xml",
-        id: "dialog-container",
-        hittest: true,
-        children: [{
-            id: "contents-container",
-            cssClasses: ["contents-container"],
-            style: {
-                width: 400
-            },
-            children: [{
-                    cssClasses: ["control", "horizontal-center"],
-                    id: "control-1",
-                    children: [{
-                        id: "label-1",
-                        panelType: "Label",
-                        text: "Checkmate. You win!"
-                    }]
-                },
-                {
-                    cssClasses: ["control", "horizontal-center"],
-                    id: "control-2",
-                    children: [{
-                        events: {
-                            OnActivate: function() {
-                                OnNewGame();
-                                this.root.close();
-                            },
-                            OnTabForward: function() {
-                                this.root.focusNextInput(this);
-                            }
-                        },
-                        panelType: "Button",
-                        init: function() {
-                            this.root.controls.push(this);
-                        },
-                        cssClasses: ["btn"],
-                        children: [{
-                            panelType: "Label",
-                            text: "Play again",
-                            skipBindHandlers: true
-                        }]
-                    }]
-                }
-            ]
-        }]
-    });
+    OnGameEnd("Checkmate. You win!");
 }
 
 function CreateChatPanel() {
@@ -526,13 +444,14 @@ _.extend(Square.prototype, {
                 endX: this.col(),
                 endY: this.row(),
                 playerId: Players.GetLocalPlayer(),
-                playerSide: isWhite ? 8 : 0
+                playerSide: mySide,
+                offerDraw: uiState.drawPressed
             };
 
             if (selectedSquare.piece() == "pawn" && this.row() % 7 == 0) {
                 OnPromote(data);
             } else {
-                GameEvents.SendCustomGameEventToServer("drop_piece", data);
+                OnDropPiece(data);
             }
         }
 
@@ -574,13 +493,15 @@ _.extend(Square.prototype, {
             startY: draggedSquare.row(),
             endX: square.col(),
             endY: square.row(),
-            playerId: Players.GetLocalPlayer()
+            playerId: Players.GetLocalPlayer(),
+            playerSide: mySide,
+            offerDraw: uiState.drawPressed
         };
 
         if (draggedSquare.piece() == "pawn" && square.row() % 7 == 0) {
             OnPromote(data);
         } else {
-            GameEvents.SendCustomGameEventToServer("drop_piece", data);
+            OnDropPiece(data);
         }
     },
     OnDragStart: function(panelId, dragCallbacks, square) {
@@ -796,7 +717,7 @@ function OnBoardUpdate(data) {
 
     if (data.moves && Object.keys(data.moves).length == 0) {
         if (data.check) {
-            if ((isWhite && data.toMove == 0) || (!isWhite && data.toMove != 0)) {
+            if (mySide != data.toMove) {
                 OnWin();
             } else {
                 OnLose();
@@ -896,10 +817,113 @@ function RedrawPieces(g_board) {
     }
 }
 
+var uiStates = {
+    0: new UIState(),
+    8: new UIState()
+}
+
+var uiState = uiStates[mySide];
+
+function isMyTurn() {
+    return mySide == currentSide;
+}
+
+function UIState() {
+    var self = this;
+    this.drawPressed = false;
+    this.resignPressed = false;
+    this.resignPressed = false;
+    this.pendingDraw = false;
+}
+
+function OnOfferDrawPressed() {
+    if isMyTurn() {
+        uiState.drawPressed = true;
+        UpdateUI();
+    }
+}
+
+function OnResignPressed() {
+    uiState.resignPressed = true;
+    UpdateUI();
+}
+
+function OnCancelActionPressed() {
+    uiState.drawPressed = false;
+    uiState.resignPressed = false;
+    UpdateUI();
+}
+
+function OnConfirmActionPressed() {
+    if (uiState.resignPressed) {
+        Resign();
+    }
+    UpdateUI();
+}
+
+function OnReceivedDrawOffer(data) {
+    if (mySide == data.playerSide) {
+        uiState.pendingDraw = true;
+    }
+    UpdateUI();
+}
+
+function OnAcceptPressed() {
+    if (uiState.pendingDraw) {
+        uiState.pendingDraw = true;
+        GameEvents.SendCustomGameEventToServer("claim_draw", {
+            playerId: Players.GetLocalPlayer(),
+            playerSide: mySide
+        });
+    }
+    UpdateUI();
+}
+
+function OnDeclinePressed() {
+    DeclineDraw();
+    UpdateUI();
+}
+
+function DeclineDraw() {
+    if (uiState.pendingDraw) {
+        uiState.pendingDraw = false;
+        GameEvents.SendCustomGameEventToServer("decline_draw", {
+            playerId: Players.GetLocalPlayer(),
+            playerSide: mySide
+        });
+    }
+}
+
+function OnReceivedDrawClaimed() {
+    OnDraw();
+}
+
+function OnReceivedResigned() {
+    var prompt = data.playerSide == 0 ? "Black" : "White";
+    prompt += " resigns. ";
+    prompt += mySide == data.playerSide ? "You lose!" : "You win!";
+    OnGameEnd(prompt);
+}
+
+function UpdateUI() {
+    $('#btn-draw').SetHasClass("disabled", uiState.drawPressed);
+    $('#btn-confirm').SetHasClass("hidden", !uiState.resignPressed);
+    $('#btn-cancel').SetHasClass("hidden", !uiState.drawPressed && !uiState.resignPressed);
+    $('#action-message-container').SetHasClass("hidden", !uiState.pendingDraw);
+}
+
+function Resign() {
+    GameEvents.SendCustomGameEventToServer("resign", {
+        playerId: Players.GetLocalPlayer(),
+        playerSide: mySide
+    });
+}
+
 function OnTogglePlayerPressed() {
-    isWhite = !isWhite;
-    $('#btn-toggle-player-label').text = isWhite ? "White" : "Black";
-    $.Msg(isWhite);
+    mySide = mySide == 0 ? 8 : 0;
+    uiState = uiStates[mySide];
+    $('#btn-toggle-player-label').text = mySide == 0 ? "Black" : "White";
+    UpdateUI();
 }
 
 (function() {
@@ -923,6 +947,9 @@ function OnTogglePlayerPressed() {
     GameEvents.Subscribe("board_reset", OnBoardReset);
     GameEvents.Subscribe("board_pause_changed", OnPauseChanged);
     GameEvents.Subscribe("receive_moves", OnReceiveMoves);
+    GameEvents.Subscribe("draw_offer", OnReceivedDrawOffer);
+    GameEvents.Subscribe("draw_claimed", OnReceivedDrawClaimed);
+    GameEvents.Subscribe("resigned", OnReceivedResigned);
 
     if (Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_GOODGUYS).length) {
         players.white = Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_GOODGUYS)[0];
@@ -946,9 +973,5 @@ function OnTogglePlayerPressed() {
         $('#timer-label-' + side).text = formatTime(timeRemaining[side]);
     });
     $('#timer-white').SetHasClass("highlight", true);
-    /*$.Schedule(1, function () {
-      GameEvents.SendCustomGameEventToServer( "get_moves", {} );
-    });*/
     $.Msg("main.js");
-    //OnPromote();
 })();
