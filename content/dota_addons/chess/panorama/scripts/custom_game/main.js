@@ -105,9 +105,9 @@ function pad(num, size) {
 
 function formatTime(t) {
     if (t < 100) {
-        return Math.floor(t / 600) + ":" + pad(Math.floor(t / 10), 2) + "." + (t % 10);
+        return Math.floor(t / 600) + ":" + pad(Math.floor(t / 10) % 60, 2) + "." + (t % 10);
     } else {
-        return Math.floor(t / 600) + ":" + pad(Math.floor(t / 10), 2);
+        return Math.floor(t / 600) + ":" + pad(Math.floor(t / 10) % 60, 2);
     }
 }
 
