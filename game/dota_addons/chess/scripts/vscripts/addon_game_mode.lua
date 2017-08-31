@@ -9,12 +9,15 @@ if GameMode == nil then
     GameMode = class({})
 end
 
+local DEBUG = true
 local moves = nil
 local clock_time = 600
 local clock_increment = 20
 local paused = false
 local vs_ai = false
 local ai_side = 0
+-- 0 = black
+-- 8 = white
 local ai_ply_difficulty = 88888
 --local ai_max_think_time = 5
 
@@ -38,7 +41,7 @@ function GameMode:OnGameRulesStateChange()
         print("DOTA_GAMERULES_STATE_HERO_SELECTION")
     elseif nNewState == DOTA_GAMERULES_STATE_PRE_GAME then
         print("DOTA_GAMERULES_STATE_PRE_GAME")
-    if PlayerResource:GetPlayerCount() == 1 then
+    if DEBUG == false and PlayerResource:GetPlayerCount() == 1 then
         vs_ai = true
         if PlayerResource:GetTeam(0) == DOTA_TEAM_GOODGUYS then
             ai_side = 0
