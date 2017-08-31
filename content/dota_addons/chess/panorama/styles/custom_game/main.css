@@ -24,6 +24,7 @@
 .left-container {
     height: 1036px;
     width: 20%;
+    flow-children: down;
 }
 .right-container {
     height: 1036px;
@@ -42,7 +43,7 @@
 #action-container {
     border-top: 1px solid #ccc;
     background-color: #eeeeee;
-    width: 60%;
+    width: 80%;
     height: 200px;
     flow-children: down;
 }
@@ -51,7 +52,7 @@
     horizontal-align: middle;
 }
 #history {
-    width: 60%;
+    width: 80%;
     height: 300px;
     flow-children: down;
     background-color: #eeeeee;
@@ -79,9 +80,12 @@
 .history-ply.white {
     //border-right: 1px solid #888;
 }
-.history-ply.black {} .timer {
+.history-ply.black {
+    
+}
+.timer {
     background-color: #eeeeee;
-    width: 60%;
+    width: 80%;
     flow-children: right;
 }
 .timer.highlight {
@@ -195,24 +199,71 @@
     font-weight: bold;
     text-shadow: 0 1px 0 #FFF;
     padding: 0 10px;
+    width: 100%;
+    text-align: center;
+    vertical-align: middle;
 }
 .action-btn {
-    width: 36px;
-    height: 36px;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: 70% 70%;
-    margin: 0 3px;
+    width: 55px;
+    height: 45px;
+    background-color: #eeeeee;
+    border-radius: 0;
+    border: 0;
 }
-#resign-btn {
-    background-image: url("file://{images}/white66.png");
+.action-btn:hover {
+    background-color: rgba(56,147,232,0.8);
 }
-#undo-btn {
-    background-image: url("file://{images}/undo5.png");
+.action-btn:active > Image {
+    opacity: 0.5;
 }
-#draw-btn {
-    background-image: url("file://{images}/hand.png");
+.action-btn > Image {
+    width: 100%;
+    height: 100%;
+    padding: 5px 10px;
+    opacity: 0.9;
 }
+#action-message-container {
+    width: 100%;
+    flow-children: right;
+    height: 80px;
+    background-color: #d0d0d0;
+}
+#action-message {
+    width: 60%;
+    white-space: normal;
+    height: 60px;
+    font-size: 16px;
+    padding: 0px 10px;
+    vertical-align: middle;
+    color: #707070;
+}
+#action-message-buttons {
+    width: 40%;
+    flow-children: right;
+    height: 80px;
+    margin-right: 10px;
+}
+#action-message-buttons .btn {
+    height: 100%;
+}
+#action-message-buttons .btn Label {
+    font-size: 30px;
+}
+#accept-btn Label {
+    color: green;
+}
+#decline-btn Label {
+    color: red;
+}
+#accept-btn, #decline-btn {
+    width: 50%;
+    margin: 10px 0px;
+    background-color: white;
+}
+#btn-toggle-player {
+    width: 100%;
+}
+
 #DashboardButton:hover {
     opacity: 1;
 }
