@@ -13,6 +13,7 @@ var _ = GameUI.CustomUIConfig().UtilLibrary;
 var DialogLibrary;
 var m_ChatPanel;
 var m_Board = [];
+var g_board;
 var currentMovePanel;
 var moveNum = 0;
 var timeRemaining = {
@@ -386,6 +387,8 @@ function RedrawBoard() {
     parentPanel.RemoveAndDeleteChildren();
     m_Board.length = 0;
     CreateBoard();
+    RedrawPieces(g_board);
+    HighlightLastMove(lastMove);
 }
 
 
@@ -679,7 +682,8 @@ function OnBoardReset(data) {
     selectedSquare = null;
     HighlightLastMove();
     moves = data.moves;
-    RedrawPieces(data.board);
+    g_board = data.board;
+    RedrawPieces(g_board);
     $("#history").RemoveAndDeleteChildren();
     HighlightPlayerToMove(data.toMove);
 
@@ -696,6 +700,11 @@ function OnBoardReset(data) {
         white: true,
         black: true
     };
+    uiStates = {
+        0: new UIState(),
+        8: new UIState()
+    }
+    UpdateUI();
     UpdateTimePanel();
 }
 
@@ -710,7 +719,8 @@ function OnBoardUpdate(data) {
     selectedSquare = null;
     HighlightLastMove(data.last_move);
     moves = data.moves;
-    RedrawPieces(data.board);
+    g_board = data.board;
+    RedrawPieces(g_board);
 
     if (data.toMove == 0) {
         moveNum++;
@@ -864,6 +874,7 @@ function UIState() {
 }
 
 function OnOfferDrawPressed() {
+    $.Msg("OnOfferDrawPressed", mySide, currentSide);
     if (mySide == currentSide) {
         uiState.drawPressed = true;
         UpdateUI();
@@ -884,14 +895,14 @@ function OnCancelActionPressed() {
 function OnConfirmActionPressed() {
     if (uiState.resignPressed) {
         Resign();
+        uiState.resignPressed = false;
     }
     UpdateUI();
 }
 
 function OnReceivedDrawOffer(data) {
-    if (mySide == data.playerSide) {
-        uiState.pendingDraw = true;
-    }
+    $.Msg("OnReceivedDrawOffer", data);
+    uiStates[data.playerSide == 0 ? 8 : 0].pendingDraw = true;
     UpdateUI();
 }
 
