@@ -185,7 +185,7 @@ function OnDropPiece(eventSourceIndex, args)
         
         if args.offerDraw then
             CustomGameEventManager:Send_ServerToAllClients("draw_offer", {
-                playerId = args.playerId
+                playerId = args.playerId,
                 playerSide = args.playerSide
             })
         end
@@ -234,7 +234,7 @@ function AIMove()
 end
 
 function UndoMove()
-    if #g_allMoves == 0) then
+    if #g_allMoves == 0 then
         return
     end
     UnmakeMove(table.remove(g_allMoves))
@@ -259,7 +259,7 @@ function OnClaimDraw(eventSourceIndex, args)
     print ("OnClaimDraw", eventSourceIndex)
     PrintTable(args)
     CustomGameEventManager:Send_ServerToAllClients("draw_claimed", {
-        playerId = args.playerId
+        playerId = args.playerId,
         playerSide = args.playerSide
     })
     EmitGlobalSound("Chess.Stalemate")
@@ -274,7 +274,7 @@ function OnResign(eventSourceIndex, args)
     print ("OnResign", eventSourceIndex)
     PrintTable(args)
     CustomGameEventManager:Send_ServerToAllClients("resigned", {
-        playerId = args.playerId
+        playerId = args.playerId,
         playerSide = args.playerSide
     })
 end
