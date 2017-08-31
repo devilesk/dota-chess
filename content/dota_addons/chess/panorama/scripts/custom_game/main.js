@@ -896,13 +896,10 @@ function RedrawPieces(g_board) {
     }
 }
 
-function UpdateSliders() {
-    //$.Msg("UpdateSliders", $("#ZoomSlider"));
-    //$.Msg("UpdateSliders", $("#ZoomSlider").GetChild(1));
-    $("#ZoomSlider").GetChild(1).value = Math.round($("#ZoomSlider").GetChild(1).value);
-    //var zoomPer = Math.floor($("#ZoomSlider").GetChild(1).GetChild(1).actuallayoutwidth/($("#ZoomSlider").GetChild(1).GetChild(0).actuallayoutwidth-20)*100)
-    //$.Msg("UpdateSliders", $("#ZoomSlider").value);
-    $.Schedule(.01, UpdateSliders);
+function OnTogglePlayerPressed() {
+    isWhite = !isWhite;
+    $('#btn-toggle-player-label').text = isWhite ? "White" : "Black";
+    $.Msg(isWhite);
 }
 
 (function() {
@@ -953,11 +950,6 @@ function UpdateSliders() {
     /*$.Schedule(1, function () {
       GameEvents.SendCustomGameEventToServer( "get_moves", {} );
     });*/
-    $("#ZoomSlider").GetChild(1)["default"] = 1;
-    $("#ZoomSlider").GetChild(1).increment = 1;
-    $("#ZoomSlider").GetChild(1).max = 10;
-    $("#ZoomSlider").GetChild(1).value = 5;
-    UpdateSliders();
     $.Msg("main.js");
     //OnPromote();
 })();
