@@ -1,3 +1,5 @@
+node_modules/
+
 # Cache crap that Valve autogenerates
 *.bin
 *.cfg
