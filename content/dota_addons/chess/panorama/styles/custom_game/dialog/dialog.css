@@ -5,7 +5,7 @@
 .dialog-container {
     width: 100%;
     height: 100%;
-    background-color: rgba(255, 255, 255, 20);
+    background-color: rgba(255, 255, 255, 0.2);
 }
 .contents-container {
     flow-children: right-wrap;
