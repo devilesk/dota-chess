@@ -43,7 +43,7 @@ function UtilLibrary() {
             // Immediate mode and no wait timer? Execute the function..
             if (callNow) func.apply(context, args);
         };
-    };
+    }
 
     // Returns a function, that, when invoked, will only be triggered at most once
     // during a given window of time. Normally, the throttled function will run
@@ -80,13 +80,13 @@ function UtilLibrary() {
             }
             return result;
         };
-    };
+    }
 
     function inherits(childCtor, parentCtor) {
         childCtor.prototype = Object.create(parentCtor.prototype);
         childCtor.prototype.constructor = childCtor;
         childCtor.prototype.__super__ = parentCtor.prototype;
-    };
+    }
 
     function extend() {
         for (var i = 1; i < arguments.length; i++) {
@@ -142,11 +142,11 @@ function UtilLibrary() {
         }
     });
     Object.getOwnPropertyNames(Array.prototype).forEach(function(prop) {
-        if (typeof(Array.prototype[prop]) == 'function') {
+        if (typeof(Array.prototype[prop]) == "function") {
             Collection.prototype[prop] = function() {
                 var ret = Array.prototype[prop].apply(this.items, arguments);
                 return Array.isArray(ret) ? new Collection(ret) : ret;
-            }
+            };
         }
     });
 
@@ -166,21 +166,21 @@ function UtilLibrary() {
             var sub = new subscription(callback);
             _subscribers.push(sub);
             return sub;
-        }
+        };
         fn.unsubscribe = function(sub) {
             _subscribers.splice(_subscribers.indexOf(sub), 1);
-        }
+        };
         fn.unsubscribeAll = function() {
             _subscribers.length = 0;
-        }
+        };
         fn.notifySubscribers = function(newValue) {
             _notifySubscribers = newValue;
-        }
+        };
         fn.fireSubscriptions = function() {
             _subscribers.forEach(function(sub) {
                 sub.callback(_value, _oldValue);
             });
-        }
+        };
         return fn;
     }
 
@@ -189,20 +189,20 @@ function UtilLibrary() {
     }
 
     function mixin(target, src) {
-        var source = (typeof src == 'function') ? src() : src;
+        var source = (typeof src == "function") ? src() : src;
         for (var fn in source) {
-            if (source.hasOwnProperty(fn) && fn.name != 'init') {
+            if (source.hasOwnProperty(fn) && fn.name != "init") {
                 target.prototype[fn] = source[fn];
             }
         }
 
-        if (typeof source.init == 'function') {
+        if (typeof source.init == "function") {
             if (target.prototype._mixInits === undefined) {
                 target.prototype._mixInits = [];
             }
             target.prototype._mixInits.push(source.init);
         }
-    };
+    }
 
     function Mixable() {
         var mixInits = Object.getPrototypeOf(this)._mixInits;
@@ -211,7 +211,7 @@ function UtilLibrary() {
                 mixInits[i].call(this);
             }
         }
-    };
+    }
 
     function MixableArray() {
         var self = extend([], this);
@@ -223,7 +223,7 @@ function UtilLibrary() {
             }
         }
         return self;
-    };
+    }
     inherits(MixableArray, Array);
 
     function mixInPanelProps(props) {
@@ -249,17 +249,17 @@ function UtilLibrary() {
             bindPanelProp: function(prop) {
                 var self = this;
                 switch (prop) {
-                    case 'draggable':
+                    case "draggable":
                         this[prop].subscribe(function(newValue) {
                             self.panel.SetDraggable(newValue);
                         });
                         break;
-                    case 'parentPanel':
+                    case "parentPanel":
                         this[prop].subscribe(function(newValue) {
                             self.panel.SetParent(newValue);
                         });
                         break;
-                    case 'cssClasses':
+                    case "cssClasses":
                         this[prop].subscribe(function(newValue, oldValue) {
                             oldValue.forEach(function(c) {
                                 if (newValue.indexOf(c) == -1) {
@@ -295,7 +295,7 @@ function UtilLibrary() {
                     }
                 }
             }
-        }
+        };
     }
 
     function mixInStyleProps(styles) {
@@ -350,8 +350,8 @@ function UtilLibrary() {
                     }
                 }
             }
-        }
-    };
+        };
+    }
 
     var mixInEvents = {
         init: function() {
@@ -387,13 +387,13 @@ function UtilLibrary() {
                 handler.apply(self, args);
             });
         }
-    }
+    };
 
     function mixInHandlers() {
-        var events = ['OnDblClick', 'OnContextMenu', 'OnFocus', 'OnBlur', 'OnTabForward',
-            'OnActivate', 'OnMouseOver', 'OnMouseOut', 'OnInputSubmit'
+        var events = ["OnDblClick", "OnContextMenu", "OnFocus", "OnBlur", "OnTabForward",
+            "OnActivate", "OnMouseOver", "OnMouseOut", "OnInputSubmit"
         ];
-        var dragEvents = ['OnDragEnter', 'OnDragDrop', 'OnDragLeave', 'OnDragStart', 'OnDragEnd'];
+        var dragEvents = ["OnDragEnter", "OnDragDrop", "OnDragLeave", "OnDragStart", "OnDragEnd"];
         var m = {
             init: function() {
                 var self = this;
@@ -420,9 +420,9 @@ function UtilLibrary() {
             unbindHandler: function() {
                 this.panel.ClearPanelEvent(event.toLowerCase());
             }
-        }
+        };
         return m;
-    };
+    }
 
     var mixInPanelBind = {
         init: function() {
@@ -483,7 +483,7 @@ function UtilLibrary() {
             this.parent = parent;
             parent.appendChild(this);
         }
-    }
+    };
 
     function _Panel(options) {
         if (!options.skipInitPanel) {

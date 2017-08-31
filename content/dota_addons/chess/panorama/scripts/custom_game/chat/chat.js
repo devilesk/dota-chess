@@ -1,11 +1,13 @@
+/* exported OnChatMessageEntered */
+/* exported OnChatBlur */
+
 "use strict";
 
 var m_ChatMessagePanels = [];
-var localPlayerId;
 var currentPlayerId;
 
 function CreateChatMessagePanel(message, playerID) {
-    $.Msg('ReceiveChatMessage', message, playerID);
+    $.Msg("ReceiveChatMessage", message, playerID);
     var parentPanel = $("#chat-message-container");
     var chatMessagePanel = $.CreatePanel("Panel", parentPanel, "");
     chatMessagePanel.BLoadLayout("file://{resources}/layout/custom_game/chat/chat_message.xml", false, false);
@@ -14,7 +16,7 @@ function CreateChatMessagePanel(message, playerID) {
 }
 
 function CreateChatEventPanel(message, playerID) {
-    $.Msg('ReceiveChatEvent', message, playerID);
+    $.Msg("ReceiveChatEvent", message, playerID);
     var parentPanel = $("#chat-message-container");
     var chatMessagePanel = $.CreatePanel("Panel", parentPanel, "");
     chatMessagePanel.BLoadLayout("file://{resources}/layout/custom_game/chat/chat_message.xml", false, false);
@@ -23,31 +25,31 @@ function CreateChatEventPanel(message, playerID) {
 }
 
 function OnChatMessageEntered() {
-    $.Msg('OnChatMessageEntered', $('#chat-input').text);
-    if ($('#chat-input').text != "") {
+    $.Msg("OnChatMessageEntered", $("#chat-input").text);
+    if ($("#chat-input").text != "") {
         GameEvents.SendCustomGameEventToServer("send_chat_message", {
-            "message": $('#chat-input').text,
+            "message": $("#chat-input").text,
             "playerID": currentPlayerId
         });
     }
-    $('#chat-input').text = "";
+    $("#chat-input").text = "";
     $.Msg(GameUI.CustomUIConfig());
 }
 
 function ReceiveChatMessage(msg) {
-    $.Msg('ReceiveChatMessage', msg, $('#chat-message-container'));
+    $.Msg("ReceiveChatMessage", msg, $("#chat-message-container"));
     CreateChatMessagePanel(msg.message, parseInt(msg.playerId));
-    $('#chat-message-container').ScrollToBottom();
+    $("#chat-message-container").ScrollToBottom();
 }
 
 function ReceiveChatEvent(msg) {
-    $.Msg('ReceiveChatEvent', msg, $('#chat-message-container'));
+    $.Msg("ReceiveChatEvent", msg, $("#chat-message-container"));
     CreateChatEventPanel(msg.message, parseInt(msg.playerId));
-    $('#chat-message-container').ScrollToBottom();
+    $("#chat-message-container").ScrollToBottom();
 }
 
 function SetChatFocus() {
-    $('#chat-input').SetFocus();
+    $("#chat-input").SetFocus();
 }
 
 function OnChatBlur() {
@@ -61,7 +63,6 @@ function OnChatBlur() {
 }
 
 (function() {
-    localPlayerId = Players.GetLocalPlayer();
     currentPlayerId = Players.GetLocalPlayer();
 
     GameEvents.Subscribe("receive_chat_message", ReceiveChatMessage);

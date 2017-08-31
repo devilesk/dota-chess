@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 
 var chessSymbols = {
     white: {
@@ -24,23 +24,21 @@ var chessSymbols = {
         knight: "&#9822;",
         pawn: "&#9823;"
     }
-}
-
-var labelClass;
+};
 
 function SetPiece(piece, color) {
     if (piece) {
-        $('#square-label').text = chessSymbols[color][piece];
+        $("#square-label").text = chessSymbols[color][piece];
     } else {
-        $('#square-label').text = "";
+        $("#square-label").text = "";
     }
     ["white", "black"].forEach(function(c) {
-        $('#square-label').SetHasClass(c, color == c);
+        $("#square-label").SetHasClass(c, color == c);
     });
 }
 
 function SetText(text) {
-    $('#square-label').text = text;
+    $("#square-label").text = text;
 }
 
 (function() {
