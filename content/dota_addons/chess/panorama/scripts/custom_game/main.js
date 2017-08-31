@@ -54,7 +54,7 @@ function InitLookupSquare() {
 var ranks = [1, 2, 3, 4, 5, 6, 7, 8];
 var files = ["a", "b", "c", "d", "e", "f", "g", "h"];
 var initialPositions = {
-    white: {
+    8: {
         a1: "rook",
         b1: "knight",
         c1: "bishop",
@@ -72,7 +72,7 @@ var initialPositions = {
         g2: "pawn",
         h2: "pawn"
     },
-    black: {
+    0: {
         a8: "rook",
         b8: "knight",
         c8: "bishop",
@@ -404,7 +404,7 @@ function Square(options) {
     this.hasPiece = _.observable(false);
     this.piece = _.observable(null);
     this.pieceOwner = _.observable(null);
-    ["white", "black"].forEach(function(c) {
+    [8, 0].forEach(function(c) {
         if (initialPositions[c].hasOwnProperty(self.file() + self.rank())) {
             self.piece(initialPositions[c][self.file() + self.rank()]);
             self.pieceOwner(c);
@@ -543,7 +543,7 @@ _.extend(Square.prototype, {
     OnDragStart: function(panelId, dragCallbacks, square) {
         if (!this.draggable() || !this.panel) return;
         if (paused) return;
-        if (players[this.pieceOwner() == "white" ? 8 : 0] != Players.GetLocalPlayer()) return;
+        if (players[this.pieceOwner()] != Players.GetLocalPlayer()) return;
 
         //GameEvents.SendCustomGameEventToServer( "get_moves", {playerId: Players.GetLocalPlayer()} );
         $.Msg("OnDragStart", moves);
@@ -737,7 +737,7 @@ function OnBoardUpdate(data) {
     var plyPanel = $.CreatePanel("Label", currentMovePanel, "");
     plyPanel.SetHasClass("history-ply", true);
     plyPanel.SetHasClass("white", data.toMove == 0);
-    plyPanel.SetHasClass("black", data.toMove == 0);
+    plyPanel.SetHasClass("black", data.toMove == 8);
     plyPanel.text = data.san;
 
     currentSide = data.toMove;
@@ -850,7 +850,7 @@ function RedrawPieces(g_board) {
             }
 
             if (pieceName != null) {
-                var pieceOwner = (piece & 0x8) ? "white" : "black";
+                var pieceOwner = (piece & 0x8) ? 8 : 0;
                 td.setPiece(pieceName, pieceOwner);
             } else {
                 td.clearPiece();

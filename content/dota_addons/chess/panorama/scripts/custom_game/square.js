@@ -1,7 +1,7 @@
 "use strict";
 
 var chessSymbols = {
-    white: {
+    8: {
         /*    king: "&#9812;",
             queen: "&#9813;",
             rook: "&#9814;",
@@ -16,7 +16,7 @@ var chessSymbols = {
         knight: "&#9822;",
         pawn: "&#9823;"
     },
-    black: {
+    0: {
         king: "&#9818;",
         queen: "&#9819;",
         rook: "&#9820;",
@@ -32,8 +32,8 @@ function SetPiece(piece, color) {
     } else {
         $("#square-label").text = "";
     }
-    ["white", "black"].forEach(function(c) {
-        $("#square-label").SetHasClass(c, color == c);
+    [8, 0].forEach(function(c) {
+        $("#square-label").SetHasClass(c == 0 ? "black" : "white", color == c);
     });
 }
 
