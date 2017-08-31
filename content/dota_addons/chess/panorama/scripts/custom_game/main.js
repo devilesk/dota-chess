@@ -331,28 +331,48 @@ function CreateChatPanel() {
 
 function CreateBoard() {
     var parentPanel = $("#board");
-    for (var i = 7; i >= 0; i--) {
-        var rowPanel = $.CreatePanel("Panel", parentPanel, "rank-" + ranks[i]);
-        rowPanel.SetHasClass("rank", true);
-        var row = [];
-        for (var j = 0; j < 8; j++) {
-            var squarePanel = $.CreatePanel("Panel", rowPanel, "");
-            squarePanel.SetHasClass("square-wrapper", true);
-            squarePanel.SetHasClass((i + j) % 2 == 1 ? "white" : "black", true);
-            var sq = new Square({
-                row: 7 - i,
-                col: j,
-                file: files[j],
-                rank: ranks[i],
-                color: (i + j) % 2 == 1 ? "white" : "black",
-                parentPanel: squarePanel,
-                draggable: true,
-                droppable: true
-            });
-            m_Board.push(sq);
+    if (mySide == 0) {
+        for (var i = 0; i < 8; i++) {
+            var rowPanel = $.CreatePanel("Panel", parentPanel, "rank-" + ranks[i]);
+            rowPanel.SetHasClass("rank", true);
+            for (var j = 7; j >= 0; j--) {
+                m_Board.push(CreateSquare(rowPanel, i, j));
+            }
         }
     }
+    else {
+        for (var i = 7; i >= 0; i--) {
+            var rowPanel = $.CreatePanel("Panel", parentPanel, "rank-" + ranks[i]);
+            rowPanel.SetHasClass("rank", true);
+            for (var j = 0; j < 8; j++) {
+                m_Board.push(CreateSquare(rowPanel, i, j));
+            }
+        }
+    }
+}
 
+function CreateSquare(rowPanel, i, j) {
+    var squarePanel = $.CreatePanel("Panel", rowPanel, "");
+    squarePanel.SetHasClass("square-wrapper", true);
+    squarePanel.SetHasClass((i + j) % 2 == 1 ? "white" : "black", true);
+    var sq = new Square({
+        row: 7 - i,
+        col: j,
+        file: files[j],
+        rank: ranks[i],
+        color: (i + j) % 2 == 1 ? "white" : "black",
+        parentPanel: squarePanel,
+        draggable: true,
+        droppable: true
+    });
+    return sq;
+}
+
+function RedrawBoard() {
+    var parentPanel = $("#board");
+    parentPanel.RemoveAndDeleteChildren();
+    m_Board.length = 0;
+    CreateBoard();
 }
 
 
@@ -920,6 +940,7 @@ function OnTogglePlayerPressed() {
     uiState = uiStates[mySide];
     $('#btn-toggle-player-label').text = mySide == 0 ? "Black" : "White";
     UpdateUI();
+    RedrawBoard();
 }
 
 (function() {
