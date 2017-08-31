@@ -179,11 +179,12 @@ function OnDropPiece(eventSourceIndex, args)
     if (not (args.startX == args.endX and args.startY == args.endY) and move ~= nil) then
         print("making move " .. g_move50)
         table.insert(g_allMoves, move)
+        local san = GetMoveSAN(move)
         MakeMove(move)
         moves = GenerateValidMoves()
-        SendBoardUpdate(move, moves)
+        SendBoardUpdate(san, move, moves)
         
-        if args.offerDraw then
+        if args.offerDraw ~= 0 then
             CustomGameEventManager:Send_ServerToAllClients("draw_offer", {
                 playerId = args.playerId,
                 playerSide = args.playerSide
@@ -240,11 +241,12 @@ function UndoMove()
     UnmakeMove(table.remove(g_allMoves))
 end
 
-function SendBoardUpdate(move, moves)
+function SendBoardUpdate(san, move, moves)
+    print("SendBoardUpdate", move, moves)
     local data = {
         board=g_board,
         toMove=g_toMove,
-        san=GetMoveSAN(move),
+        san=san,
         moves=moves,
         last_move=move,
         check=g_inCheck,
@@ -300,8 +302,9 @@ function OnAcceptUndo(eventSourceIndex, args)
     PrintTable(args)
     UndoMove()
     local move = g_allMoves[#g_allMoves]
+    local san = GetMoveSAN(move)
     moves = GenerateValidMoves()
-    SendBoardUpdate(move, moves)
+    SendBoardUpdate(san, move, moves)
 end
 
 -- Called on Ply finish
@@ -316,6 +319,7 @@ end
 function finishMoveCallback(bestMove, value, ply)
     if (bestMove ~= nil and bestMove ~= 0) then
         table.insert(g_allMoves, bestMove)
+        local san = GetMoveSAN(bestMove)
         MakeMove(bestMove);
         print(FormatMove(bestMove), g_moveTime, g_finCnt);
         --g_foundmove = bestMove;
@@ -338,7 +342,7 @@ function finishMoveCallback(bestMove, value, ply)
                 EmitGlobalSound("Creep_Radiant.Footstep")
             end
         end
-        SendBoardUpdate(move, moves)
+        SendBoardUpdate(san, move, moves)
     --[[elseif (bestMove ~= nil and bestMove == 0) then
         if g_inCheck then
             CustomGameEventManager:Send_ServerToAllClients("board_checkmate", {board=g_board, toMove=g_toMove})
