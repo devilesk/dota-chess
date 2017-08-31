@@ -9,6 +9,8 @@ if GameMode == nil then
     GameMode = class({})
 end
 
+local INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+local g_allMoves = {}
 local DEBUG = true
 local moves = nil
 local clock_time = 600
@@ -59,7 +61,7 @@ function GameMode:OnGameRulesStateChange()
         ai_ply_difficulty = 1
         InitializeEval();
         ResetGame();
-        InitializeFromFen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+        InitializeFromFen(INITIAL_FEN);
         --autogame();
         OnGetMoves()
         AIMove()
@@ -115,7 +117,7 @@ function OnGetMoves(eventSourceIndex, args)
 end
 
 function OnNewGame(eventSourceIndex, args)
-    args.fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+    args.fen = INITIAL_FEN
     OnSubmitFen(eventSourceIndex, args)
 end
 
@@ -176,21 +178,10 @@ function OnDropPiece(eventSourceIndex, args)
 
     if (not (args.startX == args.endX and args.startY == args.endY) and move ~= nil) then
         print("making move " .. g_move50)
-        local san = GetMoveSAN(move)
+        table.insert(g_allMoves, move)
         MakeMove(move)
         moves = GenerateValidMoves()
-        local data = {
-            board=g_board,
-            toMove=g_toMove,
-            san=san,
-            moves=moves,
-            last_move=move,
-            check=g_inCheck,
-            paused=paused,
-            move50=g_move50,
-            repDraw=IsRepDraw()
-        }
-        CustomGameEventManager:Send_ServerToAllClients("board_update", data)
+        SendBoardUpdate(move, moves)
         
         if args.offerDraw then
             CustomGameEventManager:Send_ServerToAllClients("draw_offer", {
@@ -242,6 +233,28 @@ function AIMove()
     end
 end
 
+function UndoMove()
+    if #g_allMoves == 0) then
+        return
+    end
+    UnmakeMove(table.remove(g_allMoves))
+end
+
+function SendBoardUpdate(move, moves)
+    local data = {
+        board=g_board,
+        toMove=g_toMove,
+        san=GetMoveSAN(move),
+        moves=moves,
+        last_move=move,
+        check=g_inCheck,
+        paused=paused,
+        move50=g_move50,
+        repDraw=IsRepDraw()
+    }
+    CustomGameEventManager:Send_ServerToAllClients("board_update", data)
+end
+
 function OnClaimDraw(eventSourceIndex, args)
     print ("OnClaimDraw", eventSourceIndex)
     PrintTable(args)
@@ -278,40 +291,18 @@ function OnRequestUndo(eventSourceIndex, args)
 end
 
 function OnDeclineUndo(eventSourceIndex, args)
-    print ("OnRequestUndo", eventSourceIndex)
+    print ("OnDeclineUndo", eventSourceIndex)
     PrintTable(args)
 end
 
 function OnAcceptUndo(eventSourceIndex, args)
-    print ("OnRequestUndo", eventSourceIndex)
+    print ("OnAcceptUndo", eventSourceIndex)
     PrintTable(args)
+    UndoMove()
+    local move = g_allMoves[#g_allMoves]
+    moves = GenerateValidMoves()
+    SendBoardUpdate(move, moves)
 end
-
---g_foundmove = 0;
--- Produces a chess game   Lua vs Lua
---[[function autogame()
-
-local mv=0;
-local col=-1;
-
-  while(true) do
-    --while(mv < 3) do
-
-    col = -col;
-    if(col>0) then
-      mv = mv + 1;
-      print( "Move: " .. string.format("%d",mv) .. ". ");
-    end
-
-    g_foundmove = 0;
-    Search(finishMoveCallback, 8, finishPlyCallback);
-
-    if(g_foundmove == 0) then
-      break;
-    end
-  end
-end]]
---
 
 -- Called on Ply finish
 function finishPlyCallback(bestMove, value, ply)
@@ -324,7 +315,7 @@ end
 -- Called on Move ready to answer
 function finishMoveCallback(bestMove, value, ply)
     if (bestMove ~= nil and bestMove ~= 0) then
-        local san = GetMoveSAN(bestMove)
+        table.insert(g_allMoves, bestMove)
         MakeMove(bestMove);
         print(FormatMove(bestMove), g_moveTime, g_finCnt);
         --g_foundmove = bestMove;
@@ -347,18 +338,7 @@ function finishMoveCallback(bestMove, value, ply)
                 EmitGlobalSound("Creep_Radiant.Footstep")
             end
         end
-        local data = {
-            board=g_board,
-            toMove=g_toMove,
-            san=san,
-            moves=moves,
-            last_move=bestMove,
-            check=g_inCheck,
-            paused=paused,
-            move50=g_move50,
-            repDraw=IsRepDraw()
-        }
-        CustomGameEventManager:Send_ServerToAllClients("board_update", data)
+        SendBoardUpdate(move, moves)
     --[[elseif (bestMove ~= nil and bestMove == 0) then
         if g_inCheck then
             CustomGameEventManager:Send_ServerToAllClients("board_checkmate", {board=g_board, toMove=g_toMove})

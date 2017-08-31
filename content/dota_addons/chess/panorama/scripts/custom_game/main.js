@@ -824,10 +824,6 @@ var uiStates = {
 
 var uiState = uiStates[mySide];
 
-function isMyTurn() {
-    return mySide == currentSide;
-}
-
 function UIState() {
     var self = this;
     this.drawPressed = false;
@@ -837,7 +833,7 @@ function UIState() {
 }
 
 function OnOfferDrawPressed() {
-    if isMyTurn() {
+    if (mySide == currentSide) {
         uiState.drawPressed = true;
         UpdateUI();
     }
