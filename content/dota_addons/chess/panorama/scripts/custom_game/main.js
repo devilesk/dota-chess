@@ -525,7 +525,8 @@ _.extend(Square.prototype, {
                 startY: selectedSquare.row(),
                 endX: this.col(),
                 endY: this.row(),
-                playerId: Players.GetLocalPlayer()
+                playerId: Players.GetLocalPlayer(),
+                playerSide: isWhite ? 8 : 0
             };
 
             if (selectedSquare.piece() == "pawn" && this.row() % 7 == 0) {
