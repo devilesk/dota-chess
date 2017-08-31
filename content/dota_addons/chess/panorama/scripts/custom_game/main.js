@@ -813,16 +813,13 @@ function UpdateTimePanel() {
     $("#timer-label-bottom").text = formatTime(timeRemaining[mySide]);
 }
 
-var g_playerWhite = true;
-
 function RedrawPieces(g_board) {
     if (!g_board) return;
     $.Msg("m_Board.length", m_Board.length);
     for (var y = 0; y < 8; ++y) {
         for (var x = 0; x < 8; ++x) {
             var td = m_Board[y * 8 + x];
-            var pieceY = g_playerWhite ? y : 7 - y;
-            var piece = g_board[((pieceY + 2) * 0x10) + (g_playerWhite ? x : 7 - x) + 4 + 1];
+            var piece = g_board[((y + 2) * 0x10) + x + 4 + 1];
             var pieceName = null;
 
             switch (piece & 0x7) {
@@ -850,7 +847,7 @@ function RedrawPieces(g_board) {
             }
 
             if (pieceName != null) {
-                var pieceOwner = (piece & 0x8) ? 8 : 0;
+                var pieceOwner = piece & 0x8;
                 td.setPiece(pieceName, pieceOwner);
             } else {
                 td.clearPiece();
