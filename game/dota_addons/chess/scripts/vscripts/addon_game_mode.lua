@@ -190,16 +190,18 @@ function OnDropPiece(eventSourceIndex, args)
         if #moves == 0 then
             -- checkmate
             if g_inCheck then
-            EmitGlobalSound("Chess.Checkmate")
+                EmitGlobalSound("Chess.Checkmate")
             -- stalemate
             else
-            EmitGlobalSound("Chess.Stalemate")
+                EmitGlobalSound("Chess.Stalemate")
             end
             --elseif g_move50 == 50 or IsRepDraw() then
             --  EmitGlobalSound("Chess.Stalemate")
         else
             if g_inCheck then
                 EmitGlobalSound("Chess.Check")
+            else
+                EmitGlobalSound("Creep_Radiant.Footstep")
             end
             AIMove()
         end
@@ -311,6 +313,8 @@ function finishMoveCallback(bestMove, value, ply)
         else
             if g_inCheck then
                 EmitGlobalSound("Chess.Check")
+            else
+                EmitGlobalSound("Creep_Radiant.Footstep")
             end
         end
         local data = {
