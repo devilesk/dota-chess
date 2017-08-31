@@ -156,8 +156,7 @@ function OnDropPiece(eventSourceIndex, args)
     print("OnDropPiece", eventSourceIndex)
     PrintTable(args)
 
-    if g_toMove == 0 and PlayerResource:GetTeam(args.playerId) ~= DOTA_TEAM_BADGUYS then return end
-    if g_toMove ~= 0 and PlayerResource:GetTeam(args.playerId) ~= DOTA_TEAM_GOODGUYS then return end
+    if g_toMove ~= args.playerSide then return end
 
     if moves == nil then
         moves = GenerateValidMoves()
