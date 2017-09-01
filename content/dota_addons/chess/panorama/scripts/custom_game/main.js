@@ -21,7 +21,7 @@ var timeRemaining = {
     0: 110
 };
 var increment = 20;
-var timer = null;
+var timer = 0;
 var currentSide = 8; // 0 == black, 0 != white
 var firstMove = {
     white: true,
@@ -694,8 +694,11 @@ function OnBoardReset(data) {
         0: data.clock_time
     };
     increment = data.clock_increment;
-    if (timer) $.CancelScheduled(timer);
-    timer = null;
+    if (timer != 0) {
+        $.Msg("timer", timer);
+        $.CancelScheduled(timer);
+        timer = 0;
+    }
     firstMove = {
         white: true,
         black: true
@@ -787,23 +790,28 @@ function OnFenSubmitted() {
 
 function OnPauseChanged(data) {
     paused = data.paused;
-    if (timer) $.CancelScheduled(timer);
-    if (!data.paused && !firstMove["white"] && !firstMove["black"]) {
+    if (timer != 0) {
+        $.CancelScheduled(timer);
+        timer = 0;
+    }
+    if (!data.paused && !firstMove[8] && !firstMove[0]) {
         timer = $.Schedule(0.1, UpdateTime);
     }
 }
 
 function UpdateTime() {
-    var color = currentSide == 0 ? "black" : "white";
     timeRemaining[currentSide]--;
     UpdateTimePanel();
 
     //$.Msg("timer ", color, " ", timeRemaining[color]);
     if (timeRemaining[currentSide] > 0) {
         timer = $.Schedule(0.1, UpdateTime);
-    } else {
+    }
+    else {
+        timer = 0;
         GameEvents.SendCustomGameEventToServer("time_out", {
-            color: color
+            playerId: Players.GetLocalPlayer(),
+            playerSide: currentSide
         });
     }
 }
