@@ -982,16 +982,17 @@ function OnTogglePlayerPressed() {
 
 function UpdatePlayerPanel() {
     [0, 8].forEach(function (side) {
+        var pos = (mySide == side ? "bottom" : "top");
         if (players[side] != null) {
             var playerInfo = Game.GetPlayerInfo(players[side]);
             if (playerInfo) {
-                $("#player-" + (mySide == side ? "bottom" : "top")).steamid = playerInfo.player_steamid;
-                $("#player-" + (mySide == side ? "bottom" : "top")).SetHasClass("hidden", false);
+                $("#player-" + pos).steamid = playerInfo.player_steamid;
+                $("#player-" + pos).SetHasClass("hidden", false);
             }
         }
         else {
-            $("#player-" + (mySide == side ? "bottom" : "top")).steamid = 0;
-            $("#player-" + (mySide == side ? "bottom" : "top")).SetHasClass("hidden", true);
+            $("#player-" + pos).steamid = 0;
+            $("#player-" + pos).SetHasClass("hidden", true);
         }
     });
     HighlightPlayerToMove(currentSide);
