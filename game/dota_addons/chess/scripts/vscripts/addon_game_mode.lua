@@ -364,7 +364,7 @@ function finishMoveCallback(bestMove, value, ply)
                 EmitGlobalSound("Creep_Radiant.Footstep")
             end
         end
-        SendBoardUpdate(san, move, moves)
+        SendBoardUpdate(san, bestMove, moves)
     --[[elseif (bestMove ~= nil and bestMove == 0) then
         if g_inCheck then
             CustomGameEventManager:Send_ServerToAllClients("board_checkmate", {board=g_board, toMove=g_toMove})
