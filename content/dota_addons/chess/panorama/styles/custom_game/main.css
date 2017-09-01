@@ -83,6 +83,9 @@
 .timer.highlight {
     background-color: #fff077;
 }
+.timer.highlight.warning {
+    background-color: #e87e7e;
+}
 .timer.highlight Label {
     color: #444;
 }
@@ -153,6 +156,14 @@
 .btn-action.disabled > Image {
     opacity: 0.5;
 }
+#btn-cancel-label {
+    font-size: 30px;
+    color: #ce3030;
+}
+#btn-confirm-label {
+    font-size: 30px;
+    color: green;
+}
 #action-message-container {
     width: 100%;
     flow-children: right;
@@ -184,7 +195,7 @@
     color: green;
 }
 #btn-decline Label {
-    color: red;
+    color: #ce3030;
 }
 #btn-accept, #btn-decline {
     width: 50%;

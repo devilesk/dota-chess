@@ -820,6 +820,9 @@ function UpdateTime() {
 function UpdateTimePanel() {
     $("#timer-label-top").text = formatTime(timeRemaining[1 - mySide + 7]);
     $("#timer-label-bottom").text = formatTime(timeRemaining[mySide]);
+    
+    $("#timer-top").SetHasClass("warning", timeRemaining[1 - mySide + 7] < 100);
+    $("#timer-bottom").SetHasClass("warning", timeRemaining[mySide] < 100);
 }
 
 function RedrawPieces(g_board) {
