@@ -918,7 +918,7 @@ function OnReceivedDrawOffer(data) {
 
 function OnAcceptPressed() {
     if (uiState.pendingDraw) {
-        uiState.pendingDraw = true;
+        uiState.pendingDraw = false;
         GameEvents.SendCustomGameEventToServer("claim_draw", {
             playerId: Players.GetLocalPlayer(),
             playerSide: mySide
@@ -962,6 +962,7 @@ function OnReceivedTimedOut(data) {
 
 function UpdateUI() {
     $("#btn-draw").SetHasClass("disabled", uiState.drawPressed);
+    $("#btn-resign").SetHasClass("disabled", uiState.resignPressed);
     $("#btn-confirm").SetHasClass("hidden", !uiState.resignPressed);
     $("#btn-cancel").SetHasClass("hidden", !uiState.drawPressed && !uiState.resignPressed);
     $("#action-message-container").SetHasClass("hidden", !uiState.pendingDraw);
