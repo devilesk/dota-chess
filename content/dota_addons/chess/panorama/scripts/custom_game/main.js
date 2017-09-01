@@ -681,10 +681,11 @@ function OnBoardReset(data) {
     $.Msg("paused", data.paused);
     paused = data.paused;
     selectedSquare = null;
+    lastMove = null;
     HighlightLastMove();
     moves = data.moves;
     g_board = data.board;
-    RedrawPieces(g_board);
+    RedrawBoard();
     $("#history").RemoveAndDeleteChildren();
     currentSide = data.toMove;
     HighlightPlayerToMove(currentSide);
