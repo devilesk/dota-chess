@@ -14,6 +14,7 @@ var DialogLibrary;
 var m_ChatPanel;
 var m_Board = [];
 var g_board;
+var timeControl = true;
 var currentMovePanel;
 var moveNum = 0;
 var timeRemaining = {
@@ -116,10 +117,15 @@ function pad(num, size, ch) {
 }
 
 function formatTime(t) {
-    if (t < 100) {
-        return " " +pad(Math.floor(t / 600), 2) + ":" + pad(Math.floor(t / 10) % 60, 2) + "." + (t % 10);
-    } else {
-        return " " +pad(Math.floor(t / 600), 2) + ":" + pad(Math.floor(t / 10) % 60, 2);
+    if (timeControl) {
+        if (t < 100) {
+            return " " +pad(Math.floor(t / 600), 2) + ":" + pad(Math.floor(t / 10) % 60, 2) + "." + (t % 10);
+        } else {
+            return " " +pad(Math.floor(t / 600), 2) + ":" + pad(Math.floor(t / 10) % 60, 2);
+        }
+    }
+    else {
+        return "";
     }
 }
 
@@ -676,9 +682,11 @@ function OnBoardReset(data) {
     $.Msg("san", data.san);
     $.Msg("moves", data.moves);
     $.Msg("last_move", data.last_move);
+    $.Msg("time_control", data.time_control);
     $.Msg("clock_time", data.clock_time);
     $.Msg("clock_increment", data.clock_increment);
     $.Msg("paused", data.paused);
+    timeControl = data.time_control;
     paused = data.paused;
     selectedSquare = null;
     lastMove = null;
@@ -748,12 +756,14 @@ function OnBoardUpdate(data) {
     currentSide = data.toMove;
     HighlightPlayerToMove(currentSide);
 
-    var otherSide = 1 - currentSide + 7;
-    if (!firstMove[otherSide]) timeRemaining[otherSide] += increment;
-    firstMove[otherSide] = false;
-    $("#timer-label-" + (mySide != currentSide ? "top" : "bottom")).text = formatTime(timeRemaining[mySide != currentSide ? 0 : 8]);
+    if (timeControl) {
+        var otherSide = 1 - currentSide + 7;
+        if (!firstMove[otherSide]) timeRemaining[otherSide] += increment;
+        firstMove[otherSide] = false;
+        $("#timer-label-" + (mySide != currentSide ? "top" : "bottom")).text = formatTime(timeRemaining[mySide != currentSide ? 0 : 8]);
 
-    OnPauseChanged(data);
+        OnPauseChanged(data);
+    }
     //if (timer) $.CancelScheduled(timer);
     //timer = $.Schedule(1, UpdateTime);
 
@@ -820,9 +830,8 @@ function UpdateTime() {
 function UpdateTimePanel() {
     $("#timer-label-top").text = formatTime(timeRemaining[1 - mySide + 7]);
     $("#timer-label-bottom").text = formatTime(timeRemaining[mySide]);
-    
-    $("#timer-top").SetHasClass("warning", timeRemaining[1 - mySide + 7] < 100);
-    $("#timer-bottom").SetHasClass("warning", timeRemaining[mySide] < 100);
+    $("#timer-top").SetHasClass("warning", timeControl && timeRemaining[1 - mySide + 7] < 100);
+    $("#timer-bottom").SetHasClass("warning", timeControl && timeRemaining[mySide] < 100);
 }
 
 function RedrawPieces(g_board) {
