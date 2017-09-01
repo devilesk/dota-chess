@@ -1,0 +1,20 @@
+<root>
+  <styles>
+    <include src="file://{resources}/styles/custom_game/custom_loading_screen.css" />
+  </styles>
+  <Panel class="AddonLoadingRoot" >
+    <Panel class="LoadingScreenContainer" >
+      <Panel id ="LoadingScreenPosition">
+        <Image id="LoadingScreen" /> 
+      </Panel>
+    
+      <Panel id="TitlePanel" class="text-panel">
+        <Label id="AddonTitle" class="label-text" text="#addon_game_name" />
+      </Panel>
+    
+      <Panel id="DescriptionPanel" class="text-panel">
+        <Label html="true" id="DescriptionText" class="label-text" text="#LoadingScreenDescriptionText"/>
+      </Panel>
+    </Panel>
+  </Panel>
+</root>

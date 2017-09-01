@@ -1,0 +1,38 @@
+.setup-container
+{
+    width: 100%;
+    vertical-align: center;
+    flow-children: down;
+    height: 500px;
+}
+
+.setup-group
+{
+    width: 100%;
+    flow-children: down;
+    margin: 10px 0px;
+}
+
+.setup-header
+{
+    width: 100%;
+    flow-children: right;
+	color: #323232;
+}
+
+.setup-header-label
+{
+	text-transform: uppercase;
+    font-size: 22px;
+	letter-spacing: 1px;
+    color: #667273;
+	//margin-top: 16px;
+	margin-left: 8px;
+}
+.setup-header-label.value {
+    color: white;
+}
+
+#TimeControl {
+    width: 100%;
+}
