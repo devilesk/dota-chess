@@ -108,17 +108,18 @@ var pieceKing = 0x06;
 //var moveflagPromoteQueen = 0x40 << 16;
 //var moveflagPromoteBishop = 0x80 << 16;
 
-function pad(num, size) {
+function pad(num, size, ch) {
+    ch = ch || "0";
     var s = num + "";
-    while (s.length < size) s = "0" + s;
+    while (s.length < size) s = ch + s;
     return s;
 }
 
 function formatTime(t) {
     if (t < 100) {
-        return Math.floor(t / 600) + ":" + pad(Math.floor(t / 10) % 60, 2) + "." + (t % 10);
+        return " " +pad(Math.floor(t / 600), 2) + ":" + pad(Math.floor(t / 10) % 60, 2) + "." + (t % 10);
     } else {
-        return Math.floor(t / 600) + ":" + pad(Math.floor(t / 10) % 60, 2);
+        return " " +pad(Math.floor(t / 600), 2) + ":" + pad(Math.floor(t / 10) % 60, 2);
     }
 }
 
