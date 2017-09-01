@@ -3,12 +3,16 @@
 "use strict";
 
 var timeControl;
-var timeControlValue = "time_control_timed";
 var timeTotalSlider;
 var timeIncrementSlider;
 var aiDifficultySlider;
 
+function getTimeControlValue() {
+    return timeControl.GetSelected().id == "time_control_timed";
+}
+
 function getTimeTotalValue(index) {
+    if (index == null) index = Math.round(timeTotalSlider.value);
     if (index <= 5) {
         switch (index) {
             case 0: return 0;
@@ -31,28 +35,30 @@ function getTimeTotalValue(index) {
 }
 
 function getTimeIncrementValue(index) {
-    if (index == 0) return 0;
+    if (index == null) index = Math.round(timeIncrementSlider.value);
+    if (index == 0) {
+        if (getTimeTotalValue() == 0) return 1;
+        return 0;
+    }
     if (index == 1) return 1;
     return getTimeTotalValue(index + 4);
 }
 
 function UpdateSliders() {
-    $("#TimeTotalSliderValue").text = getTimeTotalValue(Math.round(timeTotalSlider.value));
-    $("#TimeIncrementSliderValue").text = getTimeIncrementValue(Math.round(timeIncrementSlider.value));
+    $("#TimeTotalSliderValue").text = getTimeTotalValue();
+    $("#TimeIncrementSliderValue").text = getTimeIncrementValue();
     $("#AIDifficultySliderValue").text = Math.round(aiDifficultySlider.value);
     $.Schedule(0.1, UpdateSliders);
 }
 
 function OnTimeControlChanged() {
-    timeControlValue = timeControl.GetSelected().id;
-    $.Msg(timeControlValue);
-    $("#TimeControlOptions").visible = timeControlValue == "time_control_timed";
+    $("#TimeControlOptions").visible = getTimeControlValue();
 }
 
 function OnReceivedGameSetupEnd() {
     $.Msg("OnReceivedGameSetupEnd");
     GameEvents.SendCustomGameEventToServer("game_setup_options", {
-        timeControl: timeControlValue,
+        timeControl: getTimeControlValue(),
         timeTotal: $("#TimeTotalSliderValue").text,
         timeIncrement: $("#TimeIncrementSliderValue").text,
         aiDifficulty: $("#AIDifficultySliderValue").text
@@ -61,7 +67,6 @@ function OnReceivedGameSetupEnd() {
 
 (function() {
     timeControl = $("#TimeControl");
-    timeControlValue = timeControl.GetSelected().id;
     
     timeTotalSlider = $("#TimeTotalSlider");
     timeTotalSlider.min = 0;
