@@ -13,11 +13,13 @@ local INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 local g_allMoves = {}
 local DEBUG = false
 local moves = nil
+local time_control = true
  -- clock_time and clock_increment are tenths of a second
 local clock_time = 600
 local clock_increment = 20
 local paused = false
 local vs_ai = false
+local has_timed_out = false
 local ai_side = 0
 -- 0 = black
 -- 8 = white
@@ -113,9 +115,14 @@ end
 function OnGameSetupOptions(eventSourceIndex, args)
     print("OnGameSetupOptions", eventSourceIndex)
     PrintTable(args)
+    time_control = args.timeControl
     clock_time = args.timeTotal * 600
     clock_increment = args.timeIncrement * 10
+    if clock_time == 0 then
+        clock_time = clock_increment
+    end
     ai_ply_difficulty = max_ply_table[tonumber(args.aiDifficulty)]
+    print("time_control", time_control)
     print("clock_time", clock_time)
     print("clock_increment", clock_increment)
     print("ai_ply_difficulty", ai_ply_difficulty)
@@ -145,7 +152,8 @@ function OnSubmitFen(eventSourceIndex, args)
     ResetGame()
     InitializeFromFen(args.fen)
     moves = GenerateValidMoves()
-    CustomGameEventManager:Send_ServerToAllClients("board_reset", {board=g_board, toMove=g_toMove, moves=moves, clock_time=clock_time, clock_increment=clock_increment})
+    has_timed_out = false
+    CustomGameEventManager:Send_ServerToAllClients("board_reset", {board=g_board, toMove=g_toMove, moves=moves, clock_time=clock_time, clock_increment=clock_increment, time_control=time_control})
 end
 
 function OnChangePauseState(eventSourceIndex, args)
@@ -303,10 +311,13 @@ end
 function OnTimeOut(eventSourceIndex, args)
     print ("OnTimeOut", eventSourceIndex)
     PrintTable(args)
-    CustomGameEventManager:Send_ServerToAllClients("timeout_end", {
-        playerId = args.playerId,
-        playerSide = args.playerSide
-    })
+    if not has_timed_out then
+        CustomGameEventManager:Send_ServerToAllClients("timeout_end", {
+            playerId = args.playerId,
+            playerSide = args.playerSide
+        })
+        has_timed_out = true
+    end
 end
 
 function OnRequestUndo(eventSourceIndex, args)
