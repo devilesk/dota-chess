@@ -708,7 +708,7 @@ function OnBoardReset(data) {
     uiStates = {
         0: new UIState(),
         8: new UIState()
-    }
+    };
     UpdateUI();
     UpdateTimePanel();
 }
