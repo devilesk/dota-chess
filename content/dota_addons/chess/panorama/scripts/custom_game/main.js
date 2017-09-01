@@ -544,7 +544,7 @@ _.extend(Square.prototype, {
     OnDragStart: function(panelId, dragCallbacks, square) {
         if (!this.draggable() || !this.panel) return;
         if (paused) return;
-        if (players[this.pieceOwner()] != Players.GetLocalPlayer()) return;
+        if (this.pieceOwner() != mySide) return;
 
         //GameEvents.SendCustomGameEventToServer( "get_moves", {playerId: Players.GetLocalPlayer()} );
         $.Msg("OnDragStart", moves);
