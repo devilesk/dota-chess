@@ -66,7 +66,7 @@ function OnReceivedGameSetupEnd() {
     timeTotalSlider = $("#TimeTotalSlider");
     timeTotalSlider.min = 0;
     timeTotalSlider.max = 34;
-    timeTotalSlider.value = 1;
+    timeTotalSlider.value = 9;
     
     timeIncrementSlider = $("#TimeIncrementSlider");
     timeIncrementSlider.min = 0;
