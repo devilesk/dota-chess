@@ -49,6 +49,14 @@
                         </Panel>
                         <Slider class="HorizontalSlider" direction="horizontal" id="TimeIncrementSlider" />
                     </Panel>
+                    
+                    <Panel id="AIControlGroup" class="setup-group">
+                        <Panel class="setup-header">
+                            <Label class="setup-header-label" text="AI Difficulty" />
+                            <Label class="setup-header-label value" text="1" id="AIDifficultySliderValue" />
+                        </Panel>
+                        <Slider class="HorizontalSlider" direction="horizontal" id="AIDifficultySlider" />
+                    </Panel>
                 </Panel>
 			</Panel>
 

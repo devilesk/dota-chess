@@ -11,8 +11,9 @@ end
 
 local INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 local g_allMoves = {}
-local DEBUG = true
+local DEBUG = false
 local moves = nil
+ -- clock_time and clock_increment are tenths of a second
 local clock_time = 600
 local clock_increment = 20
 local paused = false
@@ -20,7 +21,8 @@ local vs_ai = false
 local ai_side = 0
 -- 0 = black
 -- 8 = white
-local ai_ply_difficulty = 88888
+local max_ply_table = {1, 3, 88888}
+local ai_ply_difficulty = 1
 --local ai_max_think_time = 5
 
 function GameMode:OnNPCSpawned(event)
@@ -41,6 +43,7 @@ function GameMode:OnGameRulesStateChange()
         print("DOTA_GAMERULES_STATE_CUSTOM_GAME_SETUP")
     elseif nNewState == DOTA_GAMERULES_STATE_HERO_SELECTION then
         print("DOTA_GAMERULES_STATE_HERO_SELECTION")
+        CustomGameEventManager:Send_ServerToAllClients("game_setup_end", {})
     elseif nNewState == DOTA_GAMERULES_STATE_PRE_GAME then
         print("DOTA_GAMERULES_STATE_PRE_GAME")
     if DEBUG == false and PlayerResource:GetPlayerCount() == 1 then
@@ -53,7 +56,9 @@ function GameMode:OnGameRulesStateChange()
     end
     print("vs_ai " .. tostring(vs_ai))
     print("ai_side " .. ai_side)
-    elseif nNewState == DOTA_GAMERULES_STATE_GAME_IN_PROGRESS then  
+    elseif nNewState == DOTA_GAMERULES_STATE_GAME_IN_PROGRESS then
+        OnNewGame(0, {})
+    --[[
         SetTimeout(3)
         --SetYieldCount(3)
         --SetMaxMoveAnalysis(99999999999)
@@ -65,6 +70,7 @@ function GameMode:OnGameRulesStateChange()
         --autogame();
         OnGetMoves()
         AIMove()
+    ]]
     end
 end
 
@@ -88,6 +94,7 @@ function GameMode:InitGameMode()
     GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_GOODGUYS, 1 )
     GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_BADGUYS, 1 )
 
+    CustomGameEventManager:RegisterListener( "game_setup_options", OnGameSetupOptions )
     CustomGameEventManager:RegisterListener( "send_chat_message", OnSendChatMessage )
     CustomGameEventManager:RegisterListener( "get_moves", OnGetMoves )
     CustomGameEventManager:RegisterListener( "drop_piece", OnDropPiece )
@@ -101,6 +108,17 @@ function GameMode:InitGameMode()
     CustomGameEventManager:RegisterListener( "request_undo", OnRequestUndo )
     CustomGameEventManager:RegisterListener( "decline_undo", OnDeclineUndo )
     CustomGameEventManager:RegisterListener( "accept_undo", OnAcceptUndo )
+end
+
+function OnGameSetupOptions(eventSourceIndex, args)
+    print("OnGameSetupOptions", eventSourceIndex)
+    PrintTable(args)
+    clock_time = args.timeTotal * 600
+    clock_increment = args.timeIncrement * 10
+    ai_ply_difficulty = max_ply_table[tonumber(args.aiDifficulty)]
+    print("clock_time", clock_time)
+    print("clock_increment", clock_increment)
+    print("ai_ply_difficulty", ai_ply_difficulty)
 end
 
 function OnSendChatMessage(eventSourceIndex, args)
@@ -119,6 +137,7 @@ end
 function OnNewGame(eventSourceIndex, args)
     args.fen = INITIAL_FEN
     OnSubmitFen(eventSourceIndex, args)
+    AIMove()
 end
 
 function OnSubmitFen(eventSourceIndex, args)
@@ -215,7 +234,7 @@ end
 function AIMove()
     if vs_ai and g_toMove == ai_side and not paused then
         Timers:CreateTimer(1, function ()
-            print("AIMove first timer")
+            print("AIMove first timer", ai_ply_difficulty)
             local co = coroutine.create(Search)
             local _, co_result = coroutine.resume(co, finishMoveCallback, ai_ply_difficulty, finishPlyCallback)
             if not co_result then

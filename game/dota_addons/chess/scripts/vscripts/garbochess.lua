@@ -1522,7 +1522,7 @@ end
 
 --
 function Search(finishMoveCallback, maxPly, finishPlyCallback)
-
+  print("Search", maxPly)
   local alpha = minEval;
   local beta = maxEval;
 

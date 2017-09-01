@@ -2,8 +2,11 @@
 
 "use strict";
 
+var timeControl;
+var timeControlValue = "time_control_timed";
 var timeTotalSlider;
 var timeIncrementSlider;
+var aiDifficultySlider;
 
 function getTimeTotalValue(index) {
     if (index <= 5) {
@@ -36,17 +39,30 @@ function getTimeIncrementValue(index) {
 function UpdateSliders() {
     $("#TimeTotalSliderValue").text = getTimeTotalValue(Math.round(timeTotalSlider.value));
     $("#TimeIncrementSliderValue").text = getTimeIncrementValue(Math.round(timeIncrementSlider.value));
+    $("#AIDifficultySliderValue").text = Math.round(aiDifficultySlider.value);
     $.Schedule(0.1, UpdateSliders);
 }
 
 function OnTimeControlChanged() {
-    var timeControl = $("#TimeControl");
-    var timeControlValue = timeControl.GetSelected().id;
+    timeControlValue = timeControl.GetSelected().id;
     $.Msg(timeControlValue);
     $("#TimeControlOptions").visible = timeControlValue == "time_control_timed";
 }
 
+function OnReceivedGameSetupEnd() {
+    $.Msg("OnReceivedGameSetupEnd");
+    GameEvents.SendCustomGameEventToServer("game_setup_options", {
+        timeControl: timeControlValue,
+        timeTotal: $("#TimeTotalSliderValue").text,
+        timeIncrement: $("#TimeIncrementSliderValue").text,
+        aiDifficulty: $("#AIDifficultySliderValue").text
+    });
+}
+
 (function() {
+    timeControl = $("#TimeControl");
+    timeControlValue = timeControl.GetSelected().id;
+    
     timeTotalSlider = $("#TimeTotalSlider");
     timeTotalSlider.min = 0;
     timeTotalSlider.max = 34;
@@ -56,6 +72,17 @@ function OnTimeControlChanged() {
     timeIncrementSlider.min = 0;
     timeIncrementSlider.max = 30;
     timeIncrementSlider.value = 8;
-    $.Msg("game_setup.js");
+    
+    aiDifficultySlider = $("#AIDifficultySlider");
+    aiDifficultySlider.min = 1;
+    aiDifficultySlider.max = 3;
+    aiDifficultySlider.value = 2;
+
     UpdateSliders();
+    
+    GameEvents.Subscribe("game_setup_end", OnReceivedGameSetupEnd);
+    
+    $("#AIControlGroup").visible = Game.GetAllPlayerIDs().length == 1;
+    
+    $.Msg("game_setup.js");
 })();

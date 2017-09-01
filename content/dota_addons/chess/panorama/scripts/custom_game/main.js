@@ -325,11 +325,11 @@ function OnGameEnd(prompt) {
     });
 }
 
-function OnLose() {
+function OnDraw() {
     OnGameEnd("Stalemate. You draw!");
 }
 
-function OnDraw() {
+function OnLose() {
     OnGameEnd("Checkmate. You lose!");
 }
 
@@ -1016,7 +1016,7 @@ function UpdatePlayerPanel() {
 
     InitLookupSquare();
     CreateChatPanel();
-    CreateBoard();
+    //CreateBoard();
 
     GameEvents.Subscribe("board_update", OnBoardUpdate);
     GameEvents.Subscribe("board_checkmate", OnBoardCheckmate);
