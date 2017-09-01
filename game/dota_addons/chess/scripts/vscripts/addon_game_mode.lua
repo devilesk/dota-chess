@@ -284,7 +284,10 @@ end
 function OnTimeOut(eventSourceIndex, args)
     print ("OnTimeOut", eventSourceIndex)
     PrintTable(args)
-    EmitGlobalSound("Chess.Stalemate")
+    CustomGameEventManager:Send_ServerToAllClients("timeout_end", {
+        playerId = args.playerId,
+        playerSide = args.playerSide
+    })
 end
 
 function OnRequestUndo(eventSourceIndex, args)

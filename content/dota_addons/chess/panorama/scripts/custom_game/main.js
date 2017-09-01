@@ -949,6 +949,13 @@ function OnReceivedResigned(data) {
     OnGameEnd(prompt);
 }
 
+function OnReceivedTimedOut(data) {
+    var prompt = data.playerSide == 0 ? "Black" : "White";
+    prompt += " timed out. ";
+    prompt += mySide == data.playerSide ? "You lose!" : "You win!";
+    OnGameEnd(prompt);
+}
+
 function UpdateUI() {
     $("#btn-draw").SetHasClass("disabled", uiState.drawPressed);
     $("#btn-confirm").SetHasClass("hidden", !uiState.resignPressed);
@@ -1014,6 +1021,7 @@ function UpdatePlayerPanel() {
     GameEvents.Subscribe("draw_offer", OnReceivedDrawOffer);
     GameEvents.Subscribe("draw_claimed", OnReceivedDrawClaimed);
     GameEvents.Subscribe("resigned", OnReceivedResigned);
+    GameEvents.Subscribe("timeout_end", OnReceivedTimedOut);
 
     if (Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_GOODGUYS).length) {
         players[8] = Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_GOODGUYS)[0];
