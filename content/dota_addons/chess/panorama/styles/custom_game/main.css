@@ -78,6 +78,7 @@
     background-color: #eeeeee;
     width: 80%;
     flow-children: right;
+    min-height: 64px;
 }
 .timer.highlight {
     background-color: #fff077;
@@ -89,9 +90,9 @@
     color: #707070;
     font-size: 40;
     font-weight: bold;
-    text-align: center;
     width: 100%;
     vertical-align: middle;
+    font-family: Courier;
 }
 .timer.bottom {
     border-top: 1px solid #ccc;
