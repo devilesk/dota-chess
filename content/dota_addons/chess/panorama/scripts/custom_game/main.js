@@ -24,8 +24,8 @@ var increment = 20;
 var timer = 0;
 var currentSide = 8; // 0 == black, 0 != white
 var firstMove = {
-    white: true,
-    black: true
+    8: true,
+    0: true
 };
 var players = {
     8: null,
@@ -700,8 +700,8 @@ function OnBoardReset(data) {
         timer = 0;
     }
     firstMove = {
-        white: true,
-        black: true
+        8: true,
+        0: true
     };
     uiStates = {
         0: new UIState(),
@@ -746,10 +746,9 @@ function OnBoardUpdate(data) {
     currentSide = data.toMove;
     HighlightPlayerToMove(currentSide);
 
-    
-    var color = currentSide != 0 ? "black" : "white";
-    if (!firstMove[color]) timeRemaining[1 - currentSide + 7] += increment;
-    firstMove[color] = false;
+    var otherSide = 1 - currentSide + 7;
+    if (!firstMove[otherSide]) timeRemaining[otherSide] += increment;
+    firstMove[otherSide] = false;
     $("#timer-label-" + (mySide != currentSide ? "top" : "bottom")).text = formatTime(timeRemaining[mySide != currentSide ? 0 : 8]);
 
     OnPauseChanged(data);
