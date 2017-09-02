@@ -9,6 +9,7 @@ if GameMode == nil then
     GameMode = class({})
 end
 
+local host_player_id = 0
 local INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 local g_allMoves = {}
 local DEBUG = false
@@ -28,6 +29,7 @@ local ai_ply_difficulty = 1
 --local ai_max_think_time = 5
 
 function GameMode:OnNPCSpawned(event)
+    print("OnNPCSpawned", event)
     local npc = EntIndexToHScript(event.entindex)
     if npc:IsRealHero() then
         npc:RemoveSelf()
@@ -43,9 +45,23 @@ function GameMode:OnGameRulesStateChange()
         print("DOTA_GAMERULES_STATE_WAIT_FOR_PLAYERS_TO_LOAD")
     elseif nNewState == DOTA_GAMERULES_STATE_CUSTOM_GAME_SETUP then
         print("DOTA_GAMERULES_STATE_CUSTOM_GAME_SETUP")
+        
+        -- find host player id
+        for i = 0, DOTA_MAX_TEAM_PLAYERS do
+            if PlayerResource:IsValidPlayerID(i) then
+                local player = PlayerResource:GetPlayer(i)
+                if GameRules:PlayerHasCustomGameHostPrivileges(player) then
+                    host_player_id = i
+                    print ("host found", host_player_id)
+                    CustomNetTables:SetTableValue("game_setup", "host", {player_id=host_player_id})
+                    break
+                end
+            end
+        end
+        
     elseif nNewState == DOTA_GAMERULES_STATE_HERO_SELECTION then
         print("DOTA_GAMERULES_STATE_HERO_SELECTION")
-        CustomGameEventManager:Send_ServerToAllClients("game_setup_end", {})
+        CustomGameEventManager:Send_ServerToPlayer(PlayerResource:GetPlayer(host_player_id), "game_setup_end", {})
     elseif nNewState == DOTA_GAMERULES_STATE_PRE_GAME then
         print("DOTA_GAMERULES_STATE_PRE_GAME")
     if DEBUG == false and PlayerResource:GetPlayerCount() == 1 then
@@ -87,12 +103,12 @@ function Activate()
 end
 
 function GameMode:InitGameMode()
-    print( "Template addon is loaded." )
+    print( "Template addon is loaded.", DOTA_MAX_TEAM_PLAYERS)
     --GameRules:GetGameModeEntity():SetThink( "OnThink", self, "GlobalThink", 2 )
     GameRules:GetGameModeEntity():SetAnnouncerDisabled(true)
-    ListenToGameEvent('npc_spawned', Dynamic_Wrap(GameMode, 'OnNPCSpawned'), self)
-    ListenToGameEvent('game_rules_state_change', Dynamic_Wrap(GameMode, 'OnGameRulesStateChange'), self)
-
+    ListenToGameEvent("npc_spawned", Dynamic_Wrap(GameMode, "OnNPCSpawned"), self)
+    ListenToGameEvent("game_rules_state_change", Dynamic_Wrap(GameMode, "OnGameRulesStateChange"), self)
+    
     GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_GOODGUYS, 1 )
     GameRules:SetCustomGameTeamMaxPlayers( DOTA_TEAM_BADGUYS, 1 )
 
@@ -126,6 +142,8 @@ function OnGameSetupOptions(eventSourceIndex, args)
     print("clock_time", clock_time)
     print("clock_increment", clock_increment)
     print("ai_ply_difficulty", ai_ply_difficulty)
+    
+    CustomNetTables:SetTableValue("game_setup", "options", args)
 end
 
 function OnSendChatMessage(eventSourceIndex, args)
@@ -144,7 +162,6 @@ end
 function OnNewGame(eventSourceIndex, args)
     args.fen = INITIAL_FEN
     OnSubmitFen(eventSourceIndex, args)
-    AIMove()
 end
 
 function OnSubmitFen(eventSourceIndex, args)
@@ -154,6 +171,7 @@ function OnSubmitFen(eventSourceIndex, args)
     moves = GenerateValidMoves()
     has_timed_out = false
     CustomGameEventManager:Send_ServerToAllClients("board_reset", {board=g_board, toMove=g_toMove, moves=moves, clock_time=clock_time, clock_increment=clock_increment, time_control=time_control})
+    AIMove()
 end
 
 function OnChangePauseState(eventSourceIndex, args)

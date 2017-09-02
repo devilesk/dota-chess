@@ -29,10 +29,19 @@
 	//margin-top: 16px;
 	margin-left: 8px;
 }
+
 .setup-header-label.value {
     color: white;
 }
 
 #TimeControl {
     width: 100%;
+}
+
+.hidden {
+    visibility: collapse;
+}
+
+.visible {
+    visibility: visible;
 }
