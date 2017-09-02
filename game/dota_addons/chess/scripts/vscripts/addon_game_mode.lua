@@ -12,7 +12,7 @@ end
 local host_player_id = 0
 local INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 local g_allMoves = {}
-local DEBUG = false
+local DEBUG = true
 local moves = nil
 local time_control = true
  -- clock_time and clock_increment are tenths of a second
@@ -162,6 +162,7 @@ end
 function OnNewGame(eventSourceIndex, args)
     args.fen = INITIAL_FEN
     OnSubmitFen(eventSourceIndex, args)
+    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {message="Game started.", playerId=-1})
 end
 
 function OnSubmitFen(eventSourceIndex, args)
@@ -201,6 +202,22 @@ function promotionCheck(move, promotionType)
     end
 end
 
+function getSideString(side, upper)
+    if side == 0 then
+        if upper then
+            return "Black"
+        else
+            return "black"
+        end
+    else
+        if upper then
+            return "White"
+        else
+            return "white"
+        end
+    end
+end
+
 function OnDropPiece(eventSourceIndex, args)
     print("OnDropPiece", eventSourceIndex)
     PrintTable(args)
@@ -234,6 +251,8 @@ function OnDropPiece(eventSourceIndex, args)
                 playerId = args.playerId,
                 playerSide = args.playerSide
             })
+            local message = getSideString(args.playerSide, true) .. " offers draw."
+            CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {message=message, playerId=-1})
         end
 
         if #moves == 0 then
@@ -309,12 +328,16 @@ function OnClaimDraw(eventSourceIndex, args)
         playerId = args.playerId,
         playerSide = args.playerSide
     })
-    EmitGlobalSound("Chess.Stalemate")
+    local message = getSideString(args.playerSide, true) .. " accepts draw."
+    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {message=message, playerId=-1})
+    EmitGlobalSound("Chess.Draw")
 end
 
 function OnDeclineDraw(eventSourceIndex, args)
     print ("OnDeclineDraw", eventSourceIndex)
     PrintTable(args)
+    local message = getSideString(args.playerSide, true) .. " declines draw."
+    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {message=message, playerId=-1})
 end
 
 function OnResign(eventSourceIndex, args)
@@ -324,6 +347,8 @@ function OnResign(eventSourceIndex, args)
         playerId = args.playerId,
         playerSide = args.playerSide
     })
+    local message = getSideString(args.playerSide, true) .. " resigns."
+    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {message=message, playerId=-1})
 end
 
 function OnTimeOut(eventSourceIndex, args)
