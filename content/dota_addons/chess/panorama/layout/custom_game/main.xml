@@ -44,6 +44,9 @@
                     <Panel id="action-container" class="" hittest="false">
                         <Panel id="button-container">
                             <Panel id="action-button-container">
+                                <Button id="btn-swap" class="btn btn-action" onmouseover="DOTAShowTextTooltip('Request side change')" onmouseout="DOTAHideTextTooltip()" onactivate="OnSwapPressed()">
+                                    <Image src="file://{images}/swap.png" />
+                                </Button>
                                 <Button id="btn-undo" class="btn btn-action" onmouseover="DOTAShowTextTooltip('Propose a takeback')" onmouseout="DOTAHideTextTooltip()" onactivate="OnUndoPressed()">
                                     <Image src="file://{images}/undo5.png" />
                                 </Button>
@@ -60,6 +63,17 @@
                                 </Button>
                                 <Button id="btn-confirm" class="btn btn-action hidden" onmouseover="DOTAShowTextTooltip('Confirm')" onmouseout="DOTAHideTextTooltip()" onactivate="OnConfirmActionPressed()">
                                     <Label id="btn-confirm-label" hittest="false" text="&#10004;" />
+                                </Button>
+                            </Panel>
+                        </Panel>
+                        <Panel id="swap-request-container" class="action-message-container hidden">
+                            <Label class="action-message" hittest="false" html="true" text="Accept side change?" />
+                            <Panel class="action-message-buttons">
+                                <Button class="btn btn-accept" onactivate="OnAcceptSwapPressed()">
+                                    <Label hittest="false" text="	&#10004;" />
+                                </Button>
+                                <Button class="btn btn-decline" onactivate="OnDeclineSwapPressed()">
+                                    <Label hittest="false" text="&#10006;" />
                                 </Button>
                             </Panel>
                         </Panel>

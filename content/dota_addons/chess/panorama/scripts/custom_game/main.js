@@ -1,11 +1,17 @@
 /* exported OnFenSubmitted */
 /* exported OnOfferDrawPressed */
+/* exported OnAcceptDrawPressed */
+/* exported OnDeclineDrawPressed */
 /* exported OnResignPressed */
 /* exported OnCancelActionPressed */
 /* exported OnConfirmActionPressed */
-/* exported OnAcceptPressed */
-/* exported OnDeclinePressed */
 /* exported OnTogglePlayerPressed */
+/* exported OnUndoPressed */
+/* exported OnAcceptUndoPressed */
+/* exported OnDeclineUndoPressed */
+/* exported OnSwapPressed */
+/* exported OnAcceptSwapPressed */
+/* exported OnDeclineSwapPressed */
 
 "use strict";
 
@@ -273,11 +279,13 @@ function SendPromotionMove(data, promotionType) {
 }
 
 function OnDropPiece(data) {
+    uiState.swapPressed = false;
     uiState.drawPressed = false;
     uiState.resignPressed = false;
     GameEvents.SendCustomGameEventToServer("drop_piece", data);
     DeclineDraw();
     DeclineUndo();
+    DeclineSwap();
     UpdateUI();
 }
 
@@ -763,7 +771,7 @@ var pieceText = [
     "&#9820;", // rook
     "&#9819;", // queen
     "&#9818;", // king
-]
+];
 
 function RenderCapturedPiece(pieceType, side) {
     var capturedPiecePanel = $.CreatePanel("Panel", $("#captured-" + (mySide == side ? "top" : "bottom")), "");
@@ -975,12 +983,22 @@ var uiStates = {
 var uiState = uiStates[mySide];
 
 function UIState() {
+    this.swapPressed = false;
     this.undoPressed = false;
     this.drawPressed = false;
     this.resignPressed = false;
     this.resignPressed = false;
+    this.pendingSwap = false;
     this.pendingDraw = false;
     this.pendingUndo = false;
+}
+
+function OnSwapPressed() {
+    $.Msg("OnSwapPressed", mySide, currentSide);
+    if (firstMove[0] || firstMove[8]) {
+        uiState.swapPressed = true;
+        UpdateUI();
+    }
 }
 
 function OnUndoPressed() {
@@ -1005,6 +1023,7 @@ function OnResignPressed() {
 }
 
 function OnCancelActionPressed() {
+    uiState.swapPressed = false;
     uiState.undoPressed = false;
     uiState.drawPressed = false;
     uiState.resignPressed = false;
@@ -1012,6 +1031,10 @@ function OnCancelActionPressed() {
 }
 
 function OnConfirmActionPressed() {
+    if (uiState.swapPressed) {
+        RequestSwap();
+        uiState.swapPressed = false;
+    }
     if (uiState.undoPressed) {
         RequestUndo();
         uiState.undoPressed = false;
@@ -1020,6 +1043,12 @@ function OnConfirmActionPressed() {
         Resign();
         uiState.resignPressed = false;
     }
+    UpdateUI();
+}
+
+function OnReceivedSwapOffer(data) {
+    $.Msg("OnReceivedSwapOffer", data);
+    uiStates[1 - data.playerSide + 7].pendingSwap = true;
     UpdateUI();
 }
 
@@ -1032,6 +1061,22 @@ function OnReceivedDrawOffer(data) {
 function OnReceivedUndoOffer(data) {
     $.Msg("OnReceivedUndoOffer", data);
     uiStates[1 - data.playerSide + 7].pendingUndo = true;
+    UpdateUI();
+}
+
+function OnAcceptSwapPressed() {
+    if (uiState.pendingSwap) {
+        uiState.pendingSwap = false;
+        GameEvents.SendCustomGameEventToServer("accept_swap", {
+            playerId: Players.GetLocalPlayer(),
+            playerSide: mySide
+        });
+    }
+    UpdateUI();
+}
+
+function OnDeclineSwapPressed() {
+    DeclineSwap();
     UpdateUI();
 }
 
@@ -1087,6 +1132,16 @@ function DeclineUndo() {
     }
 }
 
+function DeclineSwap() {
+    if (uiState.pendingSwap) {
+        uiState.pendingSwap = false;
+        GameEvents.SendCustomGameEventToServer("decline_swap", {
+            playerId: Players.GetLocalPlayer(),
+            playerSide: mySide
+        });
+    }
+}
+
 function OnReceivedDrawClaimed() {
     OnDraw();
 }
@@ -1105,21 +1160,35 @@ function OnReceivedTimedOut(data) {
     OnGameEnd(prompt);
 }
 
+function OnReceiveSwapSides(data) {
+    OnTogglePlayerPressed();
+}
+
 function UpdateUI() {
+    $("#btn-swap").SetHasClass("disabled", uiState.swapPressed);
     $("#btn-undo").SetHasClass("disabled", mySide == currentSide || uiState.undoPressed || firstMove[0] || firstMove[8]);
     $("#btn-draw").SetHasClass("disabled", mySide != currentSide || uiState.drawPressed || firstMove[0] || firstMove[8] || uiState.pendingDraw);
     $("#btn-resign").SetHasClass("disabled", uiState.resignPressed);
-    $("#btn-undo").SetHasClass("hidden", uiState.drawPressed || uiState.resignPressed);
-    $("#btn-draw").SetHasClass("hidden", uiState.resignPressed || uiState.undoPressed);
-    $("#btn-resign").SetHasClass("hidden", uiState.drawPressed || uiState.undoPressed);
-    $("#btn-confirm").SetHasClass("hidden", !uiState.resignPressed && !uiState.undoPressed);
-    $("#btn-cancel").SetHasClass("hidden", !uiState.drawPressed && !uiState.resignPressed && !uiState.undoPressed);
+    $("#btn-swap").SetHasClass("hidden", uiState.undoPressed || uiState.drawPressed || uiState.resignPressed || (!firstMove[0] && !firstMove[8]));
+    $("#btn-undo").SetHasClass("hidden", uiState.swapPressed || uiState.drawPressed || uiState.resignPressed);
+    $("#btn-draw").SetHasClass("hidden", uiState.swapPressed || uiState.resignPressed || uiState.undoPressed);
+    $("#btn-resign").SetHasClass("hidden", uiState.swapPressed || uiState.drawPressed || uiState.undoPressed);
+    $("#btn-confirm").SetHasClass("hidden", !uiState.swapPressed && !uiState.resignPressed && !uiState.undoPressed);
+    $("#btn-cancel").SetHasClass("hidden", !uiState.swapPressed && !uiState.drawPressed && !uiState.resignPressed && !uiState.undoPressed);
     $("#draw-request-container").SetHasClass("hidden", !uiState.pendingDraw);
     $("#undo-request-container").SetHasClass("hidden", !uiState.pendingUndo);
+    $("#swap-request-container").SetHasClass("hidden", !uiState.pendingSwap);
 }
 
 function Resign() {
     GameEvents.SendCustomGameEventToServer("resign", {
+        playerId: Players.GetLocalPlayer(),
+        playerSide: mySide
+    });
+}
+
+function RequestSwap() {
+    GameEvents.SendCustomGameEventToServer("request_swap", {
         playerId: Players.GetLocalPlayer(),
         playerSide: mySide
     });
@@ -1181,6 +1250,8 @@ function UpdatePlayerPanel() {
     GameEvents.Subscribe("board_reset", OnBoardReset);
     GameEvents.Subscribe("board_pause_changed", OnPauseChanged);
     GameEvents.Subscribe("receive_moves", OnReceiveMoves);
+    GameEvents.Subscribe("swap_sides", OnReceiveSwapSides);
+    GameEvents.Subscribe("swap_offer", OnReceivedSwapOffer);
     GameEvents.Subscribe("undo_offer", OnReceivedUndoOffer);
     GameEvents.Subscribe("draw_offer", OnReceivedDrawOffer);
     GameEvents.Subscribe("draw_claimed", OnReceivedDrawClaimed);

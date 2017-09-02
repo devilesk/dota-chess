@@ -126,6 +126,9 @@ function GameMode:InitGameMode()
     CustomGameEventManager:RegisterListener( "request_undo", OnRequestUndo )
     CustomGameEventManager:RegisterListener( "decline_undo", OnDeclineUndo )
     CustomGameEventManager:RegisterListener( "accept_undo", OnAcceptUndo )
+    CustomGameEventManager:RegisterListener( "request_swap", OnRequestSwap )
+    CustomGameEventManager:RegisterListener( "decline_swap", OnDeclineSwap )
+    CustomGameEventManager:RegisterListener( "accept_swap", OnAcceptSwap )
 end
 
 function OnGameSetupOptions(eventSourceIndex, args)
@@ -366,6 +369,36 @@ function OnTimeOut(eventSourceIndex, args)
         })
         has_timed_out = true
     end
+end
+
+function OnRequestSwap(eventSourceIndex, args)
+    print ("OnRequestSwap", eventSourceIndex)
+    PrintTable(args)
+    CustomGameEventManager:Send_ServerToAllClients("swap_offer", {
+        playerId = args.playerId,
+        playerSide = args.playerSide
+    })
+    local message = getSideString(args.playerSide, true) .. " requests side change."
+    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {message=message, playerId=-1})
+end
+
+function OnDeclineSwap(eventSourceIndex, args)
+    print ("OnDeclineSwap", eventSourceIndex)
+    PrintTable(args)
+    local message = getSideString(args.playerSide, true) .. " declines side change."
+    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {message=message, playerId=-1})
+end
+
+function OnAcceptSwap(eventSourceIndex, args)
+    print ("OnAcceptSwap", eventSourceIndex)
+    PrintTable(args)
+    CustomGameEventManager:Send_ServerToAllClients("swap_sides", {
+        playerId = args.playerId,
+        playerSide = args.playerSide
+    })
+    OnNewGame(0, {})
+    local message = getSideString(args.playerSide, true) .. " accepts side change."
+    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {message=message, playerId=-1})
 end
 
 function OnRequestUndo(eventSourceIndex, args)
