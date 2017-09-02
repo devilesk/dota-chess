@@ -9,6 +9,7 @@
     height: 982px;
     width: 100%;
     padding: 5px;
+    padding-bottom: 30px;
     background-color: #222;
 }
 #chat-input-container {

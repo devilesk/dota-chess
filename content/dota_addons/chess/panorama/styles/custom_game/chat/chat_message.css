@@ -1,10 +1,10 @@
 .chat-message-row {
     padding: 0;
     margin: 0;
+    height:30px;
 }
 .chat-message-row:hover {
     overflow: scroll squish;
-    padding-bottom: 10px;
 }
 .chat-message {
     padding: 0;
