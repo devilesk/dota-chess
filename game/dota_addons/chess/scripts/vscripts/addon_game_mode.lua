@@ -241,10 +241,10 @@ function OnDropPiece(eventSourceIndex, args)
     if (not (args.startX == args.endX and args.startY == args.endY) and move ~= nil) then
         print("making move " .. g_move50)
         table.insert(g_allMoves, move)
-        local san = GetMoveSAN(move)
+        local san, captured_piece = GetMoveSAN(move)
         MakeMove(move)
         moves = GenerateValidMoves()
-        SendBoardUpdate(san, move, moves, false)
+        SendBoardUpdate(san, move, moves, false, captured_piece)
         
         if args.offerDraw ~= 0 then
             CustomGameEventManager:Send_ServerToAllClients("draw_offer", {
@@ -308,8 +308,8 @@ function UndoMove()
     return moveToUndo
 end
 
-function SendBoardUpdate(san, move, moves, undo)
-    print("SendBoardUpdate", move, moves)
+function SendBoardUpdate(san, move, moves, undo, captured_piece)
+    print("SendBoardUpdate", move, moves, captured_piece)
     local data = {
         board=g_board,
         toMove=g_toMove,
@@ -320,7 +320,8 @@ function SendBoardUpdate(san, move, moves, undo)
         paused=paused,
         move50=g_move50,
         repDraw=Is3RepDraw(),
-        undo=undo
+        undo=undo,
+        captured_piece=captured_piece
     }
     CustomGameEventManager:Send_ServerToAllClients("board_update", data)
 end
@@ -393,10 +394,10 @@ function OnAcceptUndo(eventSourceIndex, args)
     local move = UndoMove()
     print ("move", move)
     table.insert(g_allMoves, move)
-    local san = GetMoveSAN(move)
+    local san, captured_piece = GetMoveSAN(move)
     MakeMove(move);
     moves = GenerateValidMoves()
-    SendBoardUpdate(san, move, moves, true)
+    SendBoardUpdate(san, move, moves, true, captured_piece)
     local message = getSideString(args.playerSide, true) .. " accepts takeback."
     CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {message=message, playerId=-1})
 end
@@ -413,7 +414,7 @@ end
 function finishMoveCallback(bestMove, value, ply)
     if (bestMove ~= nil and bestMove ~= 0) then
         table.insert(g_allMoves, bestMove)
-        local san = GetMoveSAN(bestMove)
+        local san, captured_piece = GetMoveSAN(bestMove)
         MakeMove(bestMove);
         print(FormatMove(bestMove), g_moveTime, g_finCnt);
         --g_foundmove = bestMove;
@@ -436,7 +437,7 @@ function finishMoveCallback(bestMove, value, ply)
                 EmitGlobalSound("Creep_Radiant.Footstep")
             end
         end
-        SendBoardUpdate(san, bestMove, moves, false)
+        SendBoardUpdate(san, bestMove, moves, false, captured_piece)
     --[[elseif (bestMove ~= nil and bestMove == 0) then
         if g_inCheck then
             CustomGameEventManager:Send_ServerToAllClients("board_checkmate", {board=g_board, toMove=g_toMove})

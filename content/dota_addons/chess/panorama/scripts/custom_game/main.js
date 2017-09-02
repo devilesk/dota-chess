@@ -14,6 +14,7 @@ var DialogLibrary;
 var m_ChatPanel;
 var m_Board = [];
 var g_board;
+var capturedPieces = [];
 var timeControl = true;
 var currentMovePanel;
 var moveNum = 0;
@@ -418,6 +419,16 @@ function RedrawBoard() {
     CreateBoard();
     RedrawPieces(g_board);
     HighlightLastMove(lastMove);
+    RedrawCapturedPieces();
+}
+
+function RedrawCapturedPieces() {
+    $("#captured-top").RemoveAndDeleteChildren();
+    $("#captured-bottom").RemoveAndDeleteChildren();
+    
+    capturedPieces.forEach(function (data) {
+        if (data) data[2] = RenderCapturedPiece(data[1], data[0]);
+    });
 }
 
 
@@ -715,6 +726,7 @@ function OnBoardReset(data) {
     HighlightLastMove();
     moves = data.moves;
     g_board = data.board;
+    capturedPieces.length = 0;
     RedrawBoard();
     $("#history").RemoveAndDeleteChildren();
     currentSide = data.toMove;
@@ -743,6 +755,27 @@ function OnBoardReset(data) {
     UpdateTimePanel();
 }
 
+var pieceText = [
+    "",
+    "&#9823;", // pawn
+    "&#9822;", // knight
+    "&#9821;", // bishop
+    "&#9820;", // rook
+    "&#9819;", // queen
+    "&#9818;", // king
+]
+
+function RenderCapturedPiece(pieceType, side) {
+    var capturedPiecePanel = $.CreatePanel("Panel", $("#captured-" + (mySide == side ? "top" : "bottom")), "");
+    capturedPiecePanel.SetHasClass("captured-piece", true);
+    capturedPiecePanel.SetHasClass("white", side == 8);
+    capturedPiecePanel.SetHasClass("black", side == 0);
+    var capturedPieceLabel = $.CreatePanel("Label", capturedPiecePanel, "");
+    capturedPieceLabel.html = true;
+    capturedPieceLabel.text = pieceText[pieceType];
+    return capturedPiecePanel;
+}
+
 function OnBoardUpdate(data) {
     $.Msg(data.board);
     $.Msg("toMove", data.toMove);
@@ -754,6 +787,7 @@ function OnBoardUpdate(data) {
     $.Msg("undo", data.undo);
     $.Msg("repDraw", data.repDraw);
     $.Msg("move50", data.move50);
+    $.Msg("captured_piece", data.captured_piece);
     selectedSquare = null;
     HighlightLastMove(data.last_move);
     moves = data.moves;
@@ -791,6 +825,19 @@ function OnBoardUpdate(data) {
     currentSide = data.toMove;
     HighlightPlayerToMove(currentSide);
 
+    if (!data.undo) {
+        if (data.captured_piece != pieceEmpty) {
+            capturedPieces.push([data.toMove, data.captured_piece, RenderCapturedPiece(data.captured_piece, data.toMove)]);
+        }
+        else {
+            capturedPieces.push(null);
+        }
+    }
+    else {
+        var capturedPieceToRemove = capturedPieces.pop();
+        if (capturedPieceToRemove) capturedPieceToRemove[2].DeleteAsync(0);
+    }
+    
     if (timeControl) {
         var otherSide = 1 - currentSide + 7;
         if (!firstMove[otherSide]) timeRemaining[otherSide] += increment;

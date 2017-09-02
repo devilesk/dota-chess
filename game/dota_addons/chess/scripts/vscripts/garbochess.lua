@@ -2343,6 +2343,7 @@ end
 --
 function GetMoveSAN(move, validMoves)
 
+    local capturedPiece = pieceEmpty;
 	local i = 0;
 	local from = bit.band( move, 0xFF );
 	local to = bit.band( bit.rshift(move, 8) , 0xFF );
@@ -2404,6 +2405,11 @@ function GetMoveSAN(move, validMoves)
 
 	if ((g_board[1+to] ~= 0) or (bit.band(move, moveflagEPC)>0)) then
 		result = result .. "x";
+        if g_board[1+to] ~= 0 then
+            capturedPiece = bit.band( g_board[1+to], 0x7 )
+        elseif bit.band(move, moveflagEPC)>0 then
+            capturedPiece = piecePawn
+        end
 	end
 
 	result = result .. FormatSquare(to);
@@ -2433,7 +2439,7 @@ function GetMoveSAN(move, validMoves)
 	end
 	UnmakeMove(move);
 
-	return result;
+	return result, capturedPiece;
 end
 --
 
@@ -3035,8 +3041,8 @@ function PVFromHash(move, ply)
     local hashNode = 0;
 
     if(ply ~= 0) then
-
-      pvString = " " .. GetMoveSAN(move);
+      local san = GetMoveSAN(move)
+      pvString = " " .. san;
       MakeMove(move);
 
       hashNode = g_hashTable[1+ bit.band(g_hashKeyLow, g_hashMask)];

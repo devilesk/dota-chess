@@ -19,8 +19,12 @@
             <Panel class="center-container" hittest="false">
                 <Panel class="board-container">
                     <Panel class="rank-board-container">
+                        <Panel id="captured-top" class="captured-container">
+                        </Panel>
                         <Panel id="rank-container" hittest="false" />
                         <Panel id="board" class="board" hittest="false" />
+                        <Panel id="captured-bottom" class="captured-container">
+                        </Panel>
                     </Panel>
                     <Panel id="file-container">
                     </Panel>

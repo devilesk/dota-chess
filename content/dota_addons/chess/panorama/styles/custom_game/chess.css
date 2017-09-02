@@ -11,7 +11,7 @@
 }
 #file-container {
     flow-children: right;
-    margin-left: 30px;
+    margin-left: 62px;
 }
 
 .rank-label { 
@@ -35,6 +35,35 @@
 .rank-label Label, .file-label Label {
     vertical-align: middle;
     horizontal-align: middle;
+}
+
+.captured-container {
+    width: 32px;
+    height: 100%;
+    flow-children: up;
+}
+#captured-top {
+    flow-children: down;
+}
+#captured-bottom {
+    margin-left: 15px;
+}
+
+.captured-piece {
+    height: 32px;
+    width: 32px;
+}
+.captured-piece Label {
+    font-size: 24px;
+    text-align: center;
+    width: 100%;
+    vertical-align: middle;
+}
+.captured-piece.black Label {
+    color: black;
+}
+.captured-piece.white Label {
+    color: white;
 }
 
 .board {
