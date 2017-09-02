@@ -2358,6 +2358,9 @@ function GetMoveSAN(move, validMoves)
 
 	local pieceType = bit.band( g_board[1+from] , 0x7 );
 	local result = string.upper( PieceCharList[1+pieceType] );
+    if result == "P" then
+        result = " "
+    end
 
 	local dupe = false;
 	local rowDiff = true;
