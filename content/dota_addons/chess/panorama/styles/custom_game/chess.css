@@ -2,8 +2,8 @@
     vertical-align: middle;
     flow-children: down;
     horizontal-align: middle;
-    margin: 0px 100px 0px 100px;
 }
+
 .rank {
     flow-children: right;
 }
@@ -12,6 +12,12 @@
     height: 86px;
     margin: 5px;
 }
+.AspectRatio4x3 .square {
+    width: 64px;
+    height: 64px;
+    margin: 3px;
+}
+
 .square.white,
 .square-wrapper.white {
     background-color: #f0d9b5;
@@ -52,6 +58,10 @@
     font-size: 64;
     vertical-align: top;
 }
+.AspectRatio4x3 .square-label {
+    font-size: 48;
+}
+
 .square-label.white {
     color: white;
     text-shadow: 0px 0px 2px 3.0 black;
