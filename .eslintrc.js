@@ -29,6 +29,8 @@ module.exports = {
         "GameUI": true,
         "GameEvents": true,
         "DOTATeam_t": true,
-        "DotaDefaultUIElement_t": true
+        "DotaDefaultUIElement_t": true,
+        "DOTA_GameState": true,
+        "CustomNetTables": true
     }
 };
