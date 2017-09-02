@@ -244,7 +244,7 @@ function OnDropPiece(eventSourceIndex, args)
         local san = GetMoveSAN(move)
         MakeMove(move)
         moves = GenerateValidMoves()
-        SendBoardUpdate(san, move, moves)
+        SendBoardUpdate(san, move, moves, false)
         
         if args.offerDraw ~= 0 then
             CustomGameEventManager:Send_ServerToAllClients("draw_offer", {
@@ -300,12 +300,15 @@ end
 
 function UndoMove()
     if #g_allMoves == 0 then
-        return
+        return nil
     end
-    UnmakeMove(table.remove(g_allMoves))
+    local moveToUndo = table.remove(g_allMoves)
+    print ("UndoMove", moveToUndo)
+    UnmakeMove(moveToUndo)
+    return moveToUndo
 end
 
-function SendBoardUpdate(san, move, moves)
+function SendBoardUpdate(san, move, moves, undo)
     print("SendBoardUpdate", move, moves)
     local data = {
         board=g_board,
@@ -316,7 +319,8 @@ function SendBoardUpdate(san, move, moves)
         check=g_inCheck,
         paused=paused,
         move50=g_move50,
-        repDraw=IsRepDraw()
+        repDraw=IsRepDraw(),
+        undo=undo
     }
     CustomGameEventManager:Send_ServerToAllClients("board_update", data)
 end
@@ -366,21 +370,35 @@ end
 function OnRequestUndo(eventSourceIndex, args)
     print ("OnRequestUndo", eventSourceIndex)
     PrintTable(args)
+    CustomGameEventManager:Send_ServerToAllClients("undo_offer", {
+        playerId = args.playerId,
+        playerSide = args.playerSide
+    })
+    local message = getSideString(args.playerSide, true) .. " requests takeback."
+    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {message=message, playerId=-1})
 end
 
 function OnDeclineUndo(eventSourceIndex, args)
     print ("OnDeclineUndo", eventSourceIndex)
     PrintTable(args)
+    local message = getSideString(args.playerSide, true) .. " declines takeback."
+    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {message=message, playerId=-1})
 end
 
 function OnAcceptUndo(eventSourceIndex, args)
-    print ("OnAcceptUndo", eventSourceIndex)
+    print ("OnAcceptUndo", eventSourceIndex, #g_allMoves)
     PrintTable(args)
+    if #g_allMoves <= 1 then return end
     UndoMove()
-    local move = g_allMoves[#g_allMoves]
+    local move = UndoMove()
+    print ("move", move)
+    table.insert(g_allMoves, move)
     local san = GetMoveSAN(move)
+    MakeMove(move);
     moves = GenerateValidMoves()
-    SendBoardUpdate(san, move, moves)
+    SendBoardUpdate(san, move, moves, true)
+    local message = getSideString(args.playerSide, true) .. " accepts takeback."
+    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {message=message, playerId=-1})
 end
 
 -- Called on Ply finish
@@ -418,7 +436,7 @@ function finishMoveCallback(bestMove, value, ply)
                 EmitGlobalSound("Creep_Radiant.Footstep")
             end
         end
-        SendBoardUpdate(san, bestMove, moves)
+        SendBoardUpdate(san, bestMove, moves, false)
     --[[elseif (bestMove ~= nil and bestMove == 0) then
         if g_inCheck then
             CustomGameEventManager:Send_ServerToAllClients("board_checkmate", {board=g_board, toMove=g_toMove})

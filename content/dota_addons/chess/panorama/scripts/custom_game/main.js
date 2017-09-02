@@ -276,6 +276,7 @@ function OnDropPiece(data) {
     uiState.resignPressed = false;
     GameEvents.SendCustomGameEventToServer("drop_piece", data);
     DeclineDraw();
+    DeclineUndo();
     UpdateUI();
 }
 
@@ -729,6 +730,7 @@ function OnBoardUpdate(data) {
     $.Msg("last_move", data.last_move);
     $.Msg("check", data.check);
     $.Msg("paused", data.paused);
+    $.Msg("undo", data.undo);
     selectedSquare = null;
     HighlightLastMove(data.last_move);
     moves = data.moves;
@@ -736,23 +738,33 @@ function OnBoardUpdate(data) {
     RedrawPieces(g_board);
 
     if (data.toMove == 0) {
-        moveNum++;
-        currentMovePanel = $.CreatePanel("Panel", $("#history"), "");
-        currentMovePanel.SetHasClass("history-move", true);
-        currentMovePanel.SetHasClass("history-move", true);
-
+        if (!data.undo) {
+            moveNum++;
+            currentMovePanel = $.CreatePanel("Panel", $("#history"), "");
+            currentMovePanel.SetHasClass("history-move", true);
+        }
+        else {
+            currentMovePanel.RemoveAndDeleteChildren();
+        }
         var moveNumPanel = $.CreatePanel("Label", currentMovePanel, "");
         moveNumPanel.SetHasClass("history-move-num", true);
         moveNumPanel.text = moveNum;
         $("#history").ScrollToBottom();
-
+    }
+    else {
+        if (data.undo) {
+            moveNum--;
+            var movePanels = $("#history").Children();
+            currentMovePanel = movePanels[movePanels.length - 2];
+            currentMovePanel.Children()[2].DeleteAsync(0);
+            movePanels[movePanels.length - 1].DeleteAsync(0);
+        }
     }
     var plyPanel = $.CreatePanel("Label", currentMovePanel, "");
     plyPanel.SetHasClass("history-ply", true);
     plyPanel.SetHasClass("white", data.toMove == 0);
     plyPanel.SetHasClass("black", data.toMove == 8);
     plyPanel.text = data.san;
-
     currentSide = data.toMove;
     HighlightPlayerToMove(currentSide);
 
@@ -780,6 +792,7 @@ function OnBoardUpdate(data) {
             OnDraw();
         }
     }
+    UpdateUI();
 }
 
 function OnBoardCheckmate() {
@@ -886,15 +899,25 @@ var uiStates = {
 var uiState = uiStates[mySide];
 
 function UIState() {
+    this.undoPressed = false;
     this.drawPressed = false;
     this.resignPressed = false;
     this.resignPressed = false;
     this.pendingDraw = false;
+    this.pendingUndo = false;
+}
+
+function OnUndoPressed() {
+    $.Msg("OnUndoPressed", mySide, currentSide);
+    if (mySide != currentSide && !firstMove[0] && !firstMove[8]) {
+        uiState.undoPressed = true;
+        UpdateUI();
+    }
 }
 
 function OnOfferDrawPressed() {
     $.Msg("OnOfferDrawPressed", mySide, currentSide);
-    if (mySide == currentSide) {
+    if (mySide == currentSide && !firstMove[0] && !firstMove[8] && !uiState.pendingDraw) {
         uiState.drawPressed = true;
         UpdateUI();
     }
@@ -906,12 +929,17 @@ function OnResignPressed() {
 }
 
 function OnCancelActionPressed() {
+    uiState.undoPressed = false;
     uiState.drawPressed = false;
     uiState.resignPressed = false;
     UpdateUI();
 }
 
 function OnConfirmActionPressed() {
+    if (uiState.undoPressed) {
+        RequestUndo();
+        uiState.undoPressed = false;
+    }
     if (uiState.resignPressed) {
         Resign();
         uiState.resignPressed = false;
@@ -925,7 +953,29 @@ function OnReceivedDrawOffer(data) {
     UpdateUI();
 }
 
-function OnAcceptPressed() {
+function OnReceivedUndoOffer(data) {
+    $.Msg("OnReceivedUndoOffer", data);
+    uiStates[1 - data.playerSide + 7].pendingUndo = true;
+    UpdateUI();
+}
+
+function OnAcceptUndoPressed() {
+    if (uiState.pendingUndo) {
+        uiState.pendingUndo = false;
+        GameEvents.SendCustomGameEventToServer("accept_undo", {
+            playerId: Players.GetLocalPlayer(),
+            playerSide: mySide
+        });
+    }
+    UpdateUI();
+}
+
+function OnDeclineUndoPressed() {
+    DeclineUndo();
+    UpdateUI();
+}
+
+function OnAcceptDrawPressed() {
     if (uiState.pendingDraw) {
         uiState.pendingDraw = false;
         GameEvents.SendCustomGameEventToServer("claim_draw", {
@@ -936,7 +986,7 @@ function OnAcceptPressed() {
     UpdateUI();
 }
 
-function OnDeclinePressed() {
+function OnDeclineDrawPressed() {
     DeclineDraw();
     UpdateUI();
 }
@@ -945,6 +995,16 @@ function DeclineDraw() {
     if (uiState.pendingDraw) {
         uiState.pendingDraw = false;
         GameEvents.SendCustomGameEventToServer("decline_draw", {
+            playerId: Players.GetLocalPlayer(),
+            playerSide: mySide
+        });
+    }
+}
+
+function DeclineUndo() {
+    if (uiState.pendingUndo) {
+        uiState.pendingUndo = false;
+        GameEvents.SendCustomGameEventToServer("decline_undo", {
             playerId: Players.GetLocalPlayer(),
             playerSide: mySide
         });
@@ -970,15 +1030,27 @@ function OnReceivedTimedOut(data) {
 }
 
 function UpdateUI() {
-    $("#btn-draw").SetHasClass("disabled", uiState.drawPressed);
+    $("#btn-undo").SetHasClass("disabled", mySide == currentSide || uiState.undoPressed || firstMove[0] || firstMove[8]);
+    $("#btn-draw").SetHasClass("disabled", mySide != currentSide || uiState.drawPressed || firstMove[0] || firstMove[8] || uiState.pendingDraw);
     $("#btn-resign").SetHasClass("disabled", uiState.resignPressed);
-    $("#btn-confirm").SetHasClass("hidden", !uiState.resignPressed);
-    $("#btn-cancel").SetHasClass("hidden", !uiState.drawPressed && !uiState.resignPressed);
-    $("#action-message-container").SetHasClass("hidden", !uiState.pendingDraw);
+    $("#btn-undo").SetHasClass("hidden", uiState.drawPressed || uiState.resignPressed);
+    $("#btn-draw").SetHasClass("hidden", uiState.resignPressed || uiState.undoPressed);
+    $("#btn-resign").SetHasClass("hidden", uiState.drawPressed || uiState.undoPressed);
+    $("#btn-confirm").SetHasClass("hidden", !uiState.resignPressed && !uiState.undoPressed);
+    $("#btn-cancel").SetHasClass("hidden", !uiState.drawPressed && !uiState.resignPressed && !uiState.undoPressed);
+    $("#draw-request-container").SetHasClass("hidden", !uiState.pendingDraw);
+    $("#undo-request-container").SetHasClass("hidden", !uiState.pendingUndo);
 }
 
 function Resign() {
     GameEvents.SendCustomGameEventToServer("resign", {
+        playerId: Players.GetLocalPlayer(),
+        playerSide: mySide
+    });
+}
+
+function RequestUndo() {
+    GameEvents.SendCustomGameEventToServer("request_undo", {
         playerId: Players.GetLocalPlayer(),
         playerSide: mySide
     });
@@ -1033,6 +1105,7 @@ function UpdatePlayerPanel() {
     GameEvents.Subscribe("board_reset", OnBoardReset);
     GameEvents.Subscribe("board_pause_changed", OnPauseChanged);
     GameEvents.Subscribe("receive_moves", OnReceiveMoves);
+    GameEvents.Subscribe("undo_offer", OnReceivedUndoOffer);
     GameEvents.Subscribe("draw_offer", OnReceivedDrawOffer);
     GameEvents.Subscribe("draw_claimed", OnReceivedDrawClaimed);
     GameEvents.Subscribe("resigned", OnReceivedResigned);
