@@ -357,6 +357,9 @@ function CreateBoard() {
         for (i = 0; i < 8; i++) {
             rowPanel = $.CreatePanel("Panel", parentPanel, "rank-" + ranks[i]);
             rowPanel.SetHasClass("rank", true);
+            
+            CreateRankFileLabel(i);
+            
             for (j = 7; j >= 0; j--) {
                 m_Board.unshift(CreateSquare(rowPanel, i, j));
             }
@@ -366,11 +369,28 @@ function CreateBoard() {
         for (i = 7; i >= 0; i--) {
             rowPanel = $.CreatePanel("Panel", parentPanel, "rank-" + ranks[i]);
             rowPanel.SetHasClass("rank", true);
+            
+            CreateRankFileLabel(i);
+            
             for (j = 0; j < 8; j++) {
                 m_Board.push(CreateSquare(rowPanel, i, j));
             }
         }
     }
+}
+
+function CreateRankFileLabel(i) {
+    var rankPanel = $("#rank-container");
+    var rank = $.CreatePanel("Panel", rankPanel, "rank-label-container-" + ranks[i]);
+    rank.SetHasClass("rank-label", true);
+    var rankLabel = $.CreatePanel("Label", rank, "rank-label-" + ranks[i]);
+    rankLabel.text = ranks[i];
+    
+    var filePanel = $("#file-container");
+    var file = $.CreatePanel("Panel", filePanel, "file-label-container-" + files[7-i]);
+    file.SetHasClass("file-label", true);
+    var fileLabel = $.CreatePanel("Label", file, "file-label-" + files[7-i]);
+    fileLabel.text = files[7-i];
 }
 
 function CreateSquare(rowPanel, i, j) {
@@ -391,8 +411,9 @@ function CreateSquare(rowPanel, i, j) {
 }
 
 function RedrawBoard() {
-    var parentPanel = $("#board");
-    parentPanel.RemoveAndDeleteChildren();
+    $("#board").RemoveAndDeleteChildren();
+    $("#rank-container").RemoveAndDeleteChildren();
+    $("#file-container").RemoveAndDeleteChildren();
     m_Board.length = 0;
     CreateBoard();
     RedrawPieces(g_board);

@@ -1,7 +1,44 @@
-.board {
+.board-container {
+    horizontal-align: middle;
     vertical-align: middle;
     flow-children: down;
+}
+.rank-board-container {
+    flow-children: right;
+}
+#rank-container {
+    flow-children: down;
+}
+#file-container {
+    flow-children: right;
+    margin-left: 30px;
+}
+
+.rank-label { 
+    height: 86px;
+    margin: 5px;
+    width: 20px;
+}
+.AspectRatio4x3 .rank-label { 
+    height: 64px;
+    margin: 3px;
+}
+.file-label {
+    width: 86px;
+    margin: 5px;
+}
+.AspectRatio4x3 .file-label {
+    width: 64px;
+    margin: 3px;
+}
+
+.rank-label Label, .file-label Label {
+    vertical-align: middle;
     horizontal-align: middle;
+}
+
+.board {
+    flow-children: down;
 }
 
 .rank {
