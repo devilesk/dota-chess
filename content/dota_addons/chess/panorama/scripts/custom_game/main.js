@@ -332,7 +332,7 @@ function OnGameEnd(prompt) {
 }
 
 function OnDraw() {
-    OnGameEnd("Stalemate. You draw!");
+    OnGameEnd("Draw.");
 }
 
 function OnLose() {
