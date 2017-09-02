@@ -319,7 +319,7 @@ function SendBoardUpdate(san, move, moves, undo)
         check=g_inCheck,
         paused=paused,
         move50=g_move50,
-        repDraw=IsRepDraw(),
+        repDraw=Is3RepDraw(),
         undo=undo
     }
     CustomGameEventManager:Send_ServerToAllClients("board_update", data)

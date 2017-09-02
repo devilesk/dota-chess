@@ -752,6 +752,8 @@ function OnBoardUpdate(data) {
     $.Msg("check", data.check);
     $.Msg("paused", data.paused);
     $.Msg("undo", data.undo);
+    $.Msg("repDraw", data.repDraw);
+    $.Msg("move50", data.move50);
     selectedSquare = null;
     HighlightLastMove(data.last_move);
     moves = data.moves;
@@ -813,6 +815,12 @@ function OnBoardUpdate(data) {
             OnDraw();
         }
     }
+    
+    if (data.move50 == 50 || data.repDraw) {
+        uiStates[0].pendingDraw = true;
+        uiStates[8].pendingDraw = true;
+    }
+    
     UpdateUI();
 }
 

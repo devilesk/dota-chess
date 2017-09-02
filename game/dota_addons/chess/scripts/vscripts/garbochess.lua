@@ -704,13 +704,38 @@ end
 function IsRepDraw()
     local i = g_moveCount - 5;
     local stop = g_moveCount - 1 - g_move50;
+    PrintTable(g_repMoveStack)
+    print ("IsRepDraw", i, g_moveCount, g_move50, stop, stop < 0)
     stop = iif( stop < 0 , 0 , stop );
-
+    
     while ( i >= stop ) do
         if (g_repMoveStack[1+i] == g_hashKeyLow) then
+            print("IsRepDraw g_repMoveStack[1+i] == g_hashKeyLow", 1+i, g_repMoveStack[1+i], g_hashKeyLow)
             return true;
-	end
-	i = i - 2;
+        end
+        i = i - 2;
+    end
+    return false;
+end
+--
+
+--
+function Is3RepDraw()
+    local i = g_moveCount - 5;
+    local stop = g_moveCount - 1 - g_move50;
+    PrintTable(g_repMoveStack)
+    print ("IsRepDraw", i, g_moveCount, g_move50, stop, stop < 0)
+    stop = iif( stop < 0 , 0 , stop );
+    local repCount = 0
+    while ( i >= stop ) do
+        if (g_repMoveStack[1+i] == g_hashKeyLow) then
+            print("IsRepDraw g_repMoveStack[1+i] == g_hashKeyLow", 1+i, g_repMoveStack[1+i], g_hashKeyLow)
+            repCount = repCount + 1
+            if repCount == 2 then
+                return true;
+            end
+        end
+        i = i - 2;
     end
     return false;
 end
@@ -1933,7 +1958,7 @@ end
 
 --
 function MakeMove(move)
-
+    print("MakeMove start")
     local me = bit.rshift( g_toMove, 3 );
     local otherColor = 8 - g_toMove;
 
@@ -2165,16 +2190,17 @@ function MakeMove(move)
         g_inCheck = IsSquareAttackable(g_pieceList[1+ bit.lshift( bit.bor(pieceKing, g_toMove), 4)], 8-g_toMove);
     end
 
+    print("adding to g_repMoveStack", 1+(g_moveCount - 1), g_hashKeyLow)
     g_repMoveStack[1+(g_moveCount - 1)] = g_hashKeyLow;
     g_move50 = g_move50 + 1;
-
+    print("MakeMove end")
     return true;
 end
 --
 
 --
 function UnmakeMove(move)
-
+    print("UnmakeMove start")
     g_toMove = 8 - g_toMove;
     g_baseEval = -g_baseEval;
 
@@ -2272,7 +2298,7 @@ function UnmakeMove(move)
         g_pieceList[1+ bit.bor( bit.lshift(captureType , 4) , g_pieceCount[1+captureType] )] = epcEnd;
         g_pieceCount[1+captureType] = g_pieceCount[1+captureType] + 1;
     end
-
+    print("UnmakeMove end")
 end
 --
 
@@ -2423,6 +2449,7 @@ end
 
 --
 function GenerateValidMoves()
+    print("GenerateValidMoves start")
     local moveList = {}		-- new Array();
     local allMoves = {}		-- new Array();
     GenerateCaptureMoves(allMoves);
@@ -2435,7 +2462,7 @@ function GenerateValidMoves()
             UnmakeMove(allMoves[1+i]);
         end
     end
-
+    print("GenerateValidMoves end")
     return moveList;
 end
 --
