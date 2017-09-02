@@ -1,4 +1,3 @@
-/* exported OnFenSubmitted */
 /* exported OnOfferDrawPressed */
 /* exported OnAcceptDrawPressed */
 /* exported OnDeclineDrawPressed */
@@ -887,13 +886,6 @@ function OnBoardCheckmate() {
 function OnBoardStalemate() {
     $.Msg("OnBoardStalemate");
     OnDraw();
-}
-
-function OnFenSubmitted() {
-    var fen = $("#input-fen").text;
-    GameEvents.SendCustomGameEventToServer("submit_fen", {
-        fen: fen
-    });
 }
 
 function OnPauseChanged(data) {

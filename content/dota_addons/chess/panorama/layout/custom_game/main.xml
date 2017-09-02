@@ -31,7 +31,6 @@
                 </Panel>
             </Panel>
             <Panel class="left-container" hittest="false">
-                <TextEntry id="input-fen" maxchars="100" placeholder="Enter Fen..." oninputsubmit="OnFenSubmitted()" />
                 <Button id="btn-toggle-player" class="btn" text="toggle player" onactivate="OnTogglePlayerPressed()">
                     <Label id="btn-toggle-player-label" text="Toggle Player" />
                 </Button>

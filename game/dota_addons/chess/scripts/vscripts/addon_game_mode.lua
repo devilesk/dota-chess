@@ -9,17 +9,17 @@ if GameMode == nil then
     GameMode = class({})
 end
 
+local game_in_progress = false
 local host_player_id = 0
 local INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 local g_allMoves = {}
-local DEBUG = true
+local DEBUG = false
 local moves = nil
 local time_control = true
  -- clock_time and clock_increment are tenths of a second
 local clock_time = 600
 local clock_increment = 20
 local paused = false
-local vs_ai = false
 local has_timed_out = false
 local ai_side = 0
 -- 0 = black
@@ -59,21 +59,26 @@ function GameMode:OnGameRulesStateChange()
             end
         end
         
+        -- register console commands
+        Convars:RegisterCommand("chess_set_fen", Dynamic_Wrap(GameMode, "OnSetFENCommand"), "Set board position in FEN format", 0)
+        Convars:RegisterCommand("chess_get_fen", Dynamic_Wrap(GameMode, "OnGetFENCommand"), "Get board position in FEN format", 0)
+        Convars:RegisterConvar("chess_ai", "1", "Set to 1 to turn ai on. Set to 0 to disable ai.", 0)
+        Convars:SetBool("chess_ai", PlayerResource:GetPlayerCount() == 1)
+        print("chess_ai", Convars:GetBool("chess_ai"))
+        
     elseif nNewState == DOTA_GAMERULES_STATE_HERO_SELECTION then
         print("DOTA_GAMERULES_STATE_HERO_SELECTION")
         CustomGameEventManager:Send_ServerToPlayer(PlayerResource:GetPlayer(host_player_id), "game_setup_end", {})
     elseif nNewState == DOTA_GAMERULES_STATE_PRE_GAME then
         print("DOTA_GAMERULES_STATE_PRE_GAME")
-    if DEBUG == false and PlayerResource:GetPlayerCount() == 1 then
-        vs_ai = true
-        if PlayerResource:GetTeam(0) == DOTA_TEAM_GOODGUYS then
-            ai_side = 0
-        else
-            ai_side = 8
+        if PlayerResource:GetPlayerCount() == 1 then
+            if PlayerResource:GetTeam(0) == DOTA_TEAM_GOODGUYS then
+                ai_side = 0
+            else
+                ai_side = 8
+            end
         end
-    end
-    print("vs_ai " .. tostring(vs_ai))
-    print("ai_side " .. ai_side)
+        print("ai_side " .. ai_side)
     elseif nNewState == DOTA_GAMERULES_STATE_GAME_IN_PROGRESS then
         OnNewGame(0, {})
     --[[
@@ -103,9 +108,10 @@ function Activate()
 end
 
 function GameMode:InitGameMode()
-    print( "Template addon is loaded.", DOTA_MAX_TEAM_PLAYERS)
-    --GameRules:GetGameModeEntity():SetThink( "OnThink", self, "GlobalThink", 2 )
+    print("InitGameMode")
+
     GameRules:GetGameModeEntity():SetAnnouncerDisabled(true)
+    
     ListenToGameEvent("npc_spawned", Dynamic_Wrap(GameMode, "OnNPCSpawned"), self)
     ListenToGameEvent("game_rules_state_change", Dynamic_Wrap(GameMode, "OnGameRulesStateChange"), self)
     
@@ -116,7 +122,6 @@ function GameMode:InitGameMode()
     CustomGameEventManager:RegisterListener( "send_chat_message", OnSendChatMessage )
     CustomGameEventManager:RegisterListener( "get_moves", OnGetMoves )
     CustomGameEventManager:RegisterListener( "drop_piece", OnDropPiece )
-    CustomGameEventManager:RegisterListener( "submit_fen", OnSubmitFen )
     CustomGameEventManager:RegisterListener( "new_game", OnNewGame )
     CustomGameEventManager:RegisterListener( "change_pause_state", OnChangePauseState )
     CustomGameEventManager:RegisterListener( "claim_draw", OnClaimDraw )
@@ -129,6 +134,25 @@ function GameMode:InitGameMode()
     CustomGameEventManager:RegisterListener( "request_swap", OnRequestSwap )
     CustomGameEventManager:RegisterListener( "decline_swap", OnDeclineSwap )
     CustomGameEventManager:RegisterListener( "accept_swap", OnAcceptSwap )
+end
+
+function GameMode:OnSetFENCommand(fen)
+    if Convars:GetDOTACommandClient() then
+        local player = Convars:GetDOTACommandClient()
+        local playerID = player:GetPlayerID()
+        if playerID == host_player_id then
+            print("Setting FEN", fen)
+            if game_in_progress then
+                OnSubmitFen(0, {fen=fen})
+            else
+                INITIAL_FEN = fen
+            end
+        end
+    end
+end
+
+function GameMode:OnGetFENCommand()
+    print(GetFen())
 end
 
 function OnGameSetupOptions(eventSourceIndex, args)
@@ -166,6 +190,7 @@ function OnNewGame(eventSourceIndex, args)
     args.fen = INITIAL_FEN
     OnSubmitFen(eventSourceIndex, args)
     CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {message="Game started.", playerId=-1})
+    game_in_progress = true
 end
 
 function OnSubmitFen(eventSourceIndex, args)
@@ -280,7 +305,7 @@ function OnDropPiece(eventSourceIndex, args)
 end
 
 function AIMove()
-    if vs_ai and g_toMove == ai_side and not paused then
+    if Convars:GetBool("chess_ai") and g_toMove == ai_side and not paused then
         Timers:CreateTimer(1, function ()
             print("AIMove first timer", ai_ply_difficulty)
             local co = coroutine.create(Search)
