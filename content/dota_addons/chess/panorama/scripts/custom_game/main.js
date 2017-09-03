@@ -727,6 +727,13 @@ function OnBoardReset(data) {
     _.DebugMsg("clock_time", data.clock_time);
     _.DebugMsg("clock_increment", data.clock_increment);
     _.DebugMsg("paused", data.paused);
+    _.DebugMsg("ai_side", data.ai_side);
+    
+    if (isSolo()) {
+        mySide = 1 - data.ai_side + 7;
+        uiState = uiStates[1 - data.ai_side + 7];
+    }
+    
     timeControl = data.time_control;
     paused = data.paused;
     selectedSquare = null;

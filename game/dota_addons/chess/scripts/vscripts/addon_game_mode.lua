@@ -209,12 +209,13 @@ function OnNewGame(eventSourceIndex, args)
 end
 
 function OnSubmitFen(eventSourceIndex, args)
+    g_allMoves = {}
     InitializeEval()
     ResetGame()
     InitializeFromFen(args.fen)
     moves = GenerateValidMoves()
     has_timed_out = false
-    CustomGameEventManager:Send_ServerToAllClients("board_reset", {board=g_board, toMove=g_toMove, moves=moves, clock_time=clock_time, clock_increment=clock_increment, time_control=time_control})
+    CustomGameEventManager:Send_ServerToAllClients("board_reset", {ai_side=ai_side, board=g_board, toMove=g_toMove, moves=moves, clock_time=clock_time, clock_increment=clock_increment, time_control=time_control})
     AIMove()
 end
 
