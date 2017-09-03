@@ -17,7 +17,7 @@ local host_player_id = 0
 local INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 local move_history = {}
 local DEBUG = 1 -- initial value of chess_debug
-local DEBUG_PLAYER_COUNT = 2 -- nil, 1, 2
+local DEBUG_PLAYER_COUNT = 1 -- nil, 1, 2
 local time_control = true
  -- clock_time and clock_increment are tenths of a second
 local clock_time = 600
@@ -400,7 +400,7 @@ function OnRequestRematch(eventSourceIndex, args)
     DebugPrint("OnRequestRematch", eventSourceIndex)
     DebugPrintTable(args)
     rematch_requested[args.playerSide] = true
-    if rematch_requested[0] and rematch_requested[8] then
+    if player_count == 1 or (rematch_requested[0] and rematch_requested[8]) then
         OnNewGame(0, {})
     end
 end
