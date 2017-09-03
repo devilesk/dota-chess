@@ -1,3 +1,6 @@
+/* exported OnAcceptPressed */
+/* exported OnDeclinePressed */
+
 "use strict";
 
 function SetText(message) {

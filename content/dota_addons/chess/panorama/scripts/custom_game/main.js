@@ -11,6 +11,7 @@
 /* exported OnSwapPressed */
 /* exported OnAcceptSwapPressed */
 /* exported OnDeclineSwapPressed */
+/* exported OnTogglePlayerPressed */
 
 "use strict";
 
