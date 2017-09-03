@@ -226,6 +226,9 @@
 #btn-toggle-player {
     width: 100%;
 }
+#btn-flip {
+    horizontal-align: right;
+}
 
 #DashboardButton:hover {
     opacity: 1;

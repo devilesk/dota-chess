@@ -45,6 +45,7 @@ var lastMove;
 var selectedSquare;
 var paused = false;
 var lookupSquare = {};
+var bottomSide = 8;
 
 function InitLookupSquare() {
     for (var i = 0; i < 8; i++) {
@@ -361,7 +362,7 @@ function CreateChatPanel() {
 function CreateBoard() {
     var parentPanel = $("#board");
     var i, j, rowPanel;
-    if (mySide == 0) {
+    if (bottomSide == 0) {
         for (i = 0; i < 8; i++) {
             rowPanel = $.CreatePanel("Panel", parentPanel, "rank-" + ranks[i]);
             rowPanel.SetHasClass("rank", true);
@@ -712,8 +713,8 @@ function HighlightLastMove(_lastMove) {
 }
 
 function HighlightPlayerToMove(toMove) {
-    $("#timer-bottom").SetHasClass("highlight", toMove == mySide);
-    $("#timer-top").SetHasClass("highlight", toMove != mySide);
+    $("#timer-bottom").SetHasClass("highlight", toMove == bottomSide);
+    $("#timer-top").SetHasClass("highlight", toMove != bottomSide);
 }
 
 function OnBoardReset(data) {
@@ -773,7 +774,7 @@ var pieceText = [
 ];
 
 function RenderCapturedPiece(pieceType, side) {
-    var capturedPiecePanel = $.CreatePanel("Panel", $("#captured-" + (mySide == side ? "top" : "bottom")), "");
+    var capturedPiecePanel = $.CreatePanel("Panel", $("#captured-" + (bottomSide == side ? "top" : "bottom")), "");
     capturedPiecePanel.SetHasClass("captured-piece", true);
     capturedPiecePanel.SetHasClass("white", side == 8);
     capturedPiecePanel.SetHasClass("black", side == 0);
@@ -781,6 +782,11 @@ function RenderCapturedPiece(pieceType, side) {
     capturedPieceLabel.html = true;
     capturedPieceLabel.text = pieceText[pieceType];
     return capturedPiecePanel;
+}
+
+function isSolo() {
+    var netTable = CustomNetTables.GetTableValue( "chess", "players" );
+    return netTable && netTable.count == 1;
 }
 
 function OnBoardUpdate(data) {
@@ -800,6 +806,11 @@ function OnBoardUpdate(data) {
     moves = data.moves;
     g_board = data.board;
     RedrawPieces(g_board);
+    
+    if (isSolo()) {
+        mySide = data.toMove;
+        uiState = uiStates[data.toMove];
+    }
 
     if (data.toMove == 0) {
         if (!data.undo) {
@@ -849,7 +860,7 @@ function OnBoardUpdate(data) {
         var otherSide = 1 - currentSide + 7;
         if (!firstMove[otherSide]) timeRemaining[otherSide] += increment;
         firstMove[otherSide] = false;
-        $("#timer-label-" + (mySide != currentSide ? "top" : "bottom")).text = formatTime(timeRemaining[mySide != currentSide ? 0 : 8]);
+        $("#timer-label-" + (bottomSide != currentSide ? "top" : "bottom")).text = formatTime(timeRemaining[bottomSide != currentSide ? 0 : 8]);
 
         OnPauseChanged(data);
     }
@@ -917,10 +928,10 @@ function UpdateTime() {
 }
 
 function UpdateTimePanel() {
-    $("#timer-label-top").text = formatTime(timeRemaining[1 - mySide + 7]);
-    $("#timer-label-bottom").text = formatTime(timeRemaining[mySide]);
-    $("#timer-top").SetHasClass("warning", timeControl && timeRemaining[1 - mySide + 7] < 100);
-    $("#timer-bottom").SetHasClass("warning", timeControl && timeRemaining[mySide] < 100);
+    $("#timer-label-top").text = formatTime(timeRemaining[1 - bottomSide + 7]);
+    $("#timer-label-bottom").text = formatTime(timeRemaining[bottomSide]);
+    $("#timer-top").SetHasClass("warning", timeControl && timeRemaining[1 - bottomSide + 7] < 100);
+    $("#timer-bottom").SetHasClass("warning", timeControl && timeRemaining[bottomSide] < 100);
 }
 
 function RedrawPieces(g_board) {
@@ -987,17 +998,27 @@ function UIState() {
 
 function OnSwapPressed() {
     $.Msg("OnSwapPressed", mySide, currentSide);
-    if (firstMove[0] || firstMove[8]) {
-        uiState.swapPressed = true;
-        UpdateUI();
+    if (isSolo()) {
+        AcceptSwap();
+    }
+    else {
+        if (firstMove[0] || firstMove[8]) {
+            uiState.swapPressed = true;
+            UpdateUI();
+        }
     }
 }
 
 function OnUndoPressed() {
     $.Msg("OnUndoPressed", mySide, currentSide);
-    if (mySide != currentSide && !firstMove[0] && !firstMove[8]) {
-        uiState.undoPressed = true;
-        UpdateUI();
+    if (isSolo()) {
+        AcceptUndo();
+    }
+    else {
+        if (mySide != currentSide && !firstMove[0] && !firstMove[8]) {
+            uiState.undoPressed = true;
+            UpdateUI();
+        }
     }
 }
 
@@ -1059,10 +1080,7 @@ function OnReceivedUndoOffer(data) {
 function OnAcceptSwapPressed() {
     if (uiState.pendingSwap) {
         uiState.pendingSwap = false;
-        GameEvents.SendCustomGameEventToServer("accept_swap", {
-            playerId: Players.GetLocalPlayer(),
-            playerSide: mySide
-        });
+        AcceptSwap();
     }
     UpdateUI();
 }
@@ -1075,10 +1093,7 @@ function OnDeclineSwapPressed() {
 function OnAcceptUndoPressed() {
     if (uiState.pendingUndo) {
         uiState.pendingUndo = false;
-        GameEvents.SendCustomGameEventToServer("accept_undo", {
-            playerId: Players.GetLocalPlayer(),
-            playerSide: mySide
-        });
+        AcceptUndo();
     }
     UpdateUI();
 }
@@ -1153,23 +1168,37 @@ function OnReceivedTimedOut(data) {
 }
 
 function OnReceiveSwapSides(data) {
-    OnTogglePlayerPressed();
+    SwapSides();
 }
 
 function UpdateUI() {
     $("#btn-swap").SetHasClass("disabled", uiState.swapPressed);
-    $("#btn-undo").SetHasClass("disabled", mySide == currentSide || uiState.undoPressed || firstMove[0] || firstMove[8]);
+    $("#btn-undo").SetHasClass("disabled", !isSolo() && (mySide == currentSide || uiState.undoPressed || firstMove[0] || firstMove[8]));
     $("#btn-draw").SetHasClass("disabled", mySide != currentSide || uiState.drawPressed || firstMove[0] || firstMove[8] || uiState.pendingDraw);
     $("#btn-resign").SetHasClass("disabled", uiState.resignPressed);
     $("#btn-swap").SetHasClass("hidden", uiState.undoPressed || uiState.drawPressed || uiState.resignPressed || (!firstMove[0] && !firstMove[8]));
     $("#btn-undo").SetHasClass("hidden", uiState.swapPressed || uiState.drawPressed || uiState.resignPressed);
-    $("#btn-draw").SetHasClass("hidden", uiState.swapPressed || uiState.resignPressed || uiState.undoPressed);
+    $("#btn-draw").SetHasClass("hidden", isSolo() || uiState.swapPressed || uiState.resignPressed || uiState.undoPressed);
     $("#btn-resign").SetHasClass("hidden", uiState.swapPressed || uiState.drawPressed || uiState.undoPressed);
     $("#btn-confirm").SetHasClass("hidden", !uiState.swapPressed && !uiState.resignPressed && !uiState.undoPressed);
     $("#btn-cancel").SetHasClass("hidden", !uiState.swapPressed && !uiState.drawPressed && !uiState.resignPressed && !uiState.undoPressed);
     $("#draw-request-container").SetHasClass("hidden", !uiState.pendingDraw);
     $("#undo-request-container").SetHasClass("hidden", !uiState.pendingUndo);
     $("#swap-request-container").SetHasClass("hidden", !uiState.pendingSwap);
+}
+
+function AcceptSwap() {
+    GameEvents.SendCustomGameEventToServer("accept_swap", {
+        playerId: Players.GetLocalPlayer(),
+        playerSide: mySide
+    });
+}
+
+function AcceptUndo() {
+    GameEvents.SendCustomGameEventToServer("accept_undo", {
+        playerId: Players.GetLocalPlayer(),
+        playerSide: mySide
+    });
 }
 
 function Resign() {
@@ -1193,10 +1222,21 @@ function RequestUndo() {
     });
 }
 
-function OnTogglePlayerPressed() {
+function SwapSides() {
+    var temp = players[8];
+    players[8] = players[0];
+    players[0] = temp;
+    
     mySide = 1 - mySide + 7;
     uiState = uiStates[mySide];
-    $("#btn-toggle-player-label").text = mySide == 0 ? "Black" : "White";
+    //$("#btn-toggle-player-label").text = mySide == 0 ? "Black" : "White";
+    UpdateUI();
+    RedrawBoard();
+    UpdatePlayerPanel();
+}
+
+function OnFlipBoardPressed() {
+    bottomSide = 1 - bottomSide + 7;
     UpdateUI();
     RedrawBoard();
     UpdatePlayerPanel();
@@ -1204,7 +1244,7 @@ function OnTogglePlayerPressed() {
 
 function UpdatePlayerPanel() {
     [0, 8].forEach(function (side) {
-        var pos = (mySide == side ? "bottom" : "top");
+        var pos = (bottomSide == side ? "bottom" : "top");
         if (players[side] != null) {
             var playerInfo = Game.GetPlayerInfo(players[side]);
             if (playerInfo) {

@@ -31,9 +31,12 @@
                 </Panel>
             </Panel>
             <Panel class="left-container" hittest="false">
-                <Button id="btn-toggle-player" class="btn" text="toggle player" onactivate="OnTogglePlayerPressed()">
-                    <Label id="btn-toggle-player-label" text="Toggle Player" />
+                <Button id="btn-flip" class="btn btn-action" onmouseover="DOTAShowTextTooltip('Flip board')" onmouseout="DOTAHideTextTooltip()" onactivate="OnFlipBoardPressed()">
+                    <Image src="file://{images}/flip_board.png" />
                 </Button>
+                <!--<Button id="btn-toggle-player" class="btn" text="toggle player" onactivate="OnTogglePlayerPressed()">
+                    <Label id="btn-toggle-player-label" text="Toggle Player" />
+                </Button>-->
                 <Panel class="info-container" hittest="false">
                     <Panel id="timer-top" class="timer top" hittest="false">
                         <DOTAAvatarImage id="player-top" class="avatar top" />

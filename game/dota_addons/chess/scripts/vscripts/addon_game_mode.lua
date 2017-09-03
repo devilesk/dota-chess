@@ -58,7 +58,7 @@ function GameMode:OnGameRulesStateChange()
                 end
             end
         end
-        
+
         -- register console commands
         Convars:RegisterCommand("chess_set_fen", Dynamic_Wrap(GameMode, "OnSetFENCommand"), "Set board position in FEN format", 0)
         Convars:RegisterCommand("chess_get_fen", Dynamic_Wrap(GameMode, "OnGetFENCommand"), "Get board position in FEN format", 0)
@@ -71,12 +71,12 @@ function GameMode:OnGameRulesStateChange()
         CustomGameEventManager:Send_ServerToPlayer(PlayerResource:GetPlayer(host_player_id), "game_setup_end", {})
     elseif nNewState == DOTA_GAMERULES_STATE_PRE_GAME then
         print("DOTA_GAMERULES_STATE_PRE_GAME")
-        if PlayerResource:GetPlayerCount() == 1 then
-            if PlayerResource:GetTeam(0) == DOTA_TEAM_GOODGUYS then
-                ai_side = 0
-            else
-                ai_side = 8
-            end
+        CustomNetTables:SetTableValue("chess", "players", {count=PlayerResource:GetPlayerCount()})
+        
+        if PlayerResource:GetTeam(0) == DOTA_TEAM_GOODGUYS then
+            ai_side = 0
+        else
+            ai_side = 8
         end
         print("ai_side " .. ai_side)
     elseif nNewState == DOTA_GAMERULES_STATE_GAME_IN_PROGRESS then
@@ -421,6 +421,7 @@ function OnAcceptSwap(eventSourceIndex, args)
         playerId = args.playerId,
         playerSide = args.playerSide
     })
+    ai_side = 1 - ai_side + 7
     OnNewGame(0, {})
     local message = getSideString(args.playerSide, true) .. " accepts side change."
     CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {message=message, playerId=-1})
