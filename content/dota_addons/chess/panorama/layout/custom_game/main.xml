@@ -1,6 +1,7 @@
 <root>
     <styles>
         <include src="file://{resources}/styles/dotastyles.css" />
+        <include src="file://{resources}/styles/custom_game/common.css" />
         <include src="file://{resources}/styles/custom_game/main.css" />
         <include src="file://{resources}/styles/custom_game/chess.css" />
     </styles>
@@ -34,9 +35,9 @@
                 <Button id="btn-flip" class="btn btn-action" onmouseover="DOTAShowTextTooltip('#flip_board')" onmouseout="DOTAHideTextTooltip()" onactivate="OnFlipBoardPressed()">
                     <Image src="file://{images}/flip_board.png" />
                 </Button>
-                <!--<Button id="btn-toggle-player" class="btn" text="toggle player" onactivate="OnTogglePlayerPressed()">
+                <Button id="btn-toggle-player" class="btn" text="toggle player" onactivate="OnTogglePlayerPressed()">
                     <Label id="btn-toggle-player-label" text="Toggle Player" />
-                </Button>-->
+                </Button>
                 <Panel class="info-container" hittest="false">
                     <Panel id="timer-top" class="timer top" hittest="false">
                         <DOTAAvatarImage id="player-top" class="avatar top" />
@@ -65,39 +66,6 @@
                                 </Button>
                                 <Button id="btn-confirm" class="btn btn-action hidden" onmouseover="DOTAShowTextTooltip('#confirm')" onmouseout="DOTAHideTextTooltip()" onactivate="OnConfirmActionPressed()">
                                     <Label id="btn-confirm-label" hittest="false" text="&#10004;" />
-                                </Button>
-                            </Panel>
-                        </Panel>
-                        <Panel id="swap-request-container" class="action-message-container hidden">
-                            <Label class="action-message" hittest="false" html="true" text="#prompt_swap" />
-                            <Panel class="action-message-buttons">
-                                <Button class="btn btn-accept" onactivate="OnAcceptSwapPressed()">
-                                    <Label hittest="false" text="&#10004;" />
-                                </Button>
-                                <Button class="btn btn-decline" onactivate="OnDeclineSwapPressed()">
-                                    <Label hittest="false" text="&#10006;" />
-                                </Button>
-                            </Panel>
-                        </Panel>
-                        <Panel id="draw-request-container" class="action-message-container hidden">
-                            <Label class="action-message" hittest="false" html="true" text="#prompt_draw" />
-                            <Panel class="action-message-buttons">
-                                <Button class="btn btn-accept" onactivate="OnAcceptDrawPressed()">
-                                    <Label hittest="false" text="&#10004;" />
-                                </Button>
-                                <Button class="btn btn-decline" onactivate="OnDeclineDrawPressed()">
-                                    <Label hittest="false" text="&#10006;" />
-                                </Button>
-                            </Panel>
-                        </Panel>
-                        <Panel id="undo-request-container" class="action-message-container hidden">
-                            <Label class="action-message" hittest="false" html="true" text="#prompt_undo" />
-                            <Panel class="action-message-buttons">
-                                <Button class="btn btn-accept" onactivate="OnAcceptUndoPressed()">
-                                    <Label hittest="false" text="&#10004;" />
-                                </Button>
-                                <Button class="btn btn-decline" onactivate="OnDeclineUndoPressed()">
-                                    <Label hittest="false" text="&#10006;" />
                                 </Button>
                             </Panel>
                         </Panel>

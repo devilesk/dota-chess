@@ -1281,6 +1281,14 @@ function UpdatePlayerPanel() {
     HighlightPlayerToMove(currentSide);
 }
 
+function InitRequestPanel(parentPanel, id, text, acceptHandler, declineHandler) {
+    var requestPanel = $.CreatePanel("Panel", parentPanel, id);
+    requestPanel.BLoadLayout("file://{resources}/layout/custom_game/request_panel.xml", false, false);
+    requestPanel.SetText(text);
+    requestPanel.AcceptHandler = acceptHandler;
+    requestPanel.DeclineHandler = declineHandler;
+}
+
 (function() {
     GameUI.SetDefaultUIEnabled(DotaDefaultUIElement_t.DOTA_DEFAULT_UI_TOP_TIMEOFDAY, false);
     GameUI.SetDefaultUIEnabled(DotaDefaultUIElement_t.DOTA_DEFAULT_UI_TOP_HEROES, false);
@@ -1296,6 +1304,11 @@ function UpdatePlayerPanel() {
     InitLookupSquare();
     CreateChatPanel();
     //CreateBoard();
+    
+    var requestContainer = $("#action-container");
+    InitRequestPanel(requestContainer, "undo-request-container", "#prompt_undo", OnAcceptUndoPressed, OnDeclineUndoPressed);
+    InitRequestPanel(requestContainer, "draw-request-container", "#prompt_draw", OnAcceptDrawPressed, OnDeclineDrawPressed);
+    InitRequestPanel(requestContainer, "swap-request-container", "#prompt_swap", OnAcceptSwapPressed, OnDeclineSwapPressed);
 
     GameEvents.Subscribe("board_update", OnBoardUpdate);
     GameEvents.Subscribe("board_checkmate", OnBoardCheckmate);

@@ -124,30 +124,6 @@
     width: 64px;
     height: 64px;
 }
-.hidden {
-    visibility: collapse;
-}
-.btn {
-    border-radius: 4px;
-    border: 1px solid #aaa;
-    background-color: gradient( linear, 0% 0%, 0% 100%, from( #eee), to( #ccc));
-}
-.btn:hover {
-    background-color: gradient( linear, 0% 0%, 0% 100%, from( #fff), to( #ddd));
-}
-.btn:active {
-    background-color: gradient( linear, 0% 0%, 0% 100%, from( #eee), to( #ccc));
-    box-shadow: 0 1px 2px #aaa inset;
-}
-.btn Label {
-    color: #848484;
-    font-weight: bold;
-    text-shadow: 0 1px 0 #FFF;
-    padding: 0 10px;
-    width: 100%;
-    text-align: center;
-    vertical-align: middle;
-}
 .btn-action {
     width: 55px;
     height: 45px;
@@ -180,48 +156,6 @@
 #btn-confirm-label {
     font-size: 30px;
     color: green;
-}
-.action-message-container {
-    width: 100%;
-    flow-children: right;
-    height: 70px;
-    background-color: #d0d0d0;
-    margin-bottom: 10px;
-}
-.action-message {
-    width: 60%;
-    white-space: normal;
-    height: 60px;
-    font-size: 24px;
-    padding: 0px 10px;
-    vertical-align: middle;
-    height: 100%;
-    line-height: 55px;
-    text-align: center;
-    color: #707070;
-}
-.action-message-buttons {
-    width: 40%;
-    flow-children: right;
-    height: 80px;
-    margin-right: 10px;
-}
-.action-message-buttons .btn {
-    height: 100%;
-}
-.action-message-buttons .btn Label {
-    font-size: 30px;
-}
-.btn-accept Label {
-    color: green;
-}
-.btn-decline Label {
-    color: #ce3030;
-}
-.btn-accept, .btn-decline {
-    width: 50%;
-    margin: 10px 0px;
-    background-color: white;
 }
 #btn-toggle-player {
     width: 100%;

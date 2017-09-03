@@ -1,0 +1,21 @@
+<root>
+    <styles>
+        <include src="file://{resources}/styles/dotastyles.css" />
+        <include src="file://{resources}/styles/custom_game/common.css" />
+        <include src="file://{resources}/styles/custom_game/request_panel.css" />
+    </styles>
+    <scripts>
+        <include src="file://{resources}/scripts/custom_game/request_panel.js" />
+    </scripts>
+    <Panel class="action-message-container hidden">
+        <Label id="action-message" class="action-message" hittest="false" html="true" />
+        <Panel class="action-message-buttons">
+            <Button class="btn btn-accept" onactivate="OnAcceptPressed()">
+                <Label hittest="false" text="&#10004;" />
+            </Button>
+            <Button class="btn btn-decline" onactivate="OnDeclinePressed()">
+                <Label hittest="false" text="&#10006;" />
+            </Button>
+        </Panel>
+    </Panel>
+</root>
