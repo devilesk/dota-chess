@@ -1,8 +1,9 @@
 require("libraries/util")
 require("libraries/timers")
 --require("libraries/bit32")
+require("debugf")
 require("garbochess")
-
+print("debug", DebugPrint)
 -- Generated from template
 
 if GameMode == nil then
@@ -29,7 +30,7 @@ local ai_ply_difficulty = 1
 --local ai_max_think_time = 5
 
 function GameMode:OnNPCSpawned(event)
-    print("OnNPCSpawned", event)
+    DebugPrint("OnNPCSpawned", event)
     local npc = EntIndexToHScript(event.entindex)
     if npc:IsRealHero() then
         npc:RemoveSelf()
@@ -38,13 +39,13 @@ end
 
 function GameMode:OnGameRulesStateChange()
     local nNewState = GameRules:State_Get()
-        print("OnGameRulesStateChange", nNewState)
+        DebugPrint("OnGameRulesStateChange", nNewState)
     if nNewState == DOTA_GAMERULES_STATE_INIT then
-        print("DOTA_GAMERULES_STATE_INIT")
+        DebugPrint("DOTA_GAMERULES_STATE_INIT")
     elseif nNewState == DOTA_GAMERULES_STATE_WAIT_FOR_PLAYERS_TO_LOAD then
-        print("DOTA_GAMERULES_STATE_WAIT_FOR_PLAYERS_TO_LOAD")
+        DebugPrint("DOTA_GAMERULES_STATE_WAIT_FOR_PLAYERS_TO_LOAD")
     elseif nNewState == DOTA_GAMERULES_STATE_CUSTOM_GAME_SETUP then
-        print("DOTA_GAMERULES_STATE_CUSTOM_GAME_SETUP")
+        DebugPrint("DOTA_GAMERULES_STATE_CUSTOM_GAME_SETUP")
         
         -- find host player id
         for i = 0, DOTA_MAX_TEAM_PLAYERS do
@@ -52,7 +53,7 @@ function GameMode:OnGameRulesStateChange()
                 local player = PlayerResource:GetPlayer(i)
                 if GameRules:PlayerHasCustomGameHostPrivileges(player) then
                     host_player_id = i
-                    print ("host found", host_player_id)
+                    DebugPrint ("host found", host_player_id)
                     CustomNetTables:SetTableValue("game_setup", "host", {player_id=host_player_id})
                     break
                 end
@@ -64,13 +65,13 @@ function GameMode:OnGameRulesStateChange()
         Convars:RegisterCommand("chess_get_fen", Dynamic_Wrap(GameMode, "OnGetFENCommand"), "Get board position in FEN format", 0)
         Convars:RegisterConvar("chess_ai", "1", "Set to 1 to turn ai on. Set to 0 to disable ai.", 0)
         Convars:SetBool("chess_ai", PlayerResource:GetPlayerCount() == 1)
-        print("chess_ai", Convars:GetBool("chess_ai"))
+        DebugPrint("chess_ai", Convars:GetBool("chess_ai"))
         
     elseif nNewState == DOTA_GAMERULES_STATE_HERO_SELECTION then
-        print("DOTA_GAMERULES_STATE_HERO_SELECTION")
+        DebugPrint("DOTA_GAMERULES_STATE_HERO_SELECTION")
         CustomGameEventManager:Send_ServerToPlayer(PlayerResource:GetPlayer(host_player_id), "game_setup_end", {})
     elseif nNewState == DOTA_GAMERULES_STATE_PRE_GAME then
-        print("DOTA_GAMERULES_STATE_PRE_GAME")
+        DebugPrint("DOTA_GAMERULES_STATE_PRE_GAME")
         CustomNetTables:SetTableValue("chess", "players", {count=PlayerResource:GetPlayerCount()})
         
         if PlayerResource:GetTeam(0) == DOTA_TEAM_GOODGUYS then
@@ -78,7 +79,7 @@ function GameMode:OnGameRulesStateChange()
         else
             ai_side = 8
         end
-        print("ai_side " .. ai_side)
+        DebugPrint("ai_side " .. ai_side)
     elseif nNewState == DOTA_GAMERULES_STATE_GAME_IN_PROGRESS then
         OnNewGame(0, {})
     --[[
@@ -108,7 +109,7 @@ function Activate()
 end
 
 function GameMode:InitGameMode()
-    print("InitGameMode")
+    DebugPrint("InitGameMode")
 
     GameRules:GetGameModeEntity():SetAnnouncerDisabled(true)
     
@@ -134,6 +135,20 @@ function GameMode:InitGameMode()
     CustomGameEventManager:RegisterListener( "request_swap", OnRequestSwap )
     CustomGameEventManager:RegisterListener( "decline_swap", OnDeclineSwap )
     CustomGameEventManager:RegisterListener( "accept_swap", OnAcceptSwap )
+    
+    CustomNetTables:SetTableValue("debug", "log", {value=0})
+    Convars:RegisterCommand("chess_debug", Dynamic_Wrap(GameMode, "OnSetDebug"), "Set to 1 to turn on debug output. Set to 0 to disable.", 0)
+end
+
+function GameMode:OnSetDebug(value)
+    if Convars:GetDOTACommandClient() then
+        local player = Convars:GetDOTACommandClient()
+        local playerID = player:GetPlayerID()
+        if playerID == host_player_id then
+            DebugPrint("Setting debug", value)
+            CustomNetTables:SetTableValue("debug", "log", {value=tonumber(value)})
+        end
+    end
 end
 
 function GameMode:OnSetFENCommand(fen)
@@ -141,7 +156,7 @@ function GameMode:OnSetFENCommand(fen)
         local player = Convars:GetDOTACommandClient()
         local playerID = player:GetPlayerID()
         if playerID == host_player_id then
-            print("Setting FEN", fen)
+            DebugPrint("Setting FEN", fen)
             if game_in_progress then
                 OnSubmitFen(0, {fen=fen})
             else
@@ -152,12 +167,12 @@ function GameMode:OnSetFENCommand(fen)
 end
 
 function GameMode:OnGetFENCommand()
-    print(GetFen())
+    DebugPrint(GetFen())
 end
 
 function OnGameSetupOptions(eventSourceIndex, args)
-    print("OnGameSetupOptions", eventSourceIndex)
-    PrintTable(args)
+    DebugPrint("OnGameSetupOptions", eventSourceIndex)
+    DebugPrintTable(args)
     time_control = args.timeControl
     clock_time = args.timeTotal * 600
     clock_increment = args.timeIncrement * 10
@@ -165,17 +180,17 @@ function OnGameSetupOptions(eventSourceIndex, args)
         clock_time = clock_increment
     end
     ai_ply_difficulty = max_ply_table[tonumber(args.aiDifficulty)]
-    print("time_control", time_control)
-    print("clock_time", clock_time)
-    print("clock_increment", clock_increment)
-    print("ai_ply_difficulty", ai_ply_difficulty)
+    DebugPrint("time_control", time_control)
+    DebugPrint("clock_time", clock_time)
+    DebugPrint("clock_increment", clock_increment)
+    DebugPrint("ai_ply_difficulty", ai_ply_difficulty)
     
     CustomNetTables:SetTableValue("game_setup", "options", args)
 end
 
 function OnSendChatMessage(eventSourceIndex, args)
-    print("OnSendChatMessage", eventSourceIndex)
-    PrintTable(args)
+    DebugPrint("OnSendChatMessage", eventSourceIndex)
+    DebugPrintTable(args)
     CustomGameEventManager:Send_ServerToAllClients("receive_chat_message", {message=args['message'], playerId=args['playerID']})
 end
 
@@ -247,8 +262,8 @@ function getSideString(side, upper)
 end
 
 function OnDropPiece(eventSourceIndex, args)
-    print("OnDropPiece", eventSourceIndex)
-    PrintTable(args)
+    DebugPrint("OnDropPiece", eventSourceIndex)
+    DebugPrintTable(args)
 
     if g_toMove ~= args.playerSide then return end
 
@@ -262,12 +277,12 @@ function OnDropPiece(eventSourceIndex, args)
             bit.band(bit.rshift(v, 8), 0xFF) == MakeSquare(args.endY, args.endX) and
             promotionCheck(v, args.promotionType)) then
             move = v
-            print("found move in valid moves", move)
+            DebugPrint("found move in valid moves", move)
         end
     end
 
     if (not (args.startX == args.endX and args.startY == args.endY) and move ~= nil) then
-        print("making move " .. g_move50)
+        DebugPrint("making move " .. g_move50)
         table.insert(g_allMoves, move)
         local san, captured_piece = GetMoveSAN(move)
         MakeMove(move)
@@ -307,17 +322,17 @@ end
 function AIMove()
     if Convars:GetBool("chess_ai") and g_toMove == ai_side and not paused then
         Timers:CreateTimer(1, function ()
-            print("AIMove first timer", ai_ply_difficulty)
+            DebugPrint("AIMove first timer", ai_ply_difficulty)
             local co = coroutine.create(Search)
             local _, co_result = coroutine.resume(co, finishMoveCallback, ai_ply_difficulty, finishPlyCallback)
             if not co_result then
                 Timers:CreateTimer(0.01, function ()
-                    --print("AIMove resume timer", Time())
+                    --DebugPrint("AIMove resume timer", Time())
                     local _, co_result = coroutine.resume(co)
                     if not co_result then
                         return 0.01
                     else
-                        --print ("AIMove done")
+                        --DebugPrint ("AIMove done")
                     end
                 end)
             end
@@ -331,13 +346,13 @@ function UndoMove()
         return nil
     end
     local moveToUndo = table.remove(g_allMoves)
-    print ("UndoMove", moveToUndo)
+    DebugPrint ("UndoMove", moveToUndo)
     UnmakeMove(moveToUndo)
     return moveToUndo
 end
 
 function SendBoardUpdate(san, move, moves, undo, captured_piece)
-    print("SendBoardUpdate", move, moves, captured_piece)
+    DebugPrint("SendBoardUpdate", move, moves, captured_piece)
     local data = {
         board=g_board,
         toMove=g_toMove,
@@ -355,8 +370,8 @@ function SendBoardUpdate(san, move, moves, undo, captured_piece)
 end
 
 function OnClaimDraw(eventSourceIndex, args)
-    print ("OnClaimDraw", eventSourceIndex)
-    PrintTable(args)
+    DebugPrint ("OnClaimDraw", eventSourceIndex)
+    DebugPrintTable(args)
     CustomGameEventManager:Send_ServerToAllClients("draw_claimed", {
         playerId = args.playerId,
         playerSide = args.playerSide
@@ -367,15 +382,15 @@ function OnClaimDraw(eventSourceIndex, args)
 end
 
 function OnDeclineDraw(eventSourceIndex, args)
-    print ("OnDeclineDraw", eventSourceIndex)
-    PrintTable(args)
+    DebugPrint ("OnDeclineDraw", eventSourceIndex)
+    DebugPrintTable(args)
     local message = getSideString(args.playerSide, true) .. " declines draw."
     CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {message=message, playerId=-1})
 end
 
 function OnResign(eventSourceIndex, args)
-    print ("OnResign", eventSourceIndex)
-    PrintTable(args)
+    DebugPrint ("OnResign", eventSourceIndex)
+    DebugPrintTable(args)
     CustomGameEventManager:Send_ServerToAllClients("resigned", {
         playerId = args.playerId,
         playerSide = args.playerSide
@@ -385,8 +400,8 @@ function OnResign(eventSourceIndex, args)
 end
 
 function OnTimeOut(eventSourceIndex, args)
-    print ("OnTimeOut", eventSourceIndex)
-    PrintTable(args)
+    DebugPrint ("OnTimeOut", eventSourceIndex)
+    DebugPrintTable(args)
     if not has_timed_out then
         CustomGameEventManager:Send_ServerToAllClients("timeout_end", {
             playerId = args.playerId,
@@ -397,8 +412,8 @@ function OnTimeOut(eventSourceIndex, args)
 end
 
 function OnRequestSwap(eventSourceIndex, args)
-    print ("OnRequestSwap", eventSourceIndex)
-    PrintTable(args)
+    DebugPrint ("OnRequestSwap", eventSourceIndex)
+    DebugPrintTable(args)
     CustomGameEventManager:Send_ServerToAllClients("swap_offer", {
         playerId = args.playerId,
         playerSide = args.playerSide
@@ -408,15 +423,15 @@ function OnRequestSwap(eventSourceIndex, args)
 end
 
 function OnDeclineSwap(eventSourceIndex, args)
-    print ("OnDeclineSwap", eventSourceIndex)
-    PrintTable(args)
+    DebugPrint ("OnDeclineSwap", eventSourceIndex)
+    DebugPrintTable(args)
     local message = getSideString(args.playerSide, true) .. " declines side change."
     CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {message=message, playerId=-1})
 end
 
 function OnAcceptSwap(eventSourceIndex, args)
-    print ("OnAcceptSwap", eventSourceIndex)
-    PrintTable(args)
+    DebugPrint ("OnAcceptSwap", eventSourceIndex)
+    DebugPrintTable(args)
     CustomGameEventManager:Send_ServerToAllClients("swap_sides", {
         playerId = args.playerId,
         playerSide = args.playerSide
@@ -428,8 +443,8 @@ function OnAcceptSwap(eventSourceIndex, args)
 end
 
 function OnRequestUndo(eventSourceIndex, args)
-    print ("OnRequestUndo", eventSourceIndex)
-    PrintTable(args)
+    DebugPrint ("OnRequestUndo", eventSourceIndex)
+    DebugPrintTable(args)
     CustomGameEventManager:Send_ServerToAllClients("undo_offer", {
         playerId = args.playerId,
         playerSide = args.playerSide
@@ -439,19 +454,19 @@ function OnRequestUndo(eventSourceIndex, args)
 end
 
 function OnDeclineUndo(eventSourceIndex, args)
-    print ("OnDeclineUndo", eventSourceIndex)
-    PrintTable(args)
+    DebugPrint ("OnDeclineUndo", eventSourceIndex)
+    DebugPrintTable(args)
     local message = getSideString(args.playerSide, true) .. " declines takeback."
     CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {message=message, playerId=-1})
 end
 
 function OnAcceptUndo(eventSourceIndex, args)
-    print ("OnAcceptUndo", eventSourceIndex, #g_allMoves)
-    PrintTable(args)
+    DebugPrint ("OnAcceptUndo", eventSourceIndex, #g_allMoves)
+    DebugPrintTable(args)
     if #g_allMoves <= 1 then return end
     UndoMove()
     local move = UndoMove()
-    print ("move", move)
+    DebugPrint ("move", move)
     table.insert(g_allMoves, move)
     local san, captured_piece = GetMoveSAN(move)
     MakeMove(move);
@@ -464,7 +479,7 @@ end
 -- Called on Ply finish
 function finishPlyCallback(bestMove, value, ply)
     if (bestMove ~= nil and bestMove ~= 0) then
-        print(BuildPVMessage(bestMove, value, ply));
+        DebugPrint(BuildPVMessage(bestMove, value, ply));
     end
 end
 --
@@ -475,7 +490,7 @@ function finishMoveCallback(bestMove, value, ply)
         table.insert(g_allMoves, bestMove)
         local san, captured_piece = GetMoveSAN(bestMove)
         MakeMove(bestMove);
-        print(FormatMove(bestMove), g_moveTime, g_finCnt);
+        DebugPrint(FormatMove(bestMove), g_moveTime, g_finCnt);
         --g_foundmove = bestMove;
         moves = GenerateValidMoves()
 
@@ -505,11 +520,11 @@ function finishMoveCallback(bestMove, value, ply)
         end]]
 
         --[[PlayerResource:SetCustomTeamAssignment(0, DOTA_TEAM_BADGUYS)
-        print("player 0 team " .. PlayerResource:GetTeam(0))
+        DebugPrint("player 0 team " .. PlayerResource:GetTeam(0))
 
         PlayerResource:SetCustomTeamAssignment(0, DOTA_TEAM_GOODGUYS)
-        print("player 0 team " .. PlayerResource:GetTeam(0))
-        print("player count " .. PlayerResource:GetPlayerCount())]]
+        DebugPrint("player 0 team " .. PlayerResource:GetTeam(0))
+        DebugPrint("player count " .. PlayerResource:GetPlayerCount())]]
     end
 end
 --

@@ -1019,7 +1019,7 @@ function AllCutNode(ply, depth, beta, allowNull)
         local co = coroutine.create(AllCutNode)
         local _, co_result = coroutine.resume(co, ply - r, depth + 1, -(beta - 1), false)
         while not co_result do
-          --print ("AllCutNode yielding")
+          --DebugPrint ("AllCutNode yielding")
           coroutine.yield()
           _, co_result = coroutine.resume(co)
         end
@@ -1068,7 +1068,7 @@ function AllCutNode(ply, depth, beta, allowNull)
             local co = coroutine.create(AllCutNode)
             local _, co_result = coroutine.resume(co, reduced, depth + 1, -(beta - 1), true)
             while not co_result do
-              --print ("AllCutNode yielding")
+              --DebugPrint ("AllCutNode yielding")
               coroutine.yield()
               _, co_result = coroutine.resume(co)
             end
@@ -1082,7 +1082,7 @@ function AllCutNode(ply, depth, beta, allowNull)
           local co = coroutine.create(AllCutNode)
           local _, co_result = coroutine.resume(co, plyToSearch, depth + 1, -(beta  - 1), true)
           while not co_result do
-            --print ("AllCutNode yielding")
+            --DebugPrint ("AllCutNode yielding")
             coroutine.yield()
             _, co_result = coroutine.resume(co)
           end
@@ -1211,7 +1211,7 @@ function AlphaBeta(ply, depth, alpha, beta)
         local co = coroutine.create(AllCutNode)
         local _, co_result = coroutine.resume(co, plyToSearch, depth + 1, -alpha, true)
         while not co_result do
-          --print ("AlphaBeta yielding")
+          --DebugPrint ("AlphaBeta yielding")
           coroutine.yield()
           _, co_result = coroutine.resume(co)
         end
@@ -1223,7 +1223,7 @@ function AlphaBeta(ply, depth, alpha, beta)
           local co = coroutine.create(AlphaBeta)
           local _, co_result = coroutine.resume(co, plyToSearch, depth + 1, -beta, -alpha)
           while not co_result do
-            --print ("AlphaBeta yielding")
+            --DebugPrint ("AlphaBeta yielding")
             coroutine.yield()
             _, co_result = coroutine.resume(co)
           end
@@ -1234,7 +1234,7 @@ function AlphaBeta(ply, depth, alpha, beta)
         local co = coroutine.create(AlphaBeta)
         local _, co_result = coroutine.resume(co, plyToSearch, depth + 1, -beta, -alpha)
         while not co_result do
-          --print ("AlphaBeta yielding")
+          --DebugPrint ("AlphaBeta yielding")
           coroutine.yield()
           _, co_result = coroutine.resume(co)
         end
@@ -1566,7 +1566,7 @@ function Search(finishMoveCallback, maxPly, finishPlyCallback)
     local co = coroutine.create(AlphaBeta)
     local _, co_result = coroutine.resume(co, i, 0, alpha, beta)
     while not co_result do
-      --print ("Search yielding")
+      --DebugPrint ("Search yielding")
       coroutine.yield()
       _, co_result = coroutine.resume(co)
     end
@@ -1606,7 +1606,7 @@ function Search(finishMoveCallback, maxPly, finishPlyCallback)
   end
 
   finishMoveCallback(bestMove, value, i - 1);
-  --print ("Search done")
+  --DebugPrint ("Search done")
   return true
 end
 --
@@ -3019,7 +3019,7 @@ function GetMoveFromString(moveString)
             return moves[1+i];
         end
     end
-    print("busted! ->" .. moveString .. " fen:" + GetFen());
+    DebugPrint("busted! ->" .. moveString .. " fen:" + GetFen());
 end
 --
 
@@ -3076,7 +3076,7 @@ local col=-1;
 	col = -col;
 	if(col>0) then
 	  mv = mv + 1;
-	  print( "Move: " .. string.format("%d",mv) .. ". ");
+	  DebugPrint( "Move: " .. string.format("%d",mv) .. ". ");
 	end
 
 	Search(finishMoveCallback, 8, finishPlyCallback);

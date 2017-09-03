@@ -2,6 +2,7 @@
 
 "use strict";
 
+var _ = GameUI.CustomUIConfig().UtilLibrary;
 var timeControl;
 var timeTotalSlider;
 var timeIncrementSlider;
@@ -74,7 +75,7 @@ function UpdateSliders() {
 
 function UpdateValues() {
     var newValues = CustomNetTables.GetTableValue( "game_setup", "options" );
-    $.Msg("UpdateValues", newValues);
+    _.DebugMsg("UpdateValues", newValues);
     if (newValues) {
         $("#TimeControlValue").text = newValues.timeControl ? "TIMED" : "UNLIMITED";
         $("#TimeTotalSliderValue").text = newValues.timeTotal;
@@ -92,22 +93,22 @@ function OnTimeControlChanged() {
 }
 
 function SendGameSetupValues() {
-    $.Msg("SendGameSetupValues", gameSetupValues);
+    _.DebugMsg("SendGameSetupValues", gameSetupValues);
     GameEvents.SendCustomGameEventToServer("game_setup_options", gameSetupValues);
 }
 
 function OnReceivedGameSetupEnd() {
-    $.Msg("OnReceivedGameSetupEnd");
+    _.DebugMsg("OnReceivedGameSetupEnd");
     SendGameSetupValues();
 }
 
 function InitGameSetupHost() {
     if (CustomNetTables.GetTableValue( "game_setup", "host" ).player_id == Players.GetLocalPlayer()) {
-        $.Msg("InitGameSetupHost is hot");
+        _.DebugMsg("InitGameSetupHost is hot");
         UpdateSliders();
     }
     else {
-        $.Msg("InitGameSetupHost not host");
+        _.DebugMsg("InitGameSetupHost not host");
         timeControl.AddClass("hidden");
         $("#TimeTotalSliderPanel").AddClass("hidden");
         $("#TimeIncrementSliderPanel").AddClass("hidden");
@@ -140,5 +141,5 @@ function InitGameSetupHost() {
     
     InitGameSetupHost();
     
-    $.Msg("game_setup.js");
+    _.DebugMsg("game_setup.js");
 })();

@@ -3,6 +3,7 @@
     custom_net_tables =
     [
         "game_setup",
-        "chess"
+        "chess",
+        "debug"
     ]
 }

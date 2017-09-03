@@ -28,5 +28,5 @@ var _;
         Dialog: Dialog
     };
 
-    $.Msg("dialog/main.js");
+    //$.Msg("dialog/main.js");
 })();

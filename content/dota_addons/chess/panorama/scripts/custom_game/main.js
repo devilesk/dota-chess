@@ -4,7 +4,7 @@
 /* exported OnResignPressed */
 /* exported OnCancelActionPressed */
 /* exported OnConfirmActionPressed */
-/* exported OnTogglePlayerPressed */
+/* exported OnFlipBoardPressed */
 /* exported OnUndoPressed */
 /* exported OnAcceptUndoPressed */
 /* exported OnDeclineUndoPressed */
@@ -39,7 +39,7 @@ var players = {
     0: null
 };
 var mySide = Game.GetLocalPlayerInfo().player_team_id == DOTATeam_t.DOTA_TEAM_GOODGUYS ? 8 : 0;
-$.Msg("mySide ", mySide);
+_.DebugMsg("mySide ", mySide);
 var moves;
 var lastMove;
 var selectedSquare;
@@ -50,7 +50,7 @@ var bottomSide = 8;
 function InitLookupSquare() {
     for (var i = 0; i < 8; i++) {
         for (var j = 0; j < 8; j++) {
-            //$.Msg(i, ", ", j, " ", MakeSquare(i, j));
+            //_.DebugMsg(i, ", ", j, " ", MakeSquare(i, j));
             lookupSquare[MakeSquare(i, j)] = {
                 x: j,
                 y: i
@@ -141,7 +141,7 @@ function OnNewGame() {
 }
 
 function OnPromote(data) {
-    $.Msg("OnPromote");
+    _.DebugMsg("OnPromote");
     new DialogLibrary.Dialog({
         parentPanel: DialogLibrary.contextPanel,
         layoutfile: "file://{resources}/layout/custom_game/dialog/dialog.xml",
@@ -441,7 +441,7 @@ function RedrawCapturedPieces() {
 
 
 function Square(options) {
-    //$.Msg("Square constructor");
+    //_.DebugMsg("Square constructor");
     var self = this;
     this.color = _.observable(options.color);
     this.row = _.observable(options.row);
@@ -500,7 +500,7 @@ _.extend(Square.prototype, {
     },
     OnMouseOver: function() {
         // highlight this panel as a drop target
-        $.Msg("Square OnMouseOver ", this.panel.id);
+        _.DebugMsg("Square OnMouseOver ", this.panel.id);
         if (this.panel) {
             this.panel.SetHasClass("highlight", true);
             this.panel.GetParent().SetHasClass("highlight", true);
@@ -508,7 +508,7 @@ _.extend(Square.prototype, {
     },
     OnMouseOut: function() {
         // highlight this panel as a drop target
-        $.Msg("Square OnMouseOut ", this.panel.id);
+        _.DebugMsg("Square OnMouseOut ", this.panel.id);
         if (this.panel) {
             this.panel.SetHasClass("highlight", false);
             this.panel.GetParent().SetHasClass("highlight", false);
@@ -516,7 +516,7 @@ _.extend(Square.prototype, {
     },
     OnContextMenu: function() {
         // highlight this panel as a drop target
-        $.Msg("Square OnContextMenu ", this.panel.id);
+        _.DebugMsg("Square OnContextMenu ", this.panel.id);
         //if (this.panel) this.panel.RemoveClass("highlight");
     },
     OnActivate: function() {
@@ -550,7 +550,7 @@ _.extend(Square.prototype, {
         }
     },
     OnDragEnter: function(a, draggedPanel) {
-        $.Msg("Square OnDragEnter ", this.panel.id);
+        _.DebugMsg("Square OnDragEnter ", this.panel.id);
         // highlight this panel as a drop target
         if (this.droppable() && this.panel) {
             this.panel.SetHasClass("potential_drop_target", true);
@@ -559,7 +559,7 @@ _.extend(Square.prototype, {
     },
     OnDragLeave: function(panelId, draggedPanel, square) {
         // un-highlight this panel
-        $.Msg("Square OnDragLeave ", this.panel.id);
+        _.DebugMsg("Square OnDragLeave ", this.panel.id);
         if (this.panel) {
             this.panel.SetHasClass("potential_drop_target", false);
             this.panel.GetParent().SetHasClass("potential_drop_target", false);
@@ -567,11 +567,11 @@ _.extend(Square.prototype, {
     },
     OnDragDrop: function(panelId, draggedPanel, square) {
         if (paused) return;
-        $.Msg("Square OnDragDrop ", this.panel.id, ", ", GameUI.GetCursorPosition());
+        _.DebugMsg("Square OnDragDrop ", this.panel.id, ", ", GameUI.GetCursorPosition());
         var draggedSquare = draggedPanel.square;
-        $.Msg("drop ", draggedSquare.panel.id, " to ", square.panel.id);
-        $.Msg("drop ", draggedSquare.pos(), " to ", square.pos(), " ", draggedSquare.hasPiece());
-        $.Msg("drop ", draggedSquare.piece(), " ", square.row(), " ", square.row() % 7, " ", square.col());
+        _.DebugMsg("drop ", draggedSquare.panel.id, " to ", square.panel.id);
+        _.DebugMsg("drop ", draggedSquare.pos(), " to ", square.pos(), " ", draggedSquare.hasPiece());
+        _.DebugMsg("drop ", draggedSquare.piece(), " ", square.row(), " ", square.row() % 7, " ", square.col());
         var data = {
             startX: draggedSquare.col(),
             startY: draggedSquare.row(),
@@ -594,7 +594,7 @@ _.extend(Square.prototype, {
         if (this.pieceOwner() != mySide) return;
 
         //GameEvents.SendCustomGameEventToServer( "get_moves", {playerId: Players.GetLocalPlayer()} );
-        $.Msg("OnDragStart", moves);
+        _.DebugMsg("OnDragStart", moves);
 
         ClearHighlight();
         if (!HighlightMoves(this)) return false;
@@ -617,7 +617,7 @@ _.extend(Square.prototype, {
         this.panel.GetParent().AddClass("dragging_from");
     },
     OnDragEnd: function(panelId, draggedPanel, square) {
-        //$.Msg("Square OnDragEnd");
+        //_.DebugMsg("Square OnDragEnd");
         // kill the display panel
         draggedPanel.DeleteAsync(0);
 
@@ -645,7 +645,7 @@ function ParseMove(move) {
     var fromSq = lookupSquare[from];
     var to = (move >> 8) & 0xFF;
     var toSq = lookupSquare[to];
-    //$.Msg("ParseMove from: ", from, ", to: ", to, ", ", ", fromSq: ", fromSq, ", toSq: ", toSq);
+    //_.DebugMsg("ParseMove from: ", from, ", to: ", to, ", ", ", fromSq: ", fromSq, ", toSq: ", toSq);
     return {
         from: from,
         fromSq: fromSq,
@@ -663,8 +663,8 @@ function HighlightMoves(square) {
         var data = ParseMove(move);
         var fromSq = data.fromSq;
         var toSq = data.toSq;
-        //$.Msg("lookupSquare ", lookupSquare);
-        //$.Msg("from: ", move & 0xFF, ", to: ", (move >> 8) & 0xFF, ", ", m_Board.length, ", fromSq: ", fromSq);
+        //_.DebugMsg("lookupSquare ", lookupSquare);
+        //_.DebugMsg("from: ", move & 0xFF, ", to: ", (move >> 8) & 0xFF, ", ", m_Board.length, ", fromSq: ", fromSq);
 
         var tdFrom = m_Board[fromSq.y * 8 + fromSq.x];
         if (tdFrom.panel.id == square.panel.id) {
@@ -675,12 +675,12 @@ function HighlightMoves(square) {
             tdTo.panel.SetHasClass("move-dest", true);
             tdTo.panel.GetParent().SetHasClass("move-dest", true);
 
-            $.Msg("from: ", tdFrom.panel.id, " td: ", tdTo.panel.id);
+            _.DebugMsg("from: ", tdFrom.panel.id, " td: ", tdTo.panel.id);
             foundMove = true;
         }
     }
     if (!foundMove) {
-        $.Msg("not found ", square.panel.id);
+        _.DebugMsg("not found ", square.panel.id);
     }
     return foundMove;
 }
@@ -690,7 +690,7 @@ function MakeSquare(row, column) {
 }
 
 function OnReceiveMoves(data) {
-    $.Msg("OnReceiveMoves", data);
+    _.DebugMsg("OnReceiveMoves", data);
     moves = data.moves;
 }
 
@@ -718,15 +718,15 @@ function HighlightPlayerToMove(toMove) {
 }
 
 function OnBoardReset(data) {
-    $.Msg(data.board);
-    $.Msg("toMove", data.toMove);
-    $.Msg("san", data.san);
-    $.Msg("moves", data.moves);
-    $.Msg("last_move", data.last_move);
-    $.Msg("time_control", data.time_control);
-    $.Msg("clock_time", data.clock_time);
-    $.Msg("clock_increment", data.clock_increment);
-    $.Msg("paused", data.paused);
+    _.DebugMsg(data.board);
+    _.DebugMsg("toMove", data.toMove);
+    _.DebugMsg("san", data.san);
+    _.DebugMsg("moves", data.moves);
+    _.DebugMsg("last_move", data.last_move);
+    _.DebugMsg("time_control", data.time_control);
+    _.DebugMsg("clock_time", data.clock_time);
+    _.DebugMsg("clock_increment", data.clock_increment);
+    _.DebugMsg("paused", data.paused);
     timeControl = data.time_control;
     paused = data.paused;
     selectedSquare = null;
@@ -747,7 +747,7 @@ function OnBoardReset(data) {
     };
     increment = data.clock_increment;
     if (timer != 0) {
-        $.Msg("timer", timer);
+        _.DebugMsg("timer", timer);
         $.CancelScheduled(timer);
         timer = 0;
     }
@@ -790,17 +790,17 @@ function isSolo() {
 }
 
 function OnBoardUpdate(data) {
-    $.Msg(data.board);
-    $.Msg("toMove", data.toMove);
-    $.Msg("san", data.san);
-    $.Msg("moves", data.moves);
-    $.Msg("last_move", data.last_move);
-    $.Msg("check", data.check);
-    $.Msg("paused", data.paused);
-    $.Msg("undo", data.undo);
-    $.Msg("repDraw", data.repDraw);
-    $.Msg("move50", data.move50);
-    $.Msg("captured_piece", data.captured_piece);
+    _.DebugMsg(data.board);
+    _.DebugMsg("toMove", data.toMove);
+    _.DebugMsg("san", data.san);
+    _.DebugMsg("moves", data.moves);
+    _.DebugMsg("last_move", data.last_move);
+    _.DebugMsg("check", data.check);
+    _.DebugMsg("paused", data.paused);
+    _.DebugMsg("undo", data.undo);
+    _.DebugMsg("repDraw", data.repDraw);
+    _.DebugMsg("move50", data.move50);
+    _.DebugMsg("captured_piece", data.captured_piece);
     selectedSquare = null;
     HighlightLastMove(data.last_move);
     moves = data.moves;
@@ -890,12 +890,12 @@ function OnBoardUpdate(data) {
 }
 
 function OnBoardCheckmate() {
-    $.Msg("OnBoardCheckmate");
+    _.DebugMsg("OnBoardCheckmate");
     OnWin();
 }
 
 function OnBoardStalemate() {
-    $.Msg("OnBoardStalemate");
+    _.DebugMsg("OnBoardStalemate");
     OnDraw();
 }
 
@@ -914,7 +914,7 @@ function UpdateTime() {
     timeRemaining[currentSide]--;
     UpdateTimePanel();
 
-    //$.Msg("timer ", color, " ", timeRemaining[color]);
+    //_.DebugMsg("timer ", color, " ", timeRemaining[color]);
     if (timeRemaining[currentSide] > 0) {
         timer = $.Schedule(0.1, UpdateTime);
     }
@@ -936,7 +936,7 @@ function UpdateTimePanel() {
 
 function RedrawPieces(g_board) {
     if (!g_board) return;
-    $.Msg("m_Board.length", m_Board.length);
+    _.DebugMsg("m_Board.length", m_Board.length);
     for (var y = 0; y < 8; ++y) {
         for (var x = 0; x < 8; ++x) {
             var td = m_Board[y * 8 + x];
@@ -997,7 +997,7 @@ function UIState() {
 }
 
 function OnSwapPressed() {
-    $.Msg("OnSwapPressed", mySide, currentSide);
+    _.DebugMsg("OnSwapPressed", mySide, currentSide);
     if (isSolo()) {
         AcceptSwap();
     }
@@ -1010,7 +1010,7 @@ function OnSwapPressed() {
 }
 
 function OnUndoPressed() {
-    $.Msg("OnUndoPressed", mySide, currentSide);
+    _.DebugMsg("OnUndoPressed", mySide, currentSide);
     if (isSolo()) {
         AcceptUndo();
     }
@@ -1023,7 +1023,7 @@ function OnUndoPressed() {
 }
 
 function OnOfferDrawPressed() {
-    $.Msg("OnOfferDrawPressed", mySide, currentSide);
+    _.DebugMsg("OnOfferDrawPressed", mySide, currentSide);
     if (mySide == currentSide && !firstMove[0] && !firstMove[8] && !uiState.pendingDraw) {
         uiState.drawPressed = true;
         UpdateUI();
@@ -1060,19 +1060,19 @@ function OnConfirmActionPressed() {
 }
 
 function OnReceivedSwapOffer(data) {
-    $.Msg("OnReceivedSwapOffer", data);
+    _.DebugMsg("OnReceivedSwapOffer", data);
     uiStates[1 - data.playerSide + 7].pendingSwap = true;
     UpdateUI();
 }
 
 function OnReceivedDrawOffer(data) {
-    $.Msg("OnReceivedDrawOffer", data);
+    _.DebugMsg("OnReceivedDrawOffer", data);
     uiStates[1 - data.playerSide + 7].pendingDraw = true;
     UpdateUI();
 }
 
 function OnReceivedUndoOffer(data) {
-    $.Msg("OnReceivedUndoOffer", data);
+    _.DebugMsg("OnReceivedUndoOffer", data);
     uiStates[1 - data.playerSide + 7].pendingUndo = true;
     UpdateUI();
 }
@@ -1296,11 +1296,11 @@ function UpdatePlayerPanel() {
     if (Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_BADGUYS).length) {
         players[0] = Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_BADGUYS)[0];
     }
-    $.Msg("players ", players);
+    _.DebugMsg("players ", players);
 
 
     UpdatePlayerPanel();
     UpdateTimePanel();
     $("#timer-bottom").SetHasClass("highlight", true);
-    $.Msg("main.js");
+    _.DebugMsg("main.js");
 })();

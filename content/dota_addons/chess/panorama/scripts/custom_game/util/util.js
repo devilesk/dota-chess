@@ -1,6 +1,13 @@
 "use strict";
 
 function UtilLibrary() {
+    
+    function DebugMsg() {
+        var netTable = CustomNetTables.GetTableValue( "debug", "log" );
+        if (netTable && netTable.value) {
+            $.Msg.apply(this, arguments);
+        }
+    }
 
     function debounce(func, wait, immediate) {
         // 'private' variable for instance
@@ -550,6 +557,7 @@ function UtilLibrary() {
     mixin(PanelCollection, mixInHandlers);
 
     return {
+        DebugMsg: DebugMsg,
         debounce: debounce,
         throttle: throttle,
         getRandomInt: getRandomInt,
@@ -574,7 +582,7 @@ function UtilLibrary() {
 (function() {
     GameUI.CustomUIConfig().UtilLibrary = new UtilLibrary();
 
-    $.Msg("util/util.js");
+    //$.Msg("util/util.js");
     /*var panel = $.CreatePanel( "Panel", $.GetContextPanel(), "idtest" );
     $.Msg("util/main.js ", panel.__proto__);
 

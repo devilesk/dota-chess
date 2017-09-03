@@ -233,10 +233,11 @@ function split(str, pat)
   return t
 end
 
-function PrintTable(t, indent, done)
+function PrintTable(t, indent, done, print_func)
   --print ( string.format ('PrintTable type %s', type(keys)) )
   if type(t) ~= "table" then return end
 
+  print_func = print_func or print
   done = done or {}
   done[t] = true
   indent = indent or 0
@@ -254,17 +255,17 @@ function PrintTable(t, indent, done)
 
       if type(value) == "table" and not done[value] then
         done [value] = true
-        print(string.rep ("\t", indent)..tostring(v)..":")
+        print_func(string.rep ("\t", indent)..tostring(v)..":")
         PrintTable (value, indent + 2, done)
       elseif type(value) == "userdata" and not done[value] then
         done [value] = true
-        print(string.rep ("\t", indent)..tostring(v)..": "..tostring(value))
+        print_func(string.rep ("\t", indent)..tostring(v)..": "..tostring(value))
         PrintTable ((getmetatable(value) and getmetatable(value).__index) or getmetatable(value), indent + 2, done)
       else
         if t.FDesc and t.FDesc[v] then
-          print(string.rep ("\t", indent)..tostring(t.FDesc[v]))
+          print_func(string.rep ("\t", indent)..tostring(t.FDesc[v]))
         else
-          print(string.rep ("\t", indent)..tostring(v)..": "..tostring(value))
+          print_func(string.rep ("\t", indent)..tostring(v)..": "..tostring(value))
         end
       end
     end
