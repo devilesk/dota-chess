@@ -11,15 +11,17 @@ if GameMode == nil then
 end
 
 local game_in_progress = false
+local playerCount = 1
 local host_player_id = 0
 local INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 local g_allMoves = {}
-local DEBUG = false
-local moves = nil
+local DEBUG = 1 -- initial value of chess_debug
 local time_control = true
  -- clock_time and clock_increment are tenths of a second
 local clock_time = 600
 local clock_increment = 20
+local ai_on = 1
+local ai_thinking = false
 local paused = false
 local has_timed_out = false
 local ai_side = 0
@@ -28,6 +30,14 @@ local ai_side = 0
 local max_ply_table = {1, 3, 88888}
 local ai_ply_difficulty = 1
 --local ai_max_think_time = 5
+
+function toboolbit(value)
+    if value and value ~= "0" and value ~= 0 then
+        return 1
+    else
+        return 0
+    end
+end
 
 function GameMode:OnNPCSpawned(event)
     DebugPrint("OnNPCSpawned", event)
@@ -63,16 +73,16 @@ function GameMode:OnGameRulesStateChange()
         -- register console commands
         Convars:RegisterCommand("chess_set_fen", Dynamic_Wrap(GameMode, "OnSetFENCommand"), "Set board position in FEN format", 0)
         Convars:RegisterCommand("chess_get_fen", Dynamic_Wrap(GameMode, "OnGetFENCommand"), "Get board position in FEN format", 0)
-        Convars:RegisterConvar("chess_ai", "1", "Set to 1 to turn ai on. Set to 0 to disable ai.", 0)
-        Convars:SetBool("chess_ai", PlayerResource:GetPlayerCount() == 1)
-        DebugPrint("chess_ai", Convars:GetBool("chess_ai"))
+        Convars:RegisterCommand("chess_ai", Dynamic_Wrap(GameMode, "OnSetAI"), "Set to 1 to turn ai on. Set to 0 to disable ai.", 0)
         
     elseif nNewState == DOTA_GAMERULES_STATE_HERO_SELECTION then
         DebugPrint("DOTA_GAMERULES_STATE_HERO_SELECTION")
-        CustomGameEventManager:Send_ServerToPlayer(PlayerResource:GetPlayer(host_player_id), "game_setup_end", {})
-    elseif nNewState == DOTA_GAMERULES_STATE_PRE_GAME then
-        DebugPrint("DOTA_GAMERULES_STATE_PRE_GAME")
-        CustomNetTables:SetTableValue("chess", "players", {count=PlayerResource:GetPlayerCount()})
+        
+        playerCount = PlayerResource:GetPlayerCountForTeam(DOTA_TEAM_GOODGUYS) + PlayerResource:GetPlayerCountForTeam(DOTA_TEAM_BADGUYS)
+        CustomNetTables:SetTableValue("chess", "players", {count=playerCount})
+        
+        SetAI(playerCount == 1)
+        DebugPrint("chess_ai", ai_on)
         
         if PlayerResource:GetTeam(0) == DOTA_TEAM_GOODGUYS then
             ai_side = 0
@@ -80,21 +90,12 @@ function GameMode:OnGameRulesStateChange()
             ai_side = 8
         end
         DebugPrint("ai_side " .. ai_side)
+        
+        CustomGameEventManager:Send_ServerToPlayer(PlayerResource:GetPlayer(host_player_id), "game_setup_end", {})
+    elseif nNewState == DOTA_GAMERULES_STATE_PRE_GAME then
+        DebugPrint("DOTA_GAMERULES_STATE_PRE_GAME")
     elseif nNewState == DOTA_GAMERULES_STATE_GAME_IN_PROGRESS then
         OnNewGame(0, {})
-    --[[
-        SetTimeout(3)
-        --SetYieldCount(3)
-        --SetMaxMoveAnalysis(99999999999)
-        --SetMaxMoveAnalysis(10)
-        ai_ply_difficulty = 1
-        InitializeEval();
-        ResetGame();
-        InitializeFromFen(INITIAL_FEN);
-        --autogame();
-        OnGetMoves()
-        AIMove()
-    ]]
     end
 end
 
@@ -135,8 +136,8 @@ function GameMode:InitGameMode()
     CustomGameEventManager:RegisterListener( "request_swap", OnRequestSwap )
     CustomGameEventManager:RegisterListener( "decline_swap", OnDeclineSwap )
     CustomGameEventManager:RegisterListener( "accept_swap", OnAcceptSwap )
-    
-    CustomNetTables:SetTableValue("debug", "log", {value=0})
+
+    CustomNetTables:SetTableValue("debug", "log", {value=DEBUG})
     Convars:RegisterCommand("chess_debug", Dynamic_Wrap(GameMode, "OnSetDebug"), "Set to 1 to turn on debug output. Set to 0 to disable.", 0)
 end
 
@@ -146,9 +147,26 @@ function GameMode:OnSetDebug(value)
         local playerID = player:GetPlayerID()
         if playerID == host_player_id then
             DebugPrint("Setting debug", value)
-            CustomNetTables:SetTableValue("debug", "log", {value=tonumber(value)})
+            CustomNetTables:SetTableValue("debug", "log", {value=toboolbit(value)})
         end
     end
+end
+
+function GameMode:OnSetAI(value)
+    if Convars:GetDOTACommandClient() then
+        local player = Convars:GetDOTACommandClient()
+        local playerID = player:GetPlayerID()
+        if playerID == host_player_id then
+            DebugPrint("Setting ai", value)
+            SetAI(value)
+        end
+    end
+end
+
+function SetAI(value)
+    ai_on = toboolbit(value)
+    CustomNetTables:SetTableValue("chess", "ai", {value=ai_on})
+    DebugPrint("SetAI", ai_on)
 end
 
 function GameMode:OnSetFENCommand(fen)
@@ -195,10 +213,7 @@ function OnSendChatMessage(eventSourceIndex, args)
 end
 
 function OnGetMoves(eventSourceIndex, args)
-    if moves == nil then
-        moves = GenerateValidMoves()
-    end
-    CustomGameEventManager:Send_ServerToAllClients("receive_moves", {moves=moves})
+    CustomGameEventManager:Send_ServerToAllClients("receive_moves", {moves=GenerateValidMoves()})
 end
 
 function OnNewGame(eventSourceIndex, args)
@@ -209,14 +224,14 @@ function OnNewGame(eventSourceIndex, args)
 end
 
 function OnSubmitFen(eventSourceIndex, args)
-    g_allMoves = {}
+    ClearMoves()
     InitializeEval()
     ResetGame()
     InitializeFromFen(args.fen)
-    moves = GenerateValidMoves()
     has_timed_out = false
+    local moves = GenerateValidMoves()
     CustomGameEventManager:Send_ServerToAllClients("board_reset", {ai_side=ai_side, board=g_board, toMove=g_toMove, moves=moves, clock_time=clock_time, clock_increment=clock_increment, time_control=time_control})
-    AIMove()
+    TryAIMove()
 end
 
 function OnChangePauseState(eventSourceIndex, args)
@@ -260,12 +275,8 @@ function OnDropPiece(eventSourceIndex, args)
 
     if g_toMove ~= args.playerSide then return end
 
-    if moves == nil then
-        moves = GenerateValidMoves()
-    end
-
     local move
-    for k, v in ipairs(moves) do
+    for k, v in ipairs(GenerateValidMoves()) do
         if (bit.band(v, 0xFF) == MakeSquare(args.startY, args.startX) and
             bit.band(bit.rshift(v, 8), 0xFF) == MakeSquare(args.endY, args.endX) and
             promotionCheck(v, args.promotionType)) then
@@ -276,11 +287,9 @@ function OnDropPiece(eventSourceIndex, args)
 
     if (not (args.startX == args.endX and args.startY == args.endY) and move ~= nil) then
         DebugPrint("making move " .. g_move50)
-        table.insert(g_allMoves, move)
-        local san, captured_piece = GetMoveSAN(move)
-        MakeMove(move)
-        moves = GenerateValidMoves()
-        SendBoardUpdate(san, move, moves, false, captured_piece)
+        local _, san, captured_piece, moves = DoMove(move)
+        SendBoardUpdate(move, san, captured_piece, moves, false)
+        PlayEndMoveSound(#moves)
         
         if args.offerDraw ~= 0 then
             CustomGameEventManager:Send_ServerToAllClients("draw_offer", {
@@ -290,30 +299,16 @@ function OnDropPiece(eventSourceIndex, args)
             local l_message = {getSideString(args.playerSide),"#event_request_draw"}
             CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
         end
-
-        if #moves == 0 then
-            -- checkmate
-            if g_inCheck then
-                EmitGlobalSound("Chess.Checkmate")
-            -- stalemate
-            else
-                EmitGlobalSound("Chess.Stalemate")
-            end
-            --elseif g_move50 == 50 or IsRepDraw() then
-            --  EmitGlobalSound("Chess.Stalemate")
-        else
-            if g_inCheck then
-                EmitGlobalSound("Chess.Check")
-            else
-                EmitGlobalSound("Creep_Radiant.Footstep")
-            end
-            AIMove()
+        
+        if #moves > 0 then
+            TryAIMove()
         end
     end
 end
 
-function AIMove()
-    if Convars:GetBool("chess_ai") and g_toMove == ai_side and not paused then
+function TryAIMove()
+    if ai_on == 1 and g_toMove == ai_side and not paused then
+        ai_thinking = true
         Timers:CreateTimer(1, function ()
             DebugPrint("AIMove first timer", ai_ply_difficulty)
             local co = coroutine.create(Search)
@@ -325,39 +320,34 @@ function AIMove()
                     if not co_result then
                         return 0.01
                     else
-                        --DebugPrint ("AIMove done")
+                        ai_thinking = false
+                        DebugPrint("AIMove done")
                     end
                 end)
+            else
+                ai_thinking = false
+                DebugPrint("AIMove done")
             end
             --Search(finishMoveCallback, ai_ply_difficulty, finishPlyCallback);
         end)
     end
 end
 
-function UndoMove()
-    if #g_allMoves == 0 then
-        return nil
-    end
-    local moveToUndo = table.remove(g_allMoves)
-    DebugPrint ("UndoMove", moveToUndo)
-    UnmakeMove(moveToUndo)
-    return moveToUndo
-end
-
-function SendBoardUpdate(san, move, moves, undo, captured_piece)
-    DebugPrint("SendBoardUpdate", move, moves, captured_piece)
+function SendBoardUpdate(move, san, captured_piece, moves, undo)
+    DebugPrint("SendBoardUpdate", move, san, captured_piece, moves, undo)
     local data = {
         board=g_board,
         toMove=g_toMove,
         san=san,
         moves=moves,
-        last_move=move,
+        move=move,
         check=g_inCheck,
         paused=paused,
         move50=g_move50,
         repDraw=Is3RepDraw(),
         undo=undo,
-        captured_piece=captured_piece
+        captured_piece=captured_piece,
+        numPly=#g_allMoves
     }
     CustomGameEventManager:Send_ServerToAllClients("board_update", data)
 end
@@ -456,20 +446,70 @@ end
 function OnAcceptUndo(eventSourceIndex, args)
     DebugPrint("OnAcceptUndo", eventSourceIndex, #g_allMoves)
     DebugPrintTable(args)
-    if #g_allMoves <= 1 then return end
+    ai_thinking = false -- prevent AI from finishing move
     UndoMove()
-    local move = UndoMove()
-    DebugPrint ("move", move)
-    table.insert(g_allMoves, move)
-    local san, captured_piece = GetMoveSAN(move)
-    MakeMove(move);
-    moves = GenerateValidMoves()
-    SendBoardUpdate(san, move, moves, true, captured_piece)
-    if PlayerResource:GetPlayerCount() > 1 then
+    local move, san, captured_piece = GetLastMove()
+    DebugPrint("move", move)
+    local moves = GenerateValidMoves()
+    SendBoardUpdate(move, san, captured_piece, moves, true)
+    if playerCount > 1 then
         local l_message = {getSideString(args.playerSide),"#event_accept_undo"}
         CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
     else
-        AIMove()
+        TryAIMove()
+    end
+end
+
+function UndoMove()
+    if #g_allMoves == 0 then
+        return nil
+    end
+    local move = table.remove(g_allMoves)
+    DebugPrint("UndoMove", move)
+    UnmakeMove(move.move)
+    return move.move, move.san, move.captured_piece
+end
+
+function GetLastMove()
+    if #g_allMoves == 0 then
+        return nil
+    end
+    local move = g_allMoves[#g_allMoves]
+    DebugPrint("GetLastMove", move)
+    return move.move, move.san, move.captured_piece
+end
+
+function DoMove(move)
+    local san, captured_piece = GetMoveSAN(move)
+    RecordMove(move, san, captured_piece)
+    MakeMove(move)
+    local moves = GenerateValidMoves()
+    return move, san, captured_piece, moves
+end
+
+function RecordMove(move, san, captured_piece)
+    table.insert(g_allMoves, {move=move, san=san, captured_piece=captured_piece})
+end
+
+function ClearMoves()
+    g_allMoves = {}
+end
+
+function PlayEndMoveSound(moveCount)
+    if moveCount == 0 then
+        -- checkmate
+        if g_inCheck then
+            EmitGlobalSound("Chess.Checkmate")
+        -- stalemate
+        else
+            EmitGlobalSound("Chess.Stalemate")
+        end
+    else
+        if g_inCheck then
+            EmitGlobalSound("Chess.Check")
+        else
+            EmitGlobalSound("Creep_Radiant.Footstep")
+        end
     end
 end
 
@@ -482,46 +522,15 @@ end
 --
 
 -- Called on Move ready to answer
-function finishMoveCallback(bestMove, value, ply)
-    if (bestMove ~= nil and bestMove ~= 0) then
-        table.insert(g_allMoves, bestMove)
-        local san, captured_piece = GetMoveSAN(bestMove)
-        MakeMove(bestMove);
-        DebugPrint(FormatMove(bestMove), g_moveTime, g_finCnt);
-        --g_foundmove = bestMove;
-        moves = GenerateValidMoves()
-
-        if #moves == 0 then
-            -- checkmate
-            if g_inCheck then
-                EmitGlobalSound("Chess.Checkmate")
-            -- stalemate
-            else
-                EmitGlobalSound("Chess.Stalemate")
-            end
-        --elseif g_move50 == 50 or IsRepDraw() then
-        --    EmitGlobalSound("Chess.Stalemate")
-        else
-            if g_inCheck then
-                EmitGlobalSound("Chess.Check")
-            else
-                EmitGlobalSound("Creep_Radiant.Footstep")
-            end
+function finishMoveCallback(move, value, ply)
+    if ai_thinking then
+        if (move ~= nil and move ~= 0) then
+            local _, san, captured_piece, moves = DoMove(move)
+            SendBoardUpdate(move, san, captured_piece, moves, false)
+            DebugPrint(FormatMove(move), g_moveTime, g_finCnt)
+            --g_foundmove = move;
+            PlayEndMoveSound(#moves)
         end
-        SendBoardUpdate(san, bestMove, moves, false, captured_piece)
-    --[[elseif (bestMove ~= nil and bestMove == 0) then
-        if g_inCheck then
-            CustomGameEventManager:Send_ServerToAllClients("board_checkmate", {board=g_board, toMove=g_toMove})
-        else
-            CustomGameEventManager:Send_ServerToAllClients("board_stalemate", {board=g_board, toMove=g_toMove})
-        end]]
-
-        --[[PlayerResource:SetCustomTeamAssignment(0, DOTA_TEAM_BADGUYS)
-        DebugPrint("player 0 team " .. PlayerResource:GetTeam(0))
-
-        PlayerResource:SetCustomTeamAssignment(0, DOTA_TEAM_GOODGUYS)
-        DebugPrint("player 0 team " .. PlayerResource:GetTeam(0))
-        DebugPrint("player count " .. PlayerResource:GetPlayerCount())]]
     end
 end
 --

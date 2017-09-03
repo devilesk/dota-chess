@@ -22,7 +22,6 @@ var g_board;
 var capturedPieces = [];
 var timeControl = true;
 var currentMovePanel;
-var moveNum = 0;
 var timeRemaining = {
     8: 110,
     0: 110
@@ -317,7 +316,7 @@ function OnGameEnd(prompt) {
                     children: [{
                         events: {
                             OnActivate: function() {
-                                OnNewGame();
+                                //OnNewGame();
                                 this.root.close();
                             },
                             OnTabForward: function() {
@@ -722,7 +721,7 @@ function OnBoardReset(data) {
     _.DebugMsg("toMove", data.toMove);
     _.DebugMsg("san", data.san);
     _.DebugMsg("moves", data.moves);
-    _.DebugMsg("last_move", data.last_move);
+    _.DebugMsg("move", data.move);
     _.DebugMsg("time_control", data.time_control);
     _.DebugMsg("clock_time", data.clock_time);
     _.DebugMsg("clock_increment", data.clock_increment);
@@ -747,7 +746,6 @@ function OnBoardReset(data) {
     currentSide = data.toMove;
     HighlightPlayerToMove(currentSide);
 
-    moveNum = 0;
     timeRemaining = {
         8: data.clock_time,
         0: data.clock_time
@@ -796,57 +794,73 @@ function isSolo() {
     return netTable && netTable.count == 1;
 }
 
+function RemoveHistory(numPly) {
+    var numMoves = Math.ceil(numPly / 2);
+    var panelsToRemove = $("#history").Children().slice(numMoves);
+    panelsToRemove.forEach(function (panel) {
+        panel.DeleteAsync(0);
+    });
+    if (numPly % 2 == 1) {
+        var panelToRemove = $("#history-ply-" + (numPly + 1));
+        if (panelToRemove) {
+            panelToRemove.DeleteAsync(0);
+        }
+    }
+}
+
+function AddHistory(numPly, san) {
+    _.DebugMsg("AddHistory", numPly, san);
+    var moveNum = Math.ceil(numPly / 2);
+    var movePanel = $("#history-move-" + moveNum);
+
+    if (!movePanel) {
+        movePanel = $.CreatePanel("Panel", $("#history"), "history-move-" + moveNum);
+        movePanel.SetHasClass("history-move", true);
+        
+        var moveNumPanel = $.CreatePanel("Label", movePanel, "");
+        moveNumPanel.SetHasClass("history-move-num", true);
+        moveNumPanel.text = moveNum;
+    }
+
+    var plyPanel = $.CreatePanel("Label", movePanel, "history-ply-" + numPly);
+    plyPanel.SetHasClass("history-ply", true);
+    plyPanel.SetHasClass("white", numPly % 2 == 1);
+    plyPanel.SetHasClass("black", numPly % 2 == 0);
+    plyPanel.text = san;
+}
+
 function OnBoardUpdate(data) {
     _.DebugMsg(data.board);
     _.DebugMsg("toMove", data.toMove);
     _.DebugMsg("san", data.san);
     _.DebugMsg("moves", data.moves);
-    _.DebugMsg("last_move", data.last_move);
+    _.DebugMsg("move", data.move);
     _.DebugMsg("check", data.check);
     _.DebugMsg("paused", data.paused);
     _.DebugMsg("undo", data.undo);
     _.DebugMsg("repDraw", data.repDraw);
     _.DebugMsg("move50", data.move50);
     _.DebugMsg("captured_piece", data.captured_piece);
+    _.DebugMsg("numPly", data.numPly);
     selectedSquare = null;
-    HighlightLastMove(data.last_move);
+    HighlightLastMove(data.move);
     moves = data.moves;
     g_board = data.board;
     RedrawPieces(g_board);
+    
+    if (data.undo) {
+        RemoveHistory(data.numPly);
+    }
+    else {
+        AddHistory(data.numPly, data.san);
+    }
+    $("#history").ScrollToBottom();
     
     if (isSolo()) {
         mySide = data.toMove;
         uiState = uiStates[data.toMove];
     }
 
-    if (data.toMove == 0) {
-        if (!data.undo) {
-            moveNum++;
-            currentMovePanel = $.CreatePanel("Panel", $("#history"), "");
-            currentMovePanel.SetHasClass("history-move", true);
-        }
-        else {
-            currentMovePanel.RemoveAndDeleteChildren();
-        }
-        var moveNumPanel = $.CreatePanel("Label", currentMovePanel, "");
-        moveNumPanel.SetHasClass("history-move-num", true);
-        moveNumPanel.text = moveNum;
-        $("#history").ScrollToBottom();
-    }
-    else {
-        if (data.undo) {
-            moveNum--;
-            var movePanels = $("#history").Children();
-            currentMovePanel = movePanels[movePanels.length - 2];
-            currentMovePanel.Children()[2].DeleteAsync(0);
-            movePanels[movePanels.length - 1].DeleteAsync(0);
-        }
-    }
-    var plyPanel = $.CreatePanel("Label", currentMovePanel, "");
-    plyPanel.SetHasClass("history-ply", true);
-    plyPanel.SetHasClass("white", data.toMove == 0);
-    plyPanel.SetHasClass("black", data.toMove == 8);
-    plyPanel.text = data.san;
     currentSide = data.toMove;
     HighlightPlayerToMove(currentSide);
 
