@@ -133,10 +133,6 @@ function formatTime(t) {
     }
 }
 
-function OnNewGame() {
-    GameEvents.SendCustomGameEventToServer("new_game", {});
-}
-
 function OnPromote(data) {
     _.DebugMsg("OnPromote");
     new DialogLibrary.Dialog({
@@ -316,7 +312,6 @@ function OnGameEnd(prompt) {
                     children: [{
                         events: {
                             OnActivate: function() {
-                                //OnNewGame();
                                 this.root.close();
                             },
                             OnTabForward: function() {
