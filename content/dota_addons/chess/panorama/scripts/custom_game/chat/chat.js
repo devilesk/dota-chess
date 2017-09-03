@@ -42,8 +42,18 @@ function ReceiveChatMessage(msg) {
 }
 
 function ReceiveChatEvent(msg) {
-    //$.Msg("ReceiveChatEvent", msg, $("#chat-message-container"));
-    CreateChatEventPanel(msg.message, parseInt(msg.playerId));
+    $.Msg("ReceiveChatEvent", msg, $("#chat-message-container"));
+    var message;
+    if (msg.l_message) {
+        message = Object.keys(msg.l_message).sort().map(function (o) {
+            var s = msg.l_message[o];
+            return s.charAt(0) == "#" ? $.Localize(s) : s;
+        }).join("");
+    }
+    else {
+        message = msg.message;
+    }
+    CreateChatEventPanel(message, parseInt(msg.playerId));
     $("#chat-message-container").ScrollToBottom();
 }
 

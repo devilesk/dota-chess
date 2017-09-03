@@ -77,7 +77,7 @@ function UpdateValues() {
     var newValues = CustomNetTables.GetTableValue( "game_setup", "options" );
     _.DebugMsg("UpdateValues", newValues);
     if (newValues) {
-        $("#TimeControlValue").text = newValues.timeControl ? "TIMED" : "UNLIMITED";
+        $("#TimeControlValue").text = newValues.timeControl ? $.Localize("#time_control_timed") : $.Localize("#time_control_unlimited");
         $("#TimeTotalSliderValue").text = newValues.timeTotal;
         $("#TimeIncrementSliderValue").text = newValues.timeIncrement;
         $("#AIDifficultySliderValue").text = newValues.aiDifficulty;
@@ -104,7 +104,7 @@ function OnReceivedGameSetupEnd() {
 
 function InitGameSetupHost() {
     if (CustomNetTables.GetTableValue( "game_setup", "host" ).player_id == Players.GetLocalPlayer()) {
-        _.DebugMsg("InitGameSetupHost is hot");
+        _.DebugMsg("InitGameSetupHost is host");
         UpdateSliders();
     }
     else {

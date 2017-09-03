@@ -31,7 +31,7 @@
                 </Panel>
             </Panel>
             <Panel class="left-container" hittest="false">
-                <Button id="btn-flip" class="btn btn-action" onmouseover="DOTAShowTextTooltip('Flip board')" onmouseout="DOTAHideTextTooltip()" onactivate="OnFlipBoardPressed()">
+                <Button id="btn-flip" class="btn btn-action" onmouseover="DOTAShowTextTooltip('#flip_board')" onmouseout="DOTAHideTextTooltip()" onactivate="OnFlipBoardPressed()">
                     <Image src="file://{images}/flip_board.png" />
                 </Button>
                 <!--<Button id="btn-toggle-player" class="btn" text="toggle player" onactivate="OnTogglePlayerPressed()">
@@ -46,33 +46,33 @@
                     <Panel id="action-container" class="" hittest="false">
                         <Panel id="button-container">
                             <Panel id="action-button-container">
-                                <Button id="btn-swap" class="btn btn-action" onmouseover="DOTAShowTextTooltip('Request side change')" onmouseout="DOTAHideTextTooltip()" onactivate="OnSwapPressed()">
+                                <Button id="btn-swap" class="btn btn-action" onmouseover="DOTAShowTextTooltip('#request_swap')" onmouseout="DOTAHideTextTooltip()" onactivate="OnSwapPressed()">
                                     <Image src="file://{images}/swap.png" />
                                 </Button>
-                                <Button id="btn-undo" class="btn btn-action" onmouseover="DOTAShowTextTooltip('Propose a takeback')" onmouseout="DOTAHideTextTooltip()" onactivate="OnUndoPressed()">
+                                <Button id="btn-undo" class="btn btn-action" onmouseover="DOTAShowTextTooltip('#request_undo')" onmouseout="DOTAHideTextTooltip()" onactivate="OnUndoPressed()">
                                     <Image src="file://{images}/undo5.png" />
                                 </Button>
-                                <Button id="btn-draw" class="btn btn-action" onmouseover="DOTAShowTextTooltip('Offer Draw')" onmouseout="DOTAHideTextTooltip()" onactivate="OnOfferDrawPressed()">
+                                <Button id="btn-draw" class="btn btn-action" onmouseover="DOTAShowTextTooltip('#request_draw')" onmouseout="DOTAHideTextTooltip()" onactivate="OnOfferDrawPressed()">
                                     <Image src="file://{images}/hand.png" />
                                 </Button>
-                                <Button id="btn-resign" class="btn btn-action" onmouseover="DOTAShowTextTooltip('Resign')" onmouseout="DOTAHideTextTooltip()" onactivate="OnResignPressed()">
+                                <Button id="btn-resign" class="btn btn-action" onmouseover="DOTAShowTextTooltip('#resign')" onmouseout="DOTAHideTextTooltip()" onactivate="OnResignPressed()">
                                     <Image src="file://{images}/white66.png" />
                                 </Button>
                             </Panel>
                             <Panel id="confirm-button-container">
-                                <Button id="btn-cancel" class="btn btn-action hidden" onmouseover="DOTAShowTextTooltip('Cancel')" onmouseout="DOTAHideTextTooltip()" onactivate="OnCancelActionPressed()">
+                                <Button id="btn-cancel" class="btn btn-action hidden" onmouseover="DOTAShowTextTooltip('#cancel')" onmouseout="DOTAHideTextTooltip()" onactivate="OnCancelActionPressed()">
                                     <Label id="btn-cancel-label" hittest="false" text="&#10006;" />
                                 </Button>
-                                <Button id="btn-confirm" class="btn btn-action hidden" onmouseover="DOTAShowTextTooltip('Confirm')" onmouseout="DOTAHideTextTooltip()" onactivate="OnConfirmActionPressed()">
+                                <Button id="btn-confirm" class="btn btn-action hidden" onmouseover="DOTAShowTextTooltip('#confirm')" onmouseout="DOTAHideTextTooltip()" onactivate="OnConfirmActionPressed()">
                                     <Label id="btn-confirm-label" hittest="false" text="&#10004;" />
                                 </Button>
                             </Panel>
                         </Panel>
                         <Panel id="swap-request-container" class="action-message-container hidden">
-                            <Label class="action-message" hittest="false" html="true" text="Accept side change?" />
+                            <Label class="action-message" hittest="false" html="true" text="#prompt_swap" />
                             <Panel class="action-message-buttons">
                                 <Button class="btn btn-accept" onactivate="OnAcceptSwapPressed()">
-                                    <Label hittest="false" text="	&#10004;" />
+                                    <Label hittest="false" text="&#10004;" />
                                 </Button>
                                 <Button class="btn btn-decline" onactivate="OnDeclineSwapPressed()">
                                     <Label hittest="false" text="&#10006;" />
@@ -80,10 +80,10 @@
                             </Panel>
                         </Panel>
                         <Panel id="draw-request-container" class="action-message-container hidden">
-                            <Label class="action-message" hittest="false" html="true" text="Accept draw?" />
+                            <Label class="action-message" hittest="false" html="true" text="#prompt_draw" />
                             <Panel class="action-message-buttons">
                                 <Button class="btn btn-accept" onactivate="OnAcceptDrawPressed()">
-                                    <Label hittest="false" text="	&#10004;" />
+                                    <Label hittest="false" text="&#10004;" />
                                 </Button>
                                 <Button class="btn btn-decline" onactivate="OnDeclineDrawPressed()">
                                     <Label hittest="false" text="&#10006;" />
@@ -91,10 +91,10 @@
                             </Panel>
                         </Panel>
                         <Panel id="undo-request-container" class="action-message-container hidden">
-                            <Label class="action-message" hittest="false" html="true" text="Accept takeback?" />
+                            <Label class="action-message" hittest="false" html="true" text="#prompt_undo" />
                             <Panel class="action-message-buttons">
                                 <Button class="btn btn-accept" onactivate="OnAcceptUndoPressed()">
-                                    <Label hittest="false" text="	&#10004;" />
+                                    <Label hittest="false" text="&#10004;" />
                                 </Button>
                                 <Button class="btn btn-decline" onactivate="OnDeclineUndoPressed()">
                                     <Label hittest="false" text="&#10006;" />

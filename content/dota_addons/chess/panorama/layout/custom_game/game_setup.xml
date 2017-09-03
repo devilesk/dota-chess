@@ -30,24 +30,24 @@
                     </Panel>
                     <Panel id="TimeControlGroup" class="setup-group">
                         <Panel class="setup-header">
-                            <Label class="setup-header-label" text="Time Control" />
-                            <Label class="setup-header-label value" text="Timed" id="TimeControlValue" />
+                            <Label class="setup-header-label" text="#time_control" />
+                            <Label class="setup-header-label value" text="#time_control_timed" id="TimeControlValue" />
                         </Panel>
                         <DropDown id="TimeControl" class="DemoButton" oninputsubmit="OnTimeControlChanged()">
-                            <Label text="TIMED" id="time_control_timed"/>
-                            <Label text="UNLIMITED" id="time_control_unlimited"/>
+                            <Label text="#time_control_timed" id="time_control_timed"/>
+                            <Label text="#time_control_unlimited" id="time_control_unlimited"/>
                         </DropDown>
                     </Panel>
                     <Panel id="TimeControlOptions" class="setup-group">
                         <Panel class="setup-header">
-                            <Label class="setup-header-label" text="Minutes per side" />
+                            <Label class="setup-header-label" text="#time_total" />
                             <Label class="setup-header-label value" text="0" id="TimeTotalSliderValue" />
                         </Panel>
                         <Panel id="TimeTotalSliderPanel" class="slider-wrapper">
                             <Slider class="HorizontalSlider" direction="horizontal" id="TimeTotalSlider" />
                         </Panel>
                         <Panel class="setup-header">
-                            <Label class="setup-header-label" text="Increment in seconds" />
+                            <Label class="setup-header-label" text="#time_increment" />
                             <Label class="setup-header-label value" text="0" id="TimeIncrementSliderValue" />
                         </Panel>
                         <Panel id="TimeIncrementSliderPanel" class="slider-wrapper">
@@ -57,7 +57,7 @@
                     
                     <Panel id="AIControlGroup" class="setup-group">
                         <Panel class="setup-header">
-                            <Label class="setup-header-label" text="AI Difficulty" />
+                            <Label class="setup-header-label" text="#ai_difficulty" />
                             <Label class="setup-header-label value" text="1" id="AIDifficultySliderValue" />
                         </Panel>
                         <Panel id="AIDifficultySliderPanel" class="slider-wrapper">

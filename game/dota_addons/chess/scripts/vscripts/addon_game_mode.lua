@@ -204,7 +204,7 @@ end
 function OnNewGame(eventSourceIndex, args)
     args.fen = INITIAL_FEN
     OnSubmitFen(eventSourceIndex, args)
-    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {message="Game started.", playerId=-1})
+    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message={"#event_game_started"}, playerId=-1})
     game_in_progress = true
 end
 
@@ -245,19 +245,11 @@ function promotionCheck(move, promotionType)
     end
 end
 
-function getSideString(side, upper)
+function getSideString(side)
     if side == 0 then
-        if upper then
-            return "Black"
-        else
-            return "black"
-        end
+        return "#side_black"
     else
-        if upper then
-            return "White"
-        else
-            return "white"
-        end
+        return "#side_white"
     end
 end
 
@@ -294,8 +286,8 @@ function OnDropPiece(eventSourceIndex, args)
                 playerId = args.playerId,
                 playerSide = args.playerSide
             })
-            local message = getSideString(args.playerSide, true) .. " offers draw."
-            CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {message=message, playerId=-1})
+            local l_message = {getSideString(args.playerSide),"#event_request_draw"}
+            CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
         end
 
         if #moves == 0 then
@@ -376,16 +368,16 @@ function OnClaimDraw(eventSourceIndex, args)
         playerId = args.playerId,
         playerSide = args.playerSide
     })
-    local message = getSideString(args.playerSide, true) .. " accepts draw."
-    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {message=message, playerId=-1})
+    local l_message = {getSideString(args.playerSide),"#event_accept_draw"}
+    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
     EmitGlobalSound("Chess.Draw")
 end
 
 function OnDeclineDraw(eventSourceIndex, args)
     DebugPrint ("OnDeclineDraw", eventSourceIndex)
     DebugPrintTable(args)
-    local message = getSideString(args.playerSide, true) .. " declines draw."
-    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {message=message, playerId=-1})
+    local l_message = {getSideString(args.playerSide),"#event_decline_draw"}
+    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
 end
 
 function OnResign(eventSourceIndex, args)
@@ -395,8 +387,8 @@ function OnResign(eventSourceIndex, args)
         playerId = args.playerId,
         playerSide = args.playerSide
     })
-    local message = getSideString(args.playerSide, true) .. " resigns."
-    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {message=message, playerId=-1})
+    local l_message = {getSideString(args.playerSide),"#event_resign"}
+    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
 end
 
 function OnTimeOut(eventSourceIndex, args)
@@ -418,15 +410,15 @@ function OnRequestSwap(eventSourceIndex, args)
         playerId = args.playerId,
         playerSide = args.playerSide
     })
-    local message = getSideString(args.playerSide, true) .. " requests side change."
-    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {message=message, playerId=-1})
+    local l_message = {getSideString(args.playerSide),"#event_request_swap"}
+    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
 end
 
 function OnDeclineSwap(eventSourceIndex, args)
     DebugPrint ("OnDeclineSwap", eventSourceIndex)
     DebugPrintTable(args)
-    local message = getSideString(args.playerSide, true) .. " declines side change."
-    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {message=message, playerId=-1})
+    local l_message = {getSideString(args.playerSide),"#event_decline_swap"}
+    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
 end
 
 function OnAcceptSwap(eventSourceIndex, args)
@@ -438,8 +430,8 @@ function OnAcceptSwap(eventSourceIndex, args)
     })
     ai_side = 1 - ai_side + 7
     OnNewGame(0, {})
-    local message = getSideString(args.playerSide, true) .. " accepts side change."
-    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {message=message, playerId=-1})
+    local l_message = {getSideString(args.playerSide),"#event_accept_swap"}
+    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
 end
 
 function OnRequestUndo(eventSourceIndex, args)
@@ -449,15 +441,15 @@ function OnRequestUndo(eventSourceIndex, args)
         playerId = args.playerId,
         playerSide = args.playerSide
     })
-    local message = getSideString(args.playerSide, true) .. " requests takeback."
-    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {message=message, playerId=-1})
+    local l_message = {getSideString(args.playerSide),"#event_request_undo"}
+    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
 end
 
 function OnDeclineUndo(eventSourceIndex, args)
     DebugPrint ("OnDeclineUndo", eventSourceIndex)
     DebugPrintTable(args)
-    local message = getSideString(args.playerSide, true) .. " declines takeback."
-    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {message=message, playerId=-1})
+    local l_message = {getSideString(args.playerSide),"#event_decline_undo"}
+    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
 end
 
 function OnAcceptUndo(eventSourceIndex, args)
@@ -472,8 +464,8 @@ function OnAcceptUndo(eventSourceIndex, args)
     MakeMove(move);
     moves = GenerateValidMoves()
     SendBoardUpdate(san, move, moves, true, captured_piece)
-    local message = getSideString(args.playerSide, true) .. " accepts takeback."
-    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {message=message, playerId=-1})
+    local l_message = {getSideString(args.playerSide),"#event_accept_undo"}
+    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
 end
 
 -- Called on Ply finish
