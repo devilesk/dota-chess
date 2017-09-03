@@ -465,8 +465,12 @@ function OnAcceptUndo(eventSourceIndex, args)
     MakeMove(move);
     moves = GenerateValidMoves()
     SendBoardUpdate(san, move, moves, true, captured_piece)
-    local l_message = {getSideString(args.playerSide),"#event_accept_undo"}
-    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
+    if PlayerResource:GetPlayerCount() > 1 then
+        local l_message = {getSideString(args.playerSide),"#event_accept_undo"}
+        CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
+    else
+        AIMove()
+    end
 end
 
 -- Called on Ply finish
