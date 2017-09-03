@@ -1009,6 +1009,7 @@ var uiStates = {
 var uiState = uiStates[mySide];
 
 function UIState() {
+    this.rematchPressed = false;
     this.swapPressed = false;
     this.undoPressed = false;
     this.drawPressed = false;
@@ -1017,6 +1018,20 @@ function UIState() {
     this.pendingSwap = false;
     this.pendingDraw = false;
     this.pendingUndo = false;
+}
+
+function OnRematchPressed() {
+    _.DebugMsg("OnRematchPressed", mySide, currentSide);
+    if (!gameInProgress) {
+        uiState.rematchPressed = !uiState.rematchPressed;
+        if (uiState.rematchPressed) {
+            RequestRematch();
+        }
+        else {
+            DeclineRematch();
+        }
+        UpdateUI();
+    }
 }
 
 function OnSwapPressed() {
@@ -1191,6 +1206,9 @@ function OnReceivedTimedOut(data) {
 }
 
 function UpdateUI() {
+    $("#btn-rematch").SetHasClass("disabled", uiState.rematchPressed);
+    $("#btn-rematch").SetHasClass("hidden", gameInProgress);
+    
     $("#btn-swap").SetHasClass("disabled", uiState.swapPressed);
     $("#btn-undo").SetHasClass("disabled", !isSolo() && (mySide == currentSide || uiState.undoPressed || numPly < 2));
     $("#btn-draw").SetHasClass("disabled", mySide != currentSide || uiState.drawPressed || numPly < 2 || uiState.pendingDraw);
@@ -1225,6 +1243,20 @@ function AcceptUndo() {
 
 function Resign() {
     GameEvents.SendCustomGameEventToServer("resign", {
+        playerId: Players.GetLocalPlayer(),
+        playerSide: mySide
+    });
+}
+
+function RequestRematch() {
+    GameEvents.SendCustomGameEventToServer("request_rematch", {
+        playerId: Players.GetLocalPlayer(),
+        playerSide: mySide
+    });
+}
+
+function DeclineRematch() {
+    GameEvents.SendCustomGameEventToServer("decline_rematch", {
         playerId: Players.GetLocalPlayer(),
         playerSide: mySide
     });

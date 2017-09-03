@@ -15,6 +15,7 @@
     "resign"                                    "Resign"
     "cancel"                                    "Cancel"
     "confirm"                                   "Confirm"
+    "rematch"                                   "Rematch"
     "prompt_swap"                               "Accept side change?"
     "prompt_draw"                               "Accept draw?"
     "prompt_undo"                               "Accept takeback?"

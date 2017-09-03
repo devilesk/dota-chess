@@ -163,6 +163,14 @@
 #btn-flip {
     horizontal-align: right;
 }
+#btn-rematch {
+    width: 100%;
+    margin: 15px;
+    padding: 5px;
+}
+#btn-rematch Label {
+    font-size: 24px;
+}
 
 #DashboardButton:hover {
     opacity: 1;

@@ -69,6 +69,9 @@
                                 </Button>
                             </Panel>
                         </Panel>
+                        <Button id="btn-rematch" class="btn" onactivate="OnRematchPressed()">
+                            <Label id="btn-rematch-label" hittest="false" text="#rematch" />
+                        </Button>
                     </Panel>
                     <Panel id="timer-bottom" class="timer bottom" hittest="false">
                         <DOTAAvatarImage id="player-bottom" class="avatar bottom" />
