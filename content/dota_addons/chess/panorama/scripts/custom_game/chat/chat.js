@@ -42,7 +42,7 @@ function ReceiveChatMessage(msg) {
 }
 
 function ReceiveChatEvent(msg) {
-    $.Msg("ReceiveChatEvent", msg, $("#chat-message-container"));
+    //$.Msg("ReceiveChatEvent", msg, $("#chat-message-container"));
     var message;
     if (msg.l_message) {
         message = Object.keys(msg.l_message).sort().map(function (o) {

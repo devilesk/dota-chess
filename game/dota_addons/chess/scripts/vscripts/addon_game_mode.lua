@@ -53,7 +53,7 @@ function GameMode:OnGameRulesStateChange()
                 local player = PlayerResource:GetPlayer(i)
                 if GameRules:PlayerHasCustomGameHostPrivileges(player) then
                     host_player_id = i
-                    DebugPrint ("host found", host_player_id)
+                    DebugPrint("host found", host_player_id)
                     CustomNetTables:SetTableValue("game_setup", "host", {player_id=host_player_id})
                     break
                 end
@@ -363,7 +363,7 @@ function SendBoardUpdate(san, move, moves, undo, captured_piece)
 end
 
 function OnClaimDraw(eventSourceIndex, args)
-    DebugPrint ("OnClaimDraw", eventSourceIndex)
+    DebugPrint("OnClaimDraw", eventSourceIndex)
     DebugPrintTable(args)
     CustomGameEventManager:Send_ServerToAllClients("draw_claimed", {
         playerId = args.playerId,
@@ -375,14 +375,14 @@ function OnClaimDraw(eventSourceIndex, args)
 end
 
 function OnDeclineDraw(eventSourceIndex, args)
-    DebugPrint ("OnDeclineDraw", eventSourceIndex)
+    DebugPrint("OnDeclineDraw", eventSourceIndex)
     DebugPrintTable(args)
     local l_message = {getSideString(args.playerSide),"#event_decline_draw"}
     CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
 end
 
 function OnResign(eventSourceIndex, args)
-    DebugPrint ("OnResign", eventSourceIndex)
+    DebugPrint("OnResign", eventSourceIndex)
     DebugPrintTable(args)
     CustomGameEventManager:Send_ServerToAllClients("resigned", {
         playerId = args.playerId,
@@ -393,7 +393,7 @@ function OnResign(eventSourceIndex, args)
 end
 
 function OnTimeOut(eventSourceIndex, args)
-    DebugPrint ("OnTimeOut", eventSourceIndex)
+    DebugPrint("OnTimeOut", eventSourceIndex)
     DebugPrintTable(args)
     if not has_timed_out then
         CustomGameEventManager:Send_ServerToAllClients("timeout_end", {
@@ -405,7 +405,7 @@ function OnTimeOut(eventSourceIndex, args)
 end
 
 function OnRequestSwap(eventSourceIndex, args)
-    DebugPrint ("OnRequestSwap", eventSourceIndex)
+    DebugPrint("OnRequestSwap", eventSourceIndex)
     DebugPrintTable(args)
     CustomGameEventManager:Send_ServerToAllClients("swap_offer", {
         playerId = args.playerId,
@@ -416,14 +416,14 @@ function OnRequestSwap(eventSourceIndex, args)
 end
 
 function OnDeclineSwap(eventSourceIndex, args)
-    DebugPrint ("OnDeclineSwap", eventSourceIndex)
+    DebugPrint("OnDeclineSwap", eventSourceIndex)
     DebugPrintTable(args)
     local l_message = {getSideString(args.playerSide),"#event_decline_swap"}
     CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
 end
 
 function OnAcceptSwap(eventSourceIndex, args)
-    DebugPrint ("OnAcceptSwap", eventSourceIndex)
+    DebugPrint("OnAcceptSwap", eventSourceIndex)
     DebugPrintTable(args)
     CustomGameEventManager:Send_ServerToAllClients("swap_sides", {
         playerId = args.playerId,
@@ -436,7 +436,7 @@ function OnAcceptSwap(eventSourceIndex, args)
 end
 
 function OnRequestUndo(eventSourceIndex, args)
-    DebugPrint ("OnRequestUndo", eventSourceIndex)
+    DebugPrint("OnRequestUndo", eventSourceIndex)
     DebugPrintTable(args)
     CustomGameEventManager:Send_ServerToAllClients("undo_offer", {
         playerId = args.playerId,
@@ -447,14 +447,14 @@ function OnRequestUndo(eventSourceIndex, args)
 end
 
 function OnDeclineUndo(eventSourceIndex, args)
-    DebugPrint ("OnDeclineUndo", eventSourceIndex)
+    DebugPrint("OnDeclineUndo", eventSourceIndex)
     DebugPrintTable(args)
     local l_message = {getSideString(args.playerSide),"#event_decline_undo"}
     CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
 end
 
 function OnAcceptUndo(eventSourceIndex, args)
-    DebugPrint ("OnAcceptUndo", eventSourceIndex, #g_allMoves)
+    DebugPrint("OnAcceptUndo", eventSourceIndex, #g_allMoves)
     DebugPrintTable(args)
     if #g_allMoves <= 1 then return end
     UndoMove()
