@@ -22,12 +22,10 @@ var m_Board = [];
 var g_board;
 var capturedPieces = [];
 var timeControl = true;
-var currentMovePanel;
 var timeRemaining = {
     8: 110,
     0: 110
 };
-var increment = 20;
 var timer = 0;
 var currentSide = 8; // 0 == black, 0 != white
 var numPly = 0;
@@ -124,7 +122,7 @@ function pad(num, size, ch) {
 function formatTime(t) {
     if (timeControl) {
         if (t < 100) {
-            return " " +pad(Math.floor(t / 600), 2) + ":" + pad(Math.floor(t / 10) % 60, 2) + "." + (t % 10);
+            return " " +pad(Math.floor(t / 600), 2) + ":" + pad(Math.floor(t / 10) % 60, 2) + "." + Math.floor(t % 10);
         } else {
             return " " +pad(Math.floor(t / 600), 2) + ":" + pad(Math.floor(t / 10) % 60, 2);
         }
@@ -749,7 +747,6 @@ function OnBoardReset(data) {
         8: data.clock_time,
         0: data.clock_time
     };
-    increment = data.clock_increment;
     if (timer != 0) {
         _.DebugMsg("timer", timer);
         $.CancelScheduled(timer);
@@ -766,7 +763,8 @@ function OnBoardReset(data) {
     _.DebugMsg("mySide", mySide);
     UpdateUI();
     UpdatePlayerPanel();
-    UpdateTimePanel();
+    //UpdateTimePanel();
+    UpdateTime();
 }
 
 var pieceText = [
@@ -880,13 +878,14 @@ function OnBoardUpdate(data) {
         if (capturedPieceToRemove) capturedPieceToRemove[2].DeleteAsync(0);
     }
     
-    if (timeControl) {
+    /*if (timeControl) {
         var otherSide = 1 - currentSide + 7;
         if (numPly > 2) timeRemaining[otherSide] += increment;
         $("#timer-label-" + (bottomSide != currentSide ? "top" : "bottom")).text = formatTime(timeRemaining[bottomSide != currentSide ? 0 : 8]);
 
         OnPauseChanged(data);
-    }
+    }*/
+    
     //if (timer) $.CancelScheduled(timer);
     //timer = $.Schedule(1, UpdateTime);
 
@@ -934,21 +933,17 @@ function OnPauseChanged(data) {
 }
 
 function UpdateTime() {
-    timeRemaining[currentSide]--;
+    var time = {
+        0: CustomNetTables.GetTableValue( "time", "0" ),
+        8: CustomNetTables.GetTableValue( "time", "8" )
+    };
+    if (time[0]) timeRemaining[0] = time[0].remaining;
+    if (time[8]) timeRemaining[8] = time[8].remaining;
     UpdateTimePanel();
 
     //_.DebugMsg("timer ", color, " ", timeRemaining[color]);
     if (gameInProgress) {
-        if (timeRemaining[currentSide] > 0) {
-            timer = $.Schedule(0.1, UpdateTime);
-        }
-        else {
-            timer = 0;
-            GameEvents.SendCustomGameEventToServer("time_out", {
-                playerId: Players.GetLocalPlayer(),
-                playerSide: currentSide
-            });
-        }
+        timer = $.Schedule(0.1, UpdateTime);
     }
     else {
         timer = 0;
@@ -1334,6 +1329,12 @@ function InitRequestPanel(parentPanel, id, text, acceptHandler, declineHandler) 
     GameEvents.Subscribe("resigned", OnReceivedResigned);
     GameEvents.Subscribe("timeout_end", OnReceivedTimedOut);
 
+    var gameSetup = CustomNetTables.GetTableValue( "game_setup", "options" );
+    if (gameSetup) {
+        timeRemaining[0] = gameSetup.clock_time;
+        timeRemaining[8] = gameSetup.clock_time;
+    }
+    
     UpdatePlayerPanel();
     UpdateTimePanel();
     $("#timer-bottom").SetHasClass("highlight", true);

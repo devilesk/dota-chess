@@ -16,11 +16,15 @@ local host_player_id = 0
 local INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 local move_history = {}
 local DEBUG = 1 -- initial value of chess_debug
-local DEBUG_PLAYER_COUNT = 2 -- nil, 1, 2
+local DEBUG_PLAYER_COUNT = 1 -- nil, 1, 2
 local time_control = true
  -- clock_time and clock_increment are tenths of a second
 local clock_time = 600
 local clock_increment = 20
+local clock_start = {}
+local clock_timer = {}
+local clock_remaining_initial = {}
+local clock_remaining = {}
 local ai_on = 1
 local ai_thinking = false
 local paused = false
@@ -225,6 +229,8 @@ function OnGameSetupOptions(eventSourceIndex, args)
     DebugPrint("clock_increment", clock_increment)
     DebugPrint("ai_ply_difficulty", ai_ply_difficulty)
     
+    args.clock_time = clock_time
+    
     CustomNetTables:SetTableValue("game_setup", "options", args)
 end
 
@@ -252,6 +258,16 @@ function OnSubmitFen(eventSourceIndex, args)
     InitializeFromFen(args.fen)
     has_timed_out = false
     local moves = GenerateValidMoves()
+    clock_start = {}
+    clock_remaining[0] = clock_time
+    clock_remaining[8] = clock_time
+    clock_remaining_initial[0] = clock_time
+    clock_remaining_initial[8] = clock_time
+    if clock_timer[0] ~= nil then Timers:RemoveTimer(clock_timer[0]) end
+    if clock_timer[8] ~= nil then Timers:RemoveTimer(clock_timer[8]) end
+    clock_timer = {}
+    CustomNetTables:SetTableValue("time", "0", {remaining=clock_remaining[0]})
+    CustomNetTables:SetTableValue("time", "8", {remaining=clock_remaining[8]})
     CustomGameEventManager:Send_ServerToAllClients("board_reset", {player_sides=player_sides, board=g_board, toMove=g_toMove, moves=moves, clock_time=clock_time, clock_increment=clock_increment, time_control=time_control})
     TryAIMove()
 end
@@ -313,6 +329,7 @@ function OnDropPiece(eventSourceIndex, args)
         local _, san, captured_piece, moves = DoMove(move)
         SendBoardUpdate(move, san, captured_piece, moves, false)
         PlayEndMoveSound(#moves)
+        EndTurn()
         
         if args.offerDraw ~= 0 then
             CustomGameEventManager:Send_ServerToAllClients("draw_offer", {
@@ -538,6 +555,71 @@ function PlayEndMoveSound(moveCount)
     end
 end
 
+function EndTurn()
+    DebugPrint("EndTurn")
+    if #move_history < 2 then return end
+    
+    local side = 1 - g_toMove + 7
+    local start = clock_start[side]
+    local now = GameRules:GetGameTime()
+    local elapsed
+    
+    if clock_timer[side] ~= nil then Timers:RemoveTimer(clock_timer[side]) end
+    
+    if start ~= nil then
+        elapsed = (now - start) * 10
+        clock_remaining[side] = math.max(clock_remaining_initial[side] - elapsed, 0)
+    end
+    
+    DebugPrint("side", side)
+    DebugPrint("clock_remaining_initial[side]", clock_remaining_initial[side])
+    DebugPrint("now", now)
+    DebugPrint("start", start)
+    DebugPrint("elapsed", elapsed)
+    DebugPrint("remaining", clock_remaining[side])
+    
+    if clock_remaining[side] == 0 then
+        OnTimeOut(0, {playerSide=side})
+    else
+        if #move_history >= 3 then
+            clock_remaining[side] = clock_remaining[side] + clock_increment
+            DebugPrint("remaining incremented", clock_remaining[side])
+        end
+    end
+    
+    clock_start[g_toMove] = GameRules:GetGameTime()
+    clock_remaining_initial[g_toMove] = clock_remaining[g_toMove]
+    
+    DebugPrint("g_toMove", g_toMove)
+    DebugPrint("clock_remaining_initial[g_toMove]", clock_remaining_initial[g_toMove])
+    DebugPrint("remaining", clock_remaining[g_toMove])
+    
+    local current_side = g_toMove
+    clock_timer[current_side] = Timers:CreateTimer(function()
+        local now = GameRules:GetGameTime()
+        local elapsed = (now - clock_start[current_side]) * 10
+
+        clock_remaining[current_side] = math.max(clock_remaining_initial[current_side] - elapsed, 0)
+        
+        --[[DebugPrint("EndTurn Timer")
+        DebugPrint("side", current_side)
+        DebugPrint("start", clock_start[current_side])
+        DebugPrint("remaining", clock_remaining[current_side])]]
+        
+        CustomNetTables:SetTableValue("time", tostring(current_side), {remaining=clock_remaining[current_side]})
+        
+        if clock_remaining[current_side] == 0 then
+            OnTimeOut(0, {playerSide=current_side})
+            return nil
+        end
+        
+        return 0.1
+    end)
+    
+    CustomNetTables:SetTableValue("time", "0", {remaining=clock_remaining[0]})
+    CustomNetTables:SetTableValue("time", "8", {remaining=clock_remaining[8]})
+end
+
 -- Called on Ply finish
 function finishPlyCallback(bestMove, value, ply)
     if (bestMove ~= nil and bestMove ~= 0) then
@@ -555,6 +637,7 @@ function finishMoveCallback(move, value, ply)
             DebugPrint(FormatMove(move), g_moveTime, g_finCnt)
             --g_foundmove = move;
             PlayEndMoveSound(#moves)
+            EndTurn()
         end
     end
 end

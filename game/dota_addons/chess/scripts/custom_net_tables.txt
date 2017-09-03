@@ -4,6 +4,7 @@
     [
         "game_setup",
         "chess",
+        "time",
         "debug"
     ]
 }
