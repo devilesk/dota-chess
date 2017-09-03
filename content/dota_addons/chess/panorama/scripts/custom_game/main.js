@@ -29,11 +29,8 @@ var timeRemaining = {
 var increment = 20;
 var timer = 0;
 var currentSide = 8; // 0 == black, 0 != white
-var firstMove = {
-    8: true,
-    0: true
-};
-var players = {
+var numPly = 0;
+var player_sides = {
     8: null,
     0: null
 };
@@ -45,6 +42,7 @@ var selectedSquare;
 var paused = false;
 var lookupSquare = {};
 var bottomSide = 8;
+var gameInProgress = false;
 
 function InitLookupSquare() {
     for (var i = 0; i < 8; i++) {
@@ -289,6 +287,8 @@ function OnDropPiece(data) {
 }
 
 function OnGameEnd(prompt) {
+    gameInProgress = false;
+    UpdateUI();
     new DialogLibrary.Dialog({
         parentPanel: DialogLibrary.contextPanel,
         layoutfile: "file://{resources}/layout/custom_game/dialog/dialog.xml",
@@ -726,13 +726,11 @@ function OnBoardReset(data) {
     _.DebugMsg("clock_time", data.clock_time);
     _.DebugMsg("clock_increment", data.clock_increment);
     _.DebugMsg("paused", data.paused);
-    _.DebugMsg("ai_side", data.ai_side);
+    _.DebugMsg("player_sides", data.player_sides);
     
-    if (isSolo()) {
-        mySide = 1 - data.ai_side + 7;
-        uiState = uiStates[1 - data.ai_side + 7];
-    }
-    
+    numPly = 0;
+    gameInProgress = true;
+    player_sides = data.player_sides;
     timeControl = data.time_control;
     paused = data.paused;
     selectedSquare = null;
@@ -756,15 +754,17 @@ function OnBoardReset(data) {
         $.CancelScheduled(timer);
         timer = 0;
     }
-    firstMove = {
-        8: true,
-        0: true
-    };
     uiStates = {
         0: new UIState(),
         8: new UIState()
     };
+    
+    if (data.player_sides[0] == Players.GetLocalPlayer()) mySide = 0;
+    if (data.player_sides[8] == Players.GetLocalPlayer()) mySide = 8;
+    uiState = uiStates[mySide];
+    _.DebugMsg("mySide", mySide);
     UpdateUI();
+    UpdatePlayerPanel();
     UpdateTimePanel();
 }
 
@@ -842,6 +842,8 @@ function OnBoardUpdate(data) {
     _.DebugMsg("move50", data.move50);
     _.DebugMsg("captured_piece", data.captured_piece);
     _.DebugMsg("numPly", data.numPly);
+    gameInProgress = true;
+    numPly = data.numPly;
     selectedSquare = null;
     HighlightLastMove(data.move);
     moves = data.moves;
@@ -879,8 +881,7 @@ function OnBoardUpdate(data) {
     
     if (timeControl) {
         var otherSide = 1 - currentSide + 7;
-        if (!firstMove[otherSide]) timeRemaining[otherSide] += increment;
-        firstMove[otherSide] = false;
+        if (numPly > 2) timeRemaining[otherSide] += increment;
         $("#timer-label-" + (bottomSide != currentSide ? "top" : "bottom")).text = formatTime(timeRemaining[bottomSide != currentSide ? 0 : 8]);
 
         OnPauseChanged(data);
@@ -926,7 +927,7 @@ function OnPauseChanged(data) {
         $.CancelScheduled(timer);
         timer = 0;
     }
-    if (!data.paused && !firstMove[8] && !firstMove[0]) {
+    if (!data.paused && numPly >= 2) {
         timer = $.Schedule(0.1, UpdateTime);
     }
 }
@@ -936,15 +937,20 @@ function UpdateTime() {
     UpdateTimePanel();
 
     //_.DebugMsg("timer ", color, " ", timeRemaining[color]);
-    if (timeRemaining[currentSide] > 0) {
-        timer = $.Schedule(0.1, UpdateTime);
+    if (gameInProgress) {
+        if (timeRemaining[currentSide] > 0) {
+            timer = $.Schedule(0.1, UpdateTime);
+        }
+        else {
+            timer = 0;
+            GameEvents.SendCustomGameEventToServer("time_out", {
+                playerId: Players.GetLocalPlayer(),
+                playerSide: currentSide
+            });
+        }
     }
     else {
         timer = 0;
-        GameEvents.SendCustomGameEventToServer("time_out", {
-            playerId: Players.GetLocalPlayer(),
-            playerSide: currentSide
-        });
     }
 }
 
@@ -1023,7 +1029,7 @@ function OnSwapPressed() {
         AcceptSwap();
     }
     else {
-        if (firstMove[0] || firstMove[8]) {
+        if (!gameInProgress || numPly < 2) {
             uiState.swapPressed = true;
             UpdateUI();
         }
@@ -1036,7 +1042,7 @@ function OnUndoPressed() {
         AcceptUndo();
     }
     else {
-        if (mySide != currentSide && !firstMove[0] && !firstMove[8]) {
+        if (mySide != currentSide && numPly >= 2) {
             uiState.undoPressed = true;
             UpdateUI();
         }
@@ -1045,7 +1051,7 @@ function OnUndoPressed() {
 
 function OnOfferDrawPressed() {
     _.DebugMsg("OnOfferDrawPressed", mySide, currentSide);
-    if (mySide == currentSide && !firstMove[0] && !firstMove[8] && !uiState.pendingDraw) {
+    if (mySide == currentSide && numPly >= 2 && !uiState.pendingDraw) {
         uiState.drawPressed = true;
         UpdateUI();
     }
@@ -1188,24 +1194,23 @@ function OnReceivedTimedOut(data) {
     OnGameEnd(prompt);
 }
 
-function OnReceiveSwapSides(data) {
-    SwapSides();
-}
-
 function UpdateUI() {
     $("#btn-swap").SetHasClass("disabled", uiState.swapPressed);
-    $("#btn-undo").SetHasClass("disabled", !isSolo() && (mySide == currentSide || uiState.undoPressed || firstMove[0] || firstMove[8]));
-    $("#btn-draw").SetHasClass("disabled", mySide != currentSide || uiState.drawPressed || firstMove[0] || firstMove[8] || uiState.pendingDraw);
+    $("#btn-undo").SetHasClass("disabled", !isSolo() && (mySide == currentSide || uiState.undoPressed || numPly < 2));
+    $("#btn-draw").SetHasClass("disabled", mySide != currentSide || uiState.drawPressed || numPly < 2 || uiState.pendingDraw);
     $("#btn-resign").SetHasClass("disabled", uiState.resignPressed);
-    $("#btn-swap").SetHasClass("hidden", uiState.undoPressed || uiState.drawPressed || uiState.resignPressed || (!firstMove[0] && !firstMove[8]));
+    
+    $("#btn-swap").SetHasClass("hidden", gameInProgress && (uiState.undoPressed || uiState.drawPressed || uiState.resignPressed || numPly >= 2));
     $("#btn-undo").SetHasClass("hidden", uiState.swapPressed || uiState.drawPressed || uiState.resignPressed);
-    $("#btn-draw").SetHasClass("hidden", isSolo() || uiState.swapPressed || uiState.resignPressed || uiState.undoPressed);
-    $("#btn-resign").SetHasClass("hidden", uiState.swapPressed || uiState.drawPressed || uiState.undoPressed);
+    $("#btn-draw").SetHasClass("hidden", !gameInProgress || isSolo() || uiState.swapPressed || uiState.resignPressed || uiState.undoPressed);
+    $("#btn-resign").SetHasClass("hidden", !gameInProgress || uiState.swapPressed || uiState.drawPressed || uiState.undoPressed);
+    
     $("#btn-confirm").SetHasClass("hidden", !uiState.swapPressed && !uiState.resignPressed && !uiState.undoPressed);
     $("#btn-cancel").SetHasClass("hidden", !uiState.swapPressed && !uiState.drawPressed && !uiState.resignPressed && !uiState.undoPressed);
+    
+    $("#swap-request-container").SetHasClass("hidden", !uiState.pendingSwap);
     $("#draw-request-container").SetHasClass("hidden", !uiState.pendingDraw);
     $("#undo-request-container").SetHasClass("hidden", !uiState.pendingUndo);
-    $("#swap-request-container").SetHasClass("hidden", !uiState.pendingSwap);
 }
 
 function AcceptSwap() {
@@ -1243,19 +1248,6 @@ function RequestUndo() {
     });
 }
 
-function SwapSides() {
-    var temp = players[8];
-    players[8] = players[0];
-    players[0] = temp;
-    
-    mySide = 1 - mySide + 7;
-    uiState = uiStates[mySide];
-    //$("#btn-toggle-player-label").text = mySide == 0 ? "Black" : "White";
-    UpdateUI();
-    RedrawBoard();
-    UpdatePlayerPanel();
-}
-
 function OnFlipBoardPressed() {
     bottomSide = 1 - bottomSide + 7;
     UpdateUI();
@@ -1263,11 +1255,21 @@ function OnFlipBoardPressed() {
     UpdatePlayerPanel();
 }
 
+function OnTogglePlayerPressed() {
+    mySide = 1 - mySide + 7;
+    uiState = uiStates[mySide];
+    $("#btn-toggle-player-label").text = mySide == 0 ? "Black" : "White";
+    UpdateUI();
+    //RedrawBoard();
+    //UpdatePlayerPanel();
+}
+
 function UpdatePlayerPanel() {
     [0, 8].forEach(function (side) {
         var pos = (bottomSide == side ? "bottom" : "top");
-        if (players[side] != null) {
-            var playerInfo = Game.GetPlayerInfo(players[side]);
+        if (player_sides[side] != null) {
+            _.DebugMsg("player_sides[side]", player_sides, player_sides[side] != null, side, player_sides[side]);
+            var playerInfo = Game.GetPlayerInfo(player_sides[side]);
             if (playerInfo) {
                 $("#player-" + pos).steamid = playerInfo.player_steamid;
                 $("#player-" + pos).SetHasClass("hidden", false);
@@ -1310,28 +1312,26 @@ function InitRequestPanel(parentPanel, id, text, acceptHandler, declineHandler) 
     InitRequestPanel(requestContainer, "draw-request-container", "#prompt_draw", OnAcceptDrawPressed, OnDeclineDrawPressed);
     InitRequestPanel(requestContainer, "swap-request-container", "#prompt_swap", OnAcceptSwapPressed, OnDeclineSwapPressed);
 
+    if (Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_GOODGUYS).length) {
+        player_sides[8] = Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_GOODGUYS)[0];
+    }
+    if (Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_BADGUYS).length) {
+        player_sides[0] = Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_BADGUYS)[0];
+    }
+    _.DebugMsg("player_sides ", player_sides);
+    
     GameEvents.Subscribe("board_update", OnBoardUpdate);
     GameEvents.Subscribe("board_checkmate", OnBoardCheckmate);
     GameEvents.Subscribe("board_stalemate", OnBoardStalemate);
     GameEvents.Subscribe("board_reset", OnBoardReset);
     GameEvents.Subscribe("board_pause_changed", OnPauseChanged);
     GameEvents.Subscribe("receive_moves", OnReceiveMoves);
-    GameEvents.Subscribe("swap_sides", OnReceiveSwapSides);
     GameEvents.Subscribe("swap_offer", OnReceivedSwapOffer);
     GameEvents.Subscribe("undo_offer", OnReceivedUndoOffer);
     GameEvents.Subscribe("draw_offer", OnReceivedDrawOffer);
     GameEvents.Subscribe("draw_claimed", OnReceivedDrawClaimed);
     GameEvents.Subscribe("resigned", OnReceivedResigned);
     GameEvents.Subscribe("timeout_end", OnReceivedTimedOut);
-
-    if (Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_GOODGUYS).length) {
-        players[8] = Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_GOODGUYS)[0];
-    }
-    if (Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_BADGUYS).length) {
-        players[0] = Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_BADGUYS)[0];
-    }
-    _.DebugMsg("players ", players);
-
 
     UpdatePlayerPanel();
     UpdateTimePanel();

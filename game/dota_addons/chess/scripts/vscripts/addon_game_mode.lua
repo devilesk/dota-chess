@@ -11,11 +11,12 @@ if GameMode == nil then
 end
 
 local game_in_progress = false
-local playerCount = 1
+local player_count = 1
 local host_player_id = 0
 local INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-local g_allMoves = {}
+local move_history = {}
 local DEBUG = 1 -- initial value of chess_debug
+local DEBUG_PLAYER_COUNT = 2 -- nil, 1, 2
 local time_control = true
  -- clock_time and clock_increment are tenths of a second
 local clock_time = 600
@@ -25,6 +26,7 @@ local ai_thinking = false
 local paused = false
 local has_timed_out = false
 local ai_side = 0
+local player_sides
 -- 0 = black
 -- 8 = white
 local max_ply_table = {1, 3, 88888}
@@ -37,6 +39,24 @@ function toboolbit(value)
     else
         return 0
     end
+end
+
+function InitPlayerSides()
+    local t1, t2
+    for i = 0, DOTA_MAX_TEAM_PLAYERS do
+        if PlayerResource:GetTeam(i) == DOTA_TEAM_GOODGUYS then
+            t1 = i
+        elseif PlayerResource:GetTeam(i) == DOTA_TEAM_BADGUYS then
+            t2 = i
+        end
+        if t1 and t2 then
+            break
+        end
+    end
+    player_sides = {
+        [0]=t2,
+        [8]=t1
+    }
 end
 
 function GameMode:OnNPCSpawned(event)
@@ -78,11 +98,13 @@ function GameMode:OnGameRulesStateChange()
     elseif nNewState == DOTA_GAMERULES_STATE_HERO_SELECTION then
         DebugPrint("DOTA_GAMERULES_STATE_HERO_SELECTION")
         
-        playerCount = PlayerResource:GetPlayerCountForTeam(DOTA_TEAM_GOODGUYS) + PlayerResource:GetPlayerCountForTeam(DOTA_TEAM_BADGUYS)
-        CustomNetTables:SetTableValue("chess", "players", {count=playerCount})
+        player_count = DEBUG_PLAYER_COUNT or (PlayerResource:GetPlayerCountForTeam(DOTA_TEAM_GOODGUYS) + PlayerResource:GetPlayerCountForTeam(DOTA_TEAM_BADGUYS))
+        CustomNetTables:SetTableValue("chess", "players", {count=player_count})
         
-        SetAI(playerCount == 1)
+        SetAI(player_count == 1)
         DebugPrint("chess_ai", ai_on)
+        
+        InitPlayerSides()
         
         if PlayerResource:GetTeam(0) == DOTA_TEAM_GOODGUYS then
             ai_side = 0
@@ -230,7 +252,7 @@ function OnSubmitFen(eventSourceIndex, args)
     InitializeFromFen(args.fen)
     has_timed_out = false
     local moves = GenerateValidMoves()
-    CustomGameEventManager:Send_ServerToAllClients("board_reset", {ai_side=ai_side, board=g_board, toMove=g_toMove, moves=moves, clock_time=clock_time, clock_increment=clock_increment, time_control=time_control})
+    CustomGameEventManager:Send_ServerToAllClients("board_reset", {player_sides=player_sides, board=g_board, toMove=g_toMove, moves=moves, clock_time=clock_time, clock_increment=clock_increment, time_control=time_control})
     TryAIMove()
 end
 
@@ -273,7 +295,7 @@ function OnDropPiece(eventSourceIndex, args)
     DebugPrint("OnDropPiece", eventSourceIndex)
     DebugPrintTable(args)
 
-    if g_toMove ~= args.playerSide then return end
+    if g_toMove ~= args.playerSide or ai_thinking then return end
 
     local move
     for k, v in ipairs(GenerateValidMoves()) do
@@ -287,6 +309,7 @@ function OnDropPiece(eventSourceIndex, args)
 
     if (not (args.startX == args.endX and args.startY == args.endY) and move ~= nil) then
         DebugPrint("making move " .. g_move50)
+        
         local _, san, captured_piece, moves = DoMove(move)
         SendBoardUpdate(move, san, captured_piece, moves, false)
         PlayEndMoveSound(#moves)
@@ -299,7 +322,7 @@ function OnDropPiece(eventSourceIndex, args)
             local l_message = {getSideString(args.playerSide),"#event_request_draw"}
             CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
         end
-        
+
         if #moves > 0 then
             TryAIMove()
         end
@@ -347,7 +370,7 @@ function SendBoardUpdate(move, san, captured_piece, moves, undo)
         repDraw=Is3RepDraw(),
         undo=undo,
         captured_piece=captured_piece,
-        numPly=#g_allMoves
+        numPly=#move_history
     }
     CustomGameEventManager:Send_ServerToAllClients("board_update", data)
 end
@@ -415,12 +438,14 @@ end
 function OnAcceptSwap(eventSourceIndex, args)
     DebugPrint("OnAcceptSwap", eventSourceIndex)
     DebugPrintTable(args)
-    CustomGameEventManager:Send_ServerToAllClients("swap_sides", {
-        playerId = args.playerId,
-        playerSide = args.playerSide
-    })
+    
+    local temp = player_sides[0]
+    player_sides[0] = player_sides[8]
+    player_sides[8] = temp
     ai_side = 1 - ai_side + 7
+    
     OnNewGame(0, {})
+    
     local l_message = {getSideString(args.playerSide),"#event_accept_swap"}
     CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
 end
@@ -444,7 +469,7 @@ function OnDeclineUndo(eventSourceIndex, args)
 end
 
 function OnAcceptUndo(eventSourceIndex, args)
-    DebugPrint("OnAcceptUndo", eventSourceIndex, #g_allMoves)
+    DebugPrint("OnAcceptUndo", eventSourceIndex, #move_history)
     DebugPrintTable(args)
     ai_thinking = false -- prevent AI from finishing move
     UndoMove()
@@ -452,7 +477,7 @@ function OnAcceptUndo(eventSourceIndex, args)
     DebugPrint("move", move)
     local moves = GenerateValidMoves()
     SendBoardUpdate(move, san, captured_piece, moves, true)
-    if playerCount > 1 then
+    if player_count > 1 then
         local l_message = {getSideString(args.playerSide),"#event_accept_undo"}
         CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
     else
@@ -461,20 +486,20 @@ function OnAcceptUndo(eventSourceIndex, args)
 end
 
 function UndoMove()
-    if #g_allMoves == 0 then
+    if #move_history == 0 then
         return nil
     end
-    local move = table.remove(g_allMoves)
+    local move = table.remove(move_history)
     DebugPrint("UndoMove", move)
     UnmakeMove(move.move)
     return move.move, move.san, move.captured_piece
 end
 
 function GetLastMove()
-    if #g_allMoves == 0 then
+    if #move_history == 0 then
         return nil
     end
-    local move = g_allMoves[#g_allMoves]
+    local move = move_history[#move_history]
     DebugPrint("GetLastMove", move)
     return move.move, move.san, move.captured_piece
 end
@@ -488,11 +513,11 @@ function DoMove(move)
 end
 
 function RecordMove(move, san, captured_piece)
-    table.insert(g_allMoves, {move=move, san=san, captured_piece=captured_piece})
+    table.insert(move_history, {move=move, san=san, captured_piece=captured_piece})
 end
 
 function ClearMoves()
-    g_allMoves = {}
+    move_history = {}
 end
 
 function PlayEndMoveSound(moveCount)
