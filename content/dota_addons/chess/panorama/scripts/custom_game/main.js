@@ -431,8 +431,10 @@ function RedrawBoard() {
     m_Board.length = 0;
     CreateBoard();
     RedrawPieces(g_board);
-    HighlightLastMove(lastMove);
     RedrawCapturedPieces();
+    $.Schedule(1, function () {
+        HighlightLastMove(lastMove);
+    });
 }
 
 function RedrawCapturedPieces() {
@@ -716,46 +718,35 @@ function ToggleHighlight(move, value, animate) {
     moveData.tdFrom.panel.GetParent().SetHasClass("last-move", value);
     moveData.tdTo.panel.SetHasClass("last-move", value);
     moveData.tdTo.panel.GetParent().SetHasClass("last-move", value);
-    _.DebugMsg("moveData.tdFrom piece", moveData.tdFrom.piece());
-    _.DebugMsg("moveData.tdTo piece", moveData.tdTo.piece(), moveData.tdTo.panel.width, moveData.tdTo.panel.height);
+    _.DebugMsg("moveData.tdFrom piece", moveData.tdFrom.piece(), moveData.tdFrom.panel.GetPositionWithinWindow());
+    _.DebugMsg("moveData.tdTo piece", moveData.tdTo.piece(), moveData.tdTo.panel.GetPositionWithinWindow());
     
     if (animate) {
-        var fromPos = GameUI.CustomUIConfig().BoardOverlay.scalePos(moveData.tdFrom.panel.GetPositionWithinWindow());
-        var toPos = GameUI.CustomUIConfig().BoardOverlay.scalePos(moveData.tdTo.panel.GetPositionWithinWindow());
-        _.DebugMsg("animating", fromPos, toPos);
-        
-        // create a temp panel that will be dragged around
-        var ghost = new _.Panel({
-            parentPanel: GameUI.CustomUIConfig().BoardOverlay.contextPanel,
-            layoutfile: "file://{resources}/layout/custom_game/square.xml",
-            hittest: false,
-            cssClasses: ["animate"],
-            style: fromPos
-        });
-        ghost.panel.SetPiece(moveData.tdTo.piece(), moveData.tdTo.pieceOwner());
-        ghost.style.x(toPos.x);
-        ghost.style.y(toPos.y);
-        $.Schedule(0.2, function () {
-            ghost.panel.DeleteAsync(0);
-        });
-        //_.DebugMsg("ghost", ghost);
-        _.DebugMsg("panel", ghost.panel.style.position, ghost.panel.y);
-        
-        //var displayPanel = $.CreatePanel("Panel", moveData.tdFrom.panel, "dragImage");
-        //displayPanel.BLoadLayout("file://{resources}/layout/custom_game/square.xml", false, false);
-        //displayPanel.SetHasClass("ghost", true);
-        //displayPanel.SetPiece(moveData.tdTo.piece(), moveData.tdTo.pieceOwner());
-        
-        //displayPanel.square = this;
+        var fromPos = moveData.tdFrom.panel.GetPositionWithinWindow();
+        var toPos = moveData.tdTo.panel.GetPositionWithinWindow();
+        _.DebugMsg("fromPos", fromPos.x, fromPos.y);
+        _.DebugMsg("toPos", toPos.x, toPos.y);
+        if (Number.isFinite(fromPos.x) && Number.isFinite(fromPos.y) && Number.isFinite(toPos.x) && Number.isFinite(toPos.y)) {
+            fromPos = GameUI.CustomUIConfig().BoardOverlay.scalePos(fromPos);
+            toPos = GameUI.CustomUIConfig().BoardOverlay.scalePos(toPos);
+            _.DebugMsg("animating", fromPos, toPos);
+            
+            var ghost = new _.Panel({
+                parentPanel: GameUI.CustomUIConfig().BoardOverlay.contextPanel,
+                layoutfile: "file://{resources}/layout/custom_game/square.xml",
+                hittest: false,
+                cssClasses: ["animate"],
+                style: fromPos
+            });
+            ghost.panel.SetPiece(moveData.tdTo.piece(), moveData.tdTo.pieceOwner());
+            ghost.style.x(toPos.x);
+            ghost.style.y(toPos.y);
+            $.Schedule(0.2, function () {
+                ghost.panel.DeleteAsync(0);
+            });
 
-        // hook up the display panel, and specify the panel offset from the cursor
-        //dragCallbacks.displayPanel = displayPanel;
-        //dragCallbacks.offsetX = 32;
-        //dragCallbacks.offsetY = 32;
-
-        // grey out the source panel while dragging
-        //this.panel.AddClass("dragging_from");
-        //this.panel.GetParent().AddClass("dragging_from");
+            _.DebugMsg("panel", ghost.panel.style.position, ghost.panel.y);
+        }
     }
 }
 
