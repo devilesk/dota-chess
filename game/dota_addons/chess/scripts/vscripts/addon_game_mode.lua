@@ -17,7 +17,7 @@ local host_player_id = 0
 local INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 local move_history = {}
 local DEBUG = 1 -- initial value of chess_debug
-local DEBUG_PLAYER_COUNT = 1 -- nil, 1, 2
+local DEBUG_PLAYER_COUNT = nil -- nil, 1, 2
 local time_control = true
  -- clock_time and clock_increment are tenths of a second
 local clock_time = 600
@@ -334,6 +334,7 @@ function OnDropPiece(eventSourceIndex, args)
         SendBoardUpdate(move, san, captured_piece, moves, false)
         PlayEndMoveSound(#moves)
         EndTurn()
+        StartTurn()
         
         if args.offerDraw ~= 0 then
             CustomGameEventManager:Send_ServerToAllClients("draw_offer", {
@@ -507,17 +508,33 @@ end
 function OnAcceptUndo(eventSourceIndex, args)
     DebugPrint("OnAcceptUndo", eventSourceIndex, #move_history)
     DebugPrintTable(args)
-    ai_thinking = false -- prevent AI from finishing move
+    if ai_thinking then return end
+    if player_count == 1 and #move_history == 1 and ai_side == 8 then return end
+    if player_count == 1 and g_toMove == ai_side then return end
+    
     UndoMove()
-    local move, san, captured_piece = GetLastMove()
+    if player_count == 1 then
+        UndoMove()
+    end
+    local move, san, captured_piece, saved_clock_remaining = GetLastMove()
+    if saved_clock_remaining then
+        clock_remaining[0] = saved_clock_remaining[0]
+        clock_remaining[8] = saved_clock_remaining[8]
+    else
+        clock_remaining[0] = clock_time
+        clock_remaining[8] = clock_time
+    end
+    if clock_timer[0] ~= nil then Timers:RemoveTimer(clock_timer[0]) end
+    if clock_timer[8] ~= nil then Timers:RemoveTimer(clock_timer[8]) end
     DebugPrint("move", move)
+    DebugPrint("saved_clock_remaining")
+    DebugPrintTable(saved_clock_remaining)
+    StartTurn()
     local moves = GenerateValidMoves()
     SendBoardUpdate(move, san, captured_piece, moves, true)
     if player_count > 1 then
         local l_message = {getSideString(args.playerSide),"#event_accept_undo"}
         CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
-    else
-        TryAIMove()
     end
 end
 
@@ -537,7 +554,8 @@ function GetLastMove()
     end
     local move = move_history[#move_history]
     DebugPrint("GetLastMove", move)
-    return move.move, move.san, move.captured_piece
+    DebugPrintTable(move)
+    return move.move, move.san, move.captured_piece, move.clock_remaining
 end
 
 function DoMove(move)
@@ -549,7 +567,18 @@ function DoMove(move)
 end
 
 function RecordMove(move, san, captured_piece)
-    table.insert(move_history, {move=move, san=san, captured_piece=captured_piece})
+    DebugPrint("RecordMove")
+    DebugPrintTable(clock_remaining_initial)
+    local data = {
+        move=move,
+        san=san,
+        captured_piece=captured_piece,
+        clock_remaining={
+            [0]=clock_remaining_initial[0],
+            [8]=clock_remaining_initial[8]
+        }
+    }
+    table.insert(move_history, data)
 end
 
 function ClearMoves()
@@ -605,6 +634,10 @@ function EndTurn()
             DebugPrint("remaining incremented", clock_remaining[side])
         end
     end
+end
+
+function StartTurn()
+    if #move_history < 2 then return end
     
     clock_start[g_toMove] = GameRules:GetGameTime()
     clock_remaining_initial[g_toMove] = clock_remaining[g_toMove]
@@ -657,6 +690,7 @@ function finishMoveCallback(move, value, ply)
             --g_foundmove = move;
             PlayEndMoveSound(#moves)
             EndTurn()
+            StartTurn()
         end
     end
 end
