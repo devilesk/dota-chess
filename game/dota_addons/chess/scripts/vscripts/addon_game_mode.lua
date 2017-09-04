@@ -168,6 +168,13 @@ function GameMode:InitGameMode()
 
     CustomNetTables:SetTableValue("debug", "log", {value=DEBUG})
     Convars:RegisterCommand("chess_debug", Dynamic_Wrap(GameMode, "OnSetDebug"), "Set to 1 to turn on debug output. Set to 0 to disable.", 0)
+    
+    GameRules:GetGameModeEntity():SetThink( "OnSetTimeOfDayThink", self, "SetTimeOfDay", 2 )
+end
+
+function GameMode:OnSetTimeOfDayThink()
+    GameRules:SetTimeOfDay(.5)
+    return 10
 end
 
 function GameMode:OnSetDebug(value)
