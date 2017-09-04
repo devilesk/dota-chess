@@ -494,7 +494,7 @@ _.extend(Square.prototype, {
     },
     OnMouseOver: function() {
         // highlight this panel as a drop target
-        _.DebugMsg("Square OnMouseOver ", this.panel.id);
+        //_.DebugMsg("Square OnMouseOver ", this.panel.id);
         if (this.panel) {
             this.panel.SetHasClass("highlight", true);
             this.panel.GetParent().SetHasClass("highlight", true);
@@ -502,7 +502,7 @@ _.extend(Square.prototype, {
     },
     OnMouseOut: function() {
         // highlight this panel as a drop target
-        _.DebugMsg("Square OnMouseOut ", this.panel.id);
+        //_.DebugMsg("Square OnMouseOut ", this.panel.id);
         if (this.panel) {
             this.panel.SetHasClass("highlight", false);
             this.panel.GetParent().SetHasClass("highlight", false);
@@ -774,6 +774,7 @@ var pieceText = [
 ];
 
 function RenderCapturedPiece(pieceType, side) {
+    _.DebugMsg("RenderCapturedPiece", pieceType, side, pieceText[pieceType]);
     var capturedPiecePanel = $.CreatePanel("Panel", $("#captured-" + (bottomSide == side ? "top" : "bottom")), "");
     capturedPiecePanel.SetHasClass("captured-piece", true);
     capturedPiecePanel.SetHasClass("white", side == 8);
@@ -847,32 +848,31 @@ function OnBoardUpdate(data) {
     
     if (data.undo) {
         RemoveHistory(data.numPly);
+        
+        var capturedPiecesToRemove = capturedPieces.splice(numPly);
+        capturedPiecesToRemove.forEach(function (capturedPieceToRemove) {
+            if (capturedPieceToRemove) capturedPieceToRemove[2].DeleteAsync(0);
+        });
     }
     else {
         AddHistory(data.numPly, data.san);
-    }
-    $("#history").ScrollToBottom();
-    
-    if (isSolo()) {
-        mySide = data.toMove;
-        uiState = uiStates[data.toMove];
-    }
-
-    currentSide = data.toMove;
-    HighlightPlayerToMove(currentSide);
-
-    if (!data.undo) {
-        if (data.captured_piece != pieceEmpty) {
+        
+        if (data.captured_piece && data.captured_piece != pieceEmpty) {
             capturedPieces.push([data.toMove, data.captured_piece, RenderCapturedPiece(data.captured_piece, data.toMove)]);
         }
         else {
             capturedPieces.push(null);
         }
     }
-    else {
-        var capturedPieceToRemove = capturedPieces.pop();
-        if (capturedPieceToRemove) capturedPieceToRemove[2].DeleteAsync(0);
-    }
+    $("#history").ScrollToBottom();
+    
+    /*if (isSolo()) {
+        mySide = data.toMove;
+        uiState = uiStates[data.toMove];
+    }*/
+
+    currentSide = data.toMove;
+    HighlightPlayerToMove(currentSide);
     
     /*if (timeControl) {
         var otherSide = 1 - currentSide + 7;
@@ -905,6 +905,8 @@ function OnBoardUpdate(data) {
     }
     
     UpdateUI();
+    
+    if (timer == 0) UpdateTime();
 }
 
 function OnBoardCheckmate() {
@@ -1202,11 +1204,17 @@ function OnReceivedTimedOut(data) {
 }
 
 function UpdateUI() {
+    if (isSolo()) {
+        $("#btn-undo").SetHasClass("disabled", mySide != currentSide || numPly < 2);
+    }
+    else {
+        $("#btn-undo").SetHasClass("disabled", mySide == currentSide || uiState.undoPressed || numPly < 2);
+    }
+    
     $("#btn-rematch").SetHasClass("disabled", uiState.rematchPressed);
     $("#btn-rematch").SetHasClass("hidden", gameInProgress);
     
     $("#btn-swap").SetHasClass("disabled", uiState.swapPressed);
-    $("#btn-undo").SetHasClass("disabled", !isSolo() && (mySide == currentSide || uiState.undoPressed || numPly < 2));
     $("#btn-draw").SetHasClass("disabled", mySide != currentSide || uiState.drawPressed || numPly < 2 || uiState.pendingDraw);
     $("#btn-resign").SetHasClass("disabled", uiState.resignPressed);
     
