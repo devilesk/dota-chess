@@ -16,7 +16,7 @@ local player_count = 1
 local host_player_id = 0
 local INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 local move_history = {}
-local DEBUG = 1 -- initial value of chess_debug
+local DEBUG = 0 -- initial value of chess_debug
 local DEBUG_PLAYER_COUNT = nil -- nil, 1, 2
 local time_control = true
  -- clock_time and clock_increment are tenths of a second
