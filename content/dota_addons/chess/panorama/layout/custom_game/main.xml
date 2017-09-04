@@ -47,9 +47,6 @@
                     <Panel id="action-container" class="" hittest="false">
                         <Panel id="button-container">
                             <Panel id="action-button-container">
-                                <Button id="btn-swap" class="btn btn-action" onmouseover="DOTAShowTextTooltip('#request_swap')" onmouseout="DOTAHideTextTooltip()" onactivate="OnSwapPressed()">
-                                    <Image src="file://{images}/swap.png" />
-                                </Button>
                                 <Button id="btn-undo" class="btn btn-action" onmouseover="DOTAShowTextTooltip('#request_undo')" onmouseout="DOTAHideTextTooltip()" onactivate="OnUndoPressed()">
                                     <Image src="file://{images}/undo5.png" />
                                 </Button>
@@ -58,6 +55,9 @@
                                 </Button>
                                 <Button id="btn-resign" class="btn btn-action" onmouseover="DOTAShowTextTooltip('#resign')" onmouseout="DOTAHideTextTooltip()" onactivate="OnResignPressed()">
                                     <Image src="file://{images}/white66.png" />
+                                </Button>
+                                <Button id="btn-swap" class="btn btn-action" onmouseover="DOTAShowTextTooltip('#request_swap')" onmouseout="DOTAHideTextTooltip()" onactivate="OnSwapPressed()">
+                                    <Image src="file://{images}/swap.png" />
                                 </Button>
                             </Panel>
                             <Panel id="confirm-button-container">
