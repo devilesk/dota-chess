@@ -6,6 +6,7 @@
         <CustomUIElement type="GameSetup" layoutfile="file://{resources}/layout/custom_game/game_setup.xml" />
         <CustomUIElement type="LoadingScreen" layoutfile="file://{resources}/layout/custom_game/custom_loading_screen.xml" />
         <CustomUIElement type="Hud" layoutfile="file://{resources}/layout/custom_game/main.xml" />
+        <CustomUIElement type="Hud" layoutfile="file://{resources}/layout/custom_game/board_overlay.xml" />
         <CustomUIElement type="Hud" layoutfile="file://{resources}/layout/custom_game/dialog/main.xml" />
     </Panel>
 </root>
