@@ -1,34 +1,18 @@
 "use strict";
 
-var chessSymbols = {
-    8: {
-        /*    king: "&#9812;",
-            queen: "&#9813;",
-            rook: "&#9814;",
-            bishop: "&#9815;",
-            knight: "&#9816;",
-            pawn: "&#9817;"
-        */
-        king: "&#9818;",
-        queen: "&#9819;",
-        rook: "&#9820;",
-        bishop: "&#9821;",
-        knight: "&#9822;",
-        pawn: "&#9823;"
-    },
-    0: {
-        king: "&#9818;",
-        queen: "&#9819;",
-        rook: "&#9820;",
-        bishop: "&#9821;",
-        knight: "&#9822;",
-        pawn: "&#9823;"
-    }
-};
+var pieceText = [
+    "",
+    "&#9823;", // pawn
+    "&#9822;", // knight
+    "&#9821;", // bishop
+    "&#9820;", // rook
+    "&#9819;", // queen
+    "&#9818;", // king
+];
 
 function SetPiece(piece, color) {
     if (piece) {
-        $("#square-label").text = chessSymbols[color][piece];
+        $("#square-label").text = pieceText[piece];
     } else {
         $("#square-label").text = "";
     }

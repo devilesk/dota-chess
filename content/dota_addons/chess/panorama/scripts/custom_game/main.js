@@ -58,44 +58,6 @@ function InitLookupSquare() {
 
 var ranks = [1, 2, 3, 4, 5, 6, 7, 8];
 var files = ["a", "b", "c", "d", "e", "f", "g", "h"];
-var initialPositions = {
-    8: {
-        a1: "rook",
-        b1: "knight",
-        c1: "bishop",
-        d1: "queen",
-        e1: "king",
-        f1: "bishop",
-        g1: "knight",
-        h1: "rook",
-        a2: "pawn",
-        b2: "pawn",
-        c2: "pawn",
-        d2: "pawn",
-        e2: "pawn",
-        f2: "pawn",
-        g2: "pawn",
-        h2: "pawn"
-    },
-    0: {
-        a8: "rook",
-        b8: "knight",
-        c8: "bishop",
-        d8: "queen",
-        e8: "king",
-        f8: "bishop",
-        g8: "knight",
-        h8: "rook",
-        a7: "pawn",
-        b7: "pawn",
-        c7: "pawn",
-        d7: "pawn",
-        e7: "pawn",
-        f7: "pawn",
-        g7: "pawn",
-        h7: "pawn"
-    }
-};
 
 //var colorBlack = 0x10;
 //var colorWhite = 0x08;
@@ -107,6 +69,55 @@ var pieceBishop = 0x03;
 var pieceRook = 0x04;
 var pieceQueen = 0x05;
 var pieceKing = 0x06;
+
+var pieceText = [
+    "",
+    "&#9823;", // pawn
+    "&#9822;", // knight
+    "&#9821;", // bishop
+    "&#9820;", // rook
+    "&#9819;", // queen
+    "&#9818;", // king
+];
+
+var initialPositions = {
+    8: {
+        a1: pieceRook,
+        b1: pieceKnight,
+        c1: pieceBishop,
+        d1: pieceQueen,
+        e1: pieceKing,
+        f1: pieceBishop,
+        g1: pieceKnight,
+        h1: pieceRook,
+        a2: piecePawn,
+        b2: piecePawn,
+        c2: piecePawn,
+        d2: piecePawn,
+        e2: piecePawn,
+        f2: piecePawn,
+        g2: piecePawn,
+        h2: piecePawn
+    },
+    0: {
+        a8: pieceRook,
+        b8: pieceKnight,
+        c8: pieceBishop,
+        d8: pieceQueen,
+        e8: pieceKing,
+        f8: pieceBishop,
+        g8: pieceKnight,
+        h8: pieceRook,
+        a7: piecePawn,
+        b7: piecePawn,
+        c7: piecePawn,
+        d7: piecePawn,
+        e7: piecePawn,
+        f7: piecePawn,
+        g7: piecePawn,
+        h7: piecePawn
+    }
+};
 
 //var moveflagPromotion = 0x10 << 16;
 //var moveflagPromoteKnight = 0x20 << 16;
@@ -639,7 +650,7 @@ function ParseMove(move) {
     var fromSq = lookupSquare[from];
     var to = (move >> 8) & 0xFF;
     var toSq = lookupSquare[to];
-    //_.DebugMsg("ParseMove from: ", from, ", to: ", to, ", ", ", fromSq: ", fromSq, ", toSq: ", toSq);
+    _.DebugMsg("ParseMove from: ", from, ", to: ", to, ", ", ", fromSq: ", fromSq, ", toSq: ", toSq);
     return {
         from: from,
         fromSq: fromSq,
@@ -762,16 +773,6 @@ function OnBoardReset(data) {
     //UpdateTimePanel();
     UpdateTime();
 }
-
-var pieceText = [
-    "",
-    "&#9823;", // pawn
-    "&#9822;", // knight
-    "&#9821;", // bishop
-    "&#9820;", // rook
-    "&#9819;", // queen
-    "&#9818;", // king
-];
 
 function RenderCapturedPiece(pieceType, side) {
     _.DebugMsg("RenderCapturedPiece", pieceType, side, pieceText[pieceType]);
@@ -962,35 +963,11 @@ function RedrawPieces(g_board) {
         for (var x = 0; x < 8; ++x) {
             var td = m_Board[y * 8 + x];
             var piece = g_board[((y + 2) * 0x10) + x + 4 + 1];
-            var pieceName = null;
+            var pieceType = piece & 0x7;
 
-            switch (piece & 0x7) {
-                case pieceEmpty:
-                    pieceName = null;
-                    break;
-                case piecePawn:
-                    pieceName = "pawn";
-                    break;
-                case pieceKnight:
-                    pieceName = "knight";
-                    break;
-                case pieceBishop:
-                    pieceName = "bishop";
-                    break;
-                case pieceRook:
-                    pieceName = "rook";
-                    break;
-                case pieceQueen:
-                    pieceName = "queen";
-                    break;
-                case pieceKing:
-                    pieceName = "king";
-                    break;
-            }
-
-            if (pieceName != null) {
+            if (pieceType != pieceEmpty) {
                 var pieceOwner = piece & 0x8;
-                td.setPiece(pieceName, pieceOwner);
+                td.setPiece(pieceType, pieceOwner);
             } else {
                 td.clearPiece();
             }
