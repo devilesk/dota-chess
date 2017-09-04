@@ -13,6 +13,6 @@
         };
         $.Msg("scalePos", pos, result);
         return result;
-    }
+    };
     $.Msg("board_overlay.js");
 })();
