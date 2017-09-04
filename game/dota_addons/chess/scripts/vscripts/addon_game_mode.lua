@@ -516,7 +516,8 @@ function OnAcceptUndo(eventSourceIndex, args)
     if player_count == 1 then
         UndoMove()
     end
-    local move, san, captured_piece, saved_clock_remaining = GetLastMove()
+    has_timed_out = false
+    local move, san, captured_piece, saved_clock_remaining, saved_clock_start = GetLastMove()
     if saved_clock_remaining then
         clock_remaining[0] = saved_clock_remaining[0]
         clock_remaining[8] = saved_clock_remaining[8]
@@ -524,8 +525,17 @@ function OnAcceptUndo(eventSourceIndex, args)
         clock_remaining[0] = clock_time
         clock_remaining[8] = clock_time
     end
+    if saved_clock_start then
+        clock_start[0] = saved_clock_start[0]
+        clock_start[8] = saved_clock_start[8]
+    else
+        clock_start[0] = nil
+        clock_start[8] = nil
+    end
     if clock_timer[0] ~= nil then Timers:RemoveTimer(clock_timer[0]) end
     if clock_timer[8] ~= nil then Timers:RemoveTimer(clock_timer[8]) end
+    CustomNetTables:SetTableValue("time", "0", {remaining=clock_remaining[0]})
+    CustomNetTables:SetTableValue("time", "8", {remaining=clock_remaining[8]})
     DebugPrint("move", move)
     DebugPrint("saved_clock_remaining")
     DebugPrintTable(saved_clock_remaining)
@@ -555,7 +565,7 @@ function GetLastMove()
     local move = move_history[#move_history]
     DebugPrint("GetLastMove", move)
     DebugPrintTable(move)
-    return move.move, move.san, move.captured_piece, move.clock_remaining
+    return move.move, move.san, move.captured_piece, move.clock_remaining, move.clock_start
 end
 
 function DoMove(move)
@@ -576,6 +586,10 @@ function RecordMove(move, san, captured_piece)
         clock_remaining={
             [0]=clock_remaining_initial[0],
             [8]=clock_remaining_initial[8]
+        },
+        clock_start={
+            [0]=clock_start[0],
+            [8]=clock_start[8]
         }
     }
     table.insert(move_history, data)
