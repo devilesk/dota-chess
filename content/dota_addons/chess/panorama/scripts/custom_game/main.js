@@ -26,7 +26,7 @@ var capturedPieces = [];
 var timeControl = true;
 var timeRemaining = {};
 var timer = 0;
-var currentSide = 8; // 0 == black, 8 == white
+var toMove = 8; // 0 == black, 8 == white
 var numPly = 0;
 var player_sides = {
     8: null,
@@ -792,8 +792,8 @@ function OnBoardReset(data) {
     RedrawBoard();
     sanHistory = [];
     $("#history").RemoveAndDeleteChildren();
-    currentSide = data.toMove;
-    HighlightPlayerToMove(currentSide);
+    toMove = data.toMove;
+    HighlightPlayerToMove(toMove);
 
     timeRemaining = {
         8: data.clock_time,
@@ -915,8 +915,8 @@ function OnBoardUpdate(data) {
     }
     $("#history").ScrollToBottom();
 
-    currentSide = data.toMove;
-    HighlightPlayerToMove(currentSide);
+    toMove = data.toMove;
+    HighlightPlayerToMove(toMove);
 
     if (data.moves && Object.keys(data.moves).length == 0) {
         if (data.check) {
@@ -1003,7 +1003,7 @@ function UIState() {
 
 function OnRematchPressed() {
     if (!isPlayer) return;
-    _.DebugMsg("OnRematchPressed", mySide, currentSide);
+    _.DebugMsg("OnRematchPressed", mySide, toMove);
     if (!gameInProgress) {
         uiState.rematchPressed = !uiState.rematchPressed;
         if (uiState.rematchPressed) {
@@ -1018,7 +1018,7 @@ function OnRematchPressed() {
 
 function OnSwapPressed() {
     if (!isPlayer) return;
-    _.DebugMsg("OnSwapPressed", mySide, currentSide);
+    _.DebugMsg("OnSwapPressed", mySide, toMove);
     if (isSolo()) {
         AcceptSwap();
     }
@@ -1032,12 +1032,12 @@ function OnSwapPressed() {
 
 function OnUndoPressed() {
     if (!isPlayer) return;
-    _.DebugMsg("OnUndoPressed", mySide, currentSide);
+    _.DebugMsg("OnUndoPressed", mySide, toMove);
     if (isSolo()) {
         AcceptUndo();
     }
     else {
-        if (mySide != currentSide && numPly >= 2) {
+        if (mySide != toMove && numPly >= 2) {
             uiState.undoPressed = true;
             UpdateUI();
         }
@@ -1046,8 +1046,8 @@ function OnUndoPressed() {
 
 function OnOfferDrawPressed() {
     if (!isPlayer) return;
-    _.DebugMsg("OnOfferDrawPressed", mySide, currentSide);
-    if (mySide == currentSide && numPly >= 2 && !uiState.pendingDraw) {
+    _.DebugMsg("OnOfferDrawPressed", mySide, toMove);
+    if (mySide == toMove && numPly >= 2 && !uiState.pendingDraw) {
         uiState.drawPressed = true;
         UpdateUI();
     }
@@ -1208,17 +1208,17 @@ function UpdateUI() {
     uiState = uiStates[mySide];
     
     if (isSolo()) {
-        $("#btn-undo").SetHasClass("disabled", mySide != currentSide || numPly < 2);
+        $("#btn-undo").SetHasClass("disabled", mySide != toMove || numPly < 2);
     }
     else {
-        $("#btn-undo").SetHasClass("disabled", mySide == currentSide || uiState.undoPressed || numPly < 2);
+        $("#btn-undo").SetHasClass("disabled", mySide == toMove || uiState.undoPressed || numPly < 2);
     }
     
     $("#btn-rematch").SetHasClass("disabled", uiState.rematchPressed);
     $("#btn-rematch").SetHasClass("hidden", gameInProgress);
     
     $("#btn-swap").SetHasClass("disabled", uiState.swapPressed);
-    $("#btn-draw").SetHasClass("disabled", mySide != currentSide || uiState.drawPressed || numPly < 2 || uiState.pendingDraw);
+    $("#btn-draw").SetHasClass("disabled", mySide != toMove || uiState.drawPressed || numPly < 2 || uiState.pendingDraw);
     $("#btn-resign").SetHasClass("disabled", uiState.resignPressed);
     
     $("#btn-swap").SetHasClass("hidden", gameInProgress && (uiState.undoPressed || uiState.drawPressed || uiState.resignPressed || numPly >= 2));
@@ -1331,7 +1331,7 @@ function UpdatePlayerPanel() {
         $("#player-name-label-" + pos).SetHasClass("white", side != 0);
         $("#player-name-label-" + pos).SetHasClass("black", side == 0);
     });
-    HighlightPlayerToMove(currentSide);
+    HighlightPlayerToMove(toMove);
 }
 
 function InitRequestPanel(parentPanel, id, text, acceptHandler, declineHandler) {
