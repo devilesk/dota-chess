@@ -31,6 +31,7 @@ local ai_thinking = false
 local has_timed_out = false
 local ai_side = 0
 local player_sides
+local player_ready_count = 0
 -- 0 = black
 -- 8 = white
 local max_ply_table = {1, 3, 88888}
@@ -69,6 +70,10 @@ function GameMode:OnNPCSpawned(event)
     if npc:IsRealHero() then
         npc:RemoveSelf()
     end
+    player_ready_count = player_ready_count + 1
+    if player_count == player_ready_count then
+        OnNewGame(0, {})
+    end
 end
 
 function GameMode:OnGameRulesStateChange()
@@ -80,6 +85,11 @@ function GameMode:OnGameRulesStateChange()
         DebugPrint("DOTA_GAMERULES_STATE_WAIT_FOR_PLAYERS_TO_LOAD")
     elseif nNewState == DOTA_GAMERULES_STATE_CUSTOM_GAME_SETUP then
         DebugPrint("DOTA_GAMERULES_STATE_CUSTOM_GAME_SETUP")
+        
+        --[[SendToServerConsole( 'dota_create_fake_clients' )
+        Timers:CreateTimer(3, function ()
+            GameRules:FinishCustomGameSetup()
+        end)]]
         
         -- find host player id
         for i = 0, DOTA_MAX_TEAM_PLAYERS do
@@ -119,7 +129,7 @@ function GameMode:OnGameRulesStateChange()
     elseif nNewState == DOTA_GAMERULES_STATE_PRE_GAME then
         DebugPrint("DOTA_GAMERULES_STATE_PRE_GAME")
     elseif nNewState == DOTA_GAMERULES_STATE_GAME_IN_PROGRESS then
-        OnNewGame(0, {})
+        DebugPrint("DOTA_GAMERULES_STATE_GAME_IN_PROGRESS")
     end
 end
 
