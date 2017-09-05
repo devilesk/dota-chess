@@ -39,7 +39,6 @@ _.DebugMsg("mySide ", mySide);
 var moves;
 var lastMove;
 var selectedSquare;
-var paused = false;
 var lookupSquare = {};
 var bottomSide = 8;
 var gameInProgress = false;
@@ -527,7 +526,7 @@ _.extend(Square.prototype, {
         //if (this.panel) this.panel.RemoveClass("highlight");
     },
     OnActivate: function() {
-        if (paused) return;
+        if (Game.IsGamePaused()) return;
         if (selectedSquare && selectedSquare != this && selectedSquare.hasPiece()) {
             var data = {
                 startX: selectedSquare.col(),
@@ -573,7 +572,7 @@ _.extend(Square.prototype, {
         }
     },
     OnDragDrop: function(panelId, draggedPanel, square) {
-        if (paused) return;
+        if (Game.IsGamePaused()) return;
         _.DebugMsg("Square OnDragDrop ", this.panel.id, ", ", GameUI.GetCursorPosition());
         var draggedSquare = draggedPanel.square;
         _.DebugMsg("drop ", draggedSquare.panel.id, " to ", square.panel.id);
@@ -596,11 +595,10 @@ _.extend(Square.prototype, {
         }
     },
     OnDragStart: function(panelId, dragCallbacks, square) {
+        if (Game.IsGamePaused()) return;
         if (!this.draggable() || !this.panel) return;
-        if (paused) return;
         if (this.pieceOwner() != mySide) return;
 
-        //GameEvents.SendCustomGameEventToServer( "get_moves", {playerId: Players.GetLocalPlayer()} );
         _.DebugMsg("OnDragStart", moves);
 
         ClearHighlight();
@@ -764,14 +762,12 @@ function OnBoardReset(data) {
     _.DebugMsg("time_control", data.time_control);
     _.DebugMsg("clock_time", data.clock_time);
     _.DebugMsg("clock_increment", data.clock_increment);
-    _.DebugMsg("paused", data.paused);
     _.DebugMsg("player_sides", data.player_sides);
     
     numPly = 0;
     gameInProgress = true;
     player_sides = data.player_sides;
     timeControl = data.time_control;
-    paused = data.paused;
     selectedSquare = null;
     lastMove = null;
     HighlightLastMove();
@@ -866,7 +862,6 @@ function OnBoardUpdate(data) {
     _.DebugMsg("moves", data.moves);
     _.DebugMsg("move", data.move);
     _.DebugMsg("check", data.check);
-    _.DebugMsg("paused", data.paused);
     _.DebugMsg("undo", data.undo);
     _.DebugMsg("repDraw", data.repDraw);
     _.DebugMsg("move50", data.move50);
@@ -951,17 +946,6 @@ function OnBoardCheckmate() {
 function OnBoardStalemate() {
     _.DebugMsg("OnBoardStalemate");
     OnDraw();
-}
-
-function OnPauseChanged(data) {
-    paused = data.paused;
-    if (timer != 0) {
-        $.CancelScheduled(timer);
-        timer = 0;
-    }
-    if (!data.paused && numPly >= 2) {
-        timer = $.Schedule(0.1, UpdateTime);
-    }
 }
 
 function UpdateTime() {
@@ -1375,7 +1359,6 @@ function InitRequestPanel(parentPanel, id, text, acceptHandler, declineHandler) 
     GameEvents.Subscribe("board_checkmate", OnBoardCheckmate);
     GameEvents.Subscribe("board_stalemate", OnBoardStalemate);
     GameEvents.Subscribe("board_reset", OnBoardReset);
-    GameEvents.Subscribe("board_pause_changed", OnPauseChanged);
     GameEvents.Subscribe("receive_moves", OnReceiveMoves);
     GameEvents.Subscribe("swap_offer", OnReceivedSwapOffer);
     GameEvents.Subscribe("undo_offer", OnReceivedUndoOffer);

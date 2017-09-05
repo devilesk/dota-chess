@@ -28,7 +28,6 @@ local clock_remaining_initial = {}
 local clock_remaining = {}
 local ai_on = 1
 local ai_thinking = false
-local paused = false
 local has_timed_out = false
 local ai_side = 0
 local player_sides
@@ -152,7 +151,6 @@ function GameMode:InitGameMode()
     CustomGameEventManager:RegisterListener( "get_moves", OnGetMoves )
     CustomGameEventManager:RegisterListener( "drop_piece", OnDropPiece )
     --CustomGameEventManager:RegisterListener( "new_game", OnNewGame )
-    CustomGameEventManager:RegisterListener( "change_pause_state", OnChangePauseState )
     CustomGameEventManager:RegisterListener( "claim_draw", OnClaimDraw )
     CustomGameEventManager:RegisterListener( "decline_draw", OnDeclineDraw )
     CustomGameEventManager:RegisterListener( "resign", OnResign )
@@ -283,11 +281,6 @@ function OnSubmitFen(eventSourceIndex, args)
     TryAIMove()
 end
 
-function OnChangePauseState(eventSourceIndex, args)
-    paused = args.paused
-    CustomGameEventManager:Send_ServerToAllClients("board_pause_changed", {paused=paused})
-end
-
 function promotionCheck(move, promotionType)
     if (bit.band(move, moveflagPromotion) > 0 and promotionType ~= nil) then
         if (bit.band( move, moveflagPromoteBishop )>0 ) then
@@ -359,7 +352,7 @@ function OnDropPiece(eventSourceIndex, args)
 end
 
 function TryAIMove()
-    if ai_on == 1 and g_toMove == ai_side and not paused then
+    if ai_on == 1 and g_toMove == ai_side then
         ai_thinking = true
         Timers:CreateTimer(1, function ()
             DebugPrint("AIMove first timer", ai_ply_difficulty)
@@ -394,7 +387,6 @@ function SendBoardUpdate(move, san, captured_piece, moves, undo)
         moves=moves,
         move=move,
         check=g_inCheck,
-        paused=paused,
         move50=g_move50,
         repDraw=Is3RepDraw(),
         undo=undo,
