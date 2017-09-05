@@ -267,7 +267,7 @@ function NewGame(fen)
     ClearMoves()
     InitializeEval()
     ResetGame()
-    InitializeFromFen(args.fen)
+    InitializeFromFen(fen)
     has_timed_out = false
     game_in_progress = true
     local moves = GenerateValidMoves()
