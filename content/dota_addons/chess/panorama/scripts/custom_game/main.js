@@ -1315,12 +1315,21 @@ function UpdatePlayerPanel() {
             if (playerInfo) {
                 $("#player-" + pos).steamid = playerInfo.player_steamid;
                 $("#player-" + pos).SetHasClass("hidden", false);
+                $("#player-name-label-" + pos).text = Players.GetPlayerName(player_sides[side]) + " &ndash; " + (side == 0 ? $.Localize("side_black") : $.Localize("side_white"));
             }
         }
         else {
             $("#player-" + pos).steamid = 0;
             $("#player-" + pos).SetHasClass("hidden", true);
+            if (isSolo()) {
+                $("#player-name-label-" + pos).text = "Computer" + " &ndash; " + (side == 0 ? $.Localize("side_black") : $.Localize("side_white"));
+            }
+            else {
+                $("#player-name-label-" + pos).text = "";
+            }
         }
+        $("#player-name-label-" + pos).SetHasClass("white", side != 0);
+        $("#player-name-label-" + pos).SetHasClass("black", side == 0);
     });
     HighlightPlayerToMove(currentSide);
 }

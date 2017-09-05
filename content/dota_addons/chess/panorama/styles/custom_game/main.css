@@ -124,6 +124,23 @@
     width: 64px;
     height: 64px;
 }
+.player-name {
+    padding: 10px;
+    width: 100%;
+    padding-left: 0px;
+}
+.player-name Label {
+    width: 100%;
+    font-size: 24px;
+    font-weight: bold;
+    
+}
+.player-name Label.white {
+    color: white;
+}
+.player-name Label.black {
+    color: black;
+}
 .btn-action {
     width: 55px;
     height: 45px;

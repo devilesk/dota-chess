@@ -39,6 +39,9 @@
                     <Label id="btn-toggle-player-label" text="Toggle Player" />
                 </Button>-->
                 <Panel class="info-container" hittest="false">
+                    <Panel class="player-name" hittest="false">
+                        <Label id="player-name-label-top" html="true" hittest="false" />
+                    </Panel>
                     <Panel id="timer-top" class="timer top" hittest="false">
                         <DOTAAvatarImage id="player-top" class="avatar top" />
                         <Label id="timer-label-top" hittest="false" text="0:00" />
@@ -76,6 +79,9 @@
                     <Panel id="timer-bottom" class="timer bottom" hittest="false">
                         <DOTAAvatarImage id="player-bottom" class="avatar bottom" />
                         <Label id="timer-label-bottom" hittest="false" text="0:00" />
+                    </Panel>
+                    <Panel class="player-name" hittest="false">
+                        <Label id="player-name-label-bottom" html="true" hittest="false" />
                     </Panel>
                 </Panel>
             </Panel>
