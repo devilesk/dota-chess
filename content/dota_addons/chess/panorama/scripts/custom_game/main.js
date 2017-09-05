@@ -39,6 +39,7 @@ var selectedSquare;
 var lookupSquare = {};
 var bottomSide = 8;
 var gameInProgress = false;
+var sanHistory = [];
 
 function InitLookupSquare() {
     for (var i = 0; i < 8; i++) {
@@ -138,6 +139,15 @@ function formatTime(t) {
     else {
         return "";
     }
+}
+
+function GetPGN() {
+    var pgn = "";
+    for (var i = 0; i < Math.ceil(sanHistory.length / 2); i++) {
+        pgn += (i+1) + ". " + sanHistory[i*2] + " ";
+        if (i*2+1 < sanHistory.length) line += sanHistory[i*2+1] + " ";
+    }
+    return pgn.trim();
 }
 
 function OnPromote(data) {
@@ -768,6 +778,7 @@ function OnBoardReset(data) {
     g_board = data.board;
     capturedPieces.length = 0;
     RedrawBoard();
+    sanHistory = [];
     $("#history").RemoveAndDeleteChildren();
     currentSide = data.toMove;
     HighlightPlayerToMove(currentSide);
@@ -832,6 +843,8 @@ function RemoveHistory(numPly) {
             panelToRemove.DeleteAsync(0);
         }
     }
+    
+    sanHistory.splice(numPly);
 }
 
 function AddHistory(numPly, san) {
@@ -853,6 +866,8 @@ function AddHistory(numPly, san) {
     plyPanel.SetHasClass("white", numPly % 2 == 1);
     plyPanel.SetHasClass("black", numPly % 2 == 0);
     plyPanel.text = san;
+    
+    sanHistory.push(san);
 }
 
 function OnBoardUpdate(data) {
