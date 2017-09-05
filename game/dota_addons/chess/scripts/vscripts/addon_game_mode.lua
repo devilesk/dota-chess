@@ -286,7 +286,7 @@ function NewGame(fen)
     
     CustomGameEventManager:Send_ServerToAllClients("board_reset", {
         player_sides=player_sides,
-        board=g_board,
+        boardState=g_board,
         toMove=g_toMove,
         moves=moves,
         clock_time=clock_time,
@@ -391,7 +391,7 @@ end
 function SendBoardUpdate(move, san, captured_piece, moves, undo)
     DebugPrint("SendBoardUpdate", move, san, captured_piece, moves, undo)
     local data = {
-        board=g_board,
+        boardState=g_board,
         toMove=g_toMove,
         san=san,
         moves=moves,

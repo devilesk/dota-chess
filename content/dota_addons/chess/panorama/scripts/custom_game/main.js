@@ -21,7 +21,7 @@ var _ = GameUI.CustomUIConfig().UtilLibrary;
 var DialogLibrary;
 var m_ChatPanel;
 var m_Board = [];
-var g_board;
+var boardState;
 var capturedPieces = [];
 var timeControl = true;
 var timeRemaining = {};
@@ -429,7 +429,7 @@ function RedrawBoard() {
     $("#file-container").RemoveAndDeleteChildren();
     m_Board.length = 0;
     CreateBoard();
-    RedrawPieces(g_board);
+    RedrawPieces(boardState);
     RedrawCapturedPieces();
     $.Schedule(1, function () {
         HighlightLastMove(lastMove);
@@ -769,7 +769,7 @@ function UpdateMySide() {
 
 function OnBoardReset(data) {
     _.DebugMsg("OnBoardReset");
-    _.DebugMsg(data.board);
+    _.DebugMsg(data.boardState);
     _.DebugMsg("toMove", data.toMove);
     _.DebugMsg("san", data.san);
     _.DebugMsg("moves", data.moves);
@@ -787,7 +787,7 @@ function OnBoardReset(data) {
     lastMove = null;
     HighlightLastMove();
     moves = data.moves;
-    g_board = data.board;
+    boardState = data.boardState;
     capturedPieces.length = 0;
     RedrawBoard();
     sanHistory = [];
@@ -876,7 +876,7 @@ function AddHistory(numPly, san) {
 }
 
 function OnBoardUpdate(data) {
-    _.DebugMsg(data.board);
+    _.DebugMsg(data.boardState);
     _.DebugMsg("toMove", data.toMove);
     _.DebugMsg("san", data.san);
     _.DebugMsg("moves", data.moves);
@@ -891,8 +891,8 @@ function OnBoardUpdate(data) {
     numPly = data.numPly;
     selectedSquare = null;
     moves = data.moves;
-    g_board = data.board;
-    RedrawPieces(g_board);
+    boardState = data.boardState;
+    RedrawPieces(boardState);
     HighlightLastMove(data.move);
     
     if (data.undo) {
@@ -962,13 +962,13 @@ function UpdateTimePanel() {
     $("#timer-bottom").SetHasClass("warning", timeControl && timeRemaining[bottomSide] < 100);
 }
 
-function RedrawPieces(g_board) {
-    if (!g_board) return;
+function RedrawPieces(boardState) {
+    if (!boardState) return;
     _.DebugMsg("m_Board.length", m_Board.length);
     for (var y = 0; y < 8; ++y) {
         for (var x = 0; x < 8; ++x) {
             var td = m_Board[y * 8 + x];
-            var piece = g_board[((y + 2) * 0x10) + x + 4 + 1];
+            var piece = boardState[((y + 2) * 0x10) + x + 4 + 1];
             var pieceType = piece & 0x7;
 
             if (pieceType != pieceEmpty) {
