@@ -612,7 +612,7 @@ function PlayEndMoveSound(moveCount)
         if g_inCheck then
             EmitGlobalSound("Chess.Check")
         else
-            EmitGlobalSound("Creep_Radiant.Footstep")
+            EmitGlobalSound("Chess.Move")
         end
     end
 end
