@@ -86,7 +86,7 @@ function GameMode:OnNPCSpawned(event)
     end
     player_ready_count = player_ready_count + 1
     if player_count == player_ready_count then
-        OnNewGame(0, {})
+        NewGame()
     end
 end
 
@@ -165,7 +165,6 @@ function GameMode:InitGameMode()
     CustomGameEventManager:RegisterListener( "game_setup_options", OnGameSetupOptions )
     CustomGameEventManager:RegisterListener( "send_chat_message", OnSendChatMessage )
     CustomGameEventManager:RegisterListener( "drop_piece", OnDropPiece )
-    --CustomGameEventManager:RegisterListener( "new_game", OnNewGame )
     CustomGameEventManager:RegisterListener( "claim_draw", OnClaimDraw )
     CustomGameEventManager:RegisterListener( "decline_draw", OnDeclineDraw )
     CustomGameEventManager:RegisterListener( "resign", OnResign )
@@ -224,7 +223,7 @@ function GameMode:OnSetFENCommand(fen)
         if playerID == host_player_id then
             DebugPrint("Setting FEN", fen)
             if game_in_progress then
-                OnSubmitFen(0, {fen=fen})
+                NewGame(fen)
             else
                 INITIAL_FEN = fen
             end
@@ -262,19 +261,15 @@ function OnSendChatMessage(eventSourceIndex, args)
     CustomGameEventManager:Send_ServerToAllClients("receive_chat_message", {message=args['message'], playerId=args['playerID']})
 end
 
-function OnNewGame(eventSourceIndex, args)
-    args.fen = INITIAL_FEN
-    OnSubmitFen(eventSourceIndex, args)
-    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message={"#event_game_started"}, playerId=-1})
-    game_in_progress = true
-end
-
-function OnSubmitFen(eventSourceIndex, args)
+function NewGame(fen)
+    fen = fen or INITIAL_FEN
+    
     ClearMoves()
     InitializeEval()
     ResetGame()
     InitializeFromFen(args.fen)
     has_timed_out = false
+    game_in_progress = true
     local moves = GenerateValidMoves()
     rematch_requested = {}
     
@@ -298,7 +293,10 @@ function OnSubmitFen(eventSourceIndex, args)
         clock_increment=clock_increment,
         time_control=time_control
     })
+    
     TryAIMove()
+    
+    CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message={"#event_game_started"}, playerId=-1})
 end
 
 function promotionCheck(move, promotionType)
@@ -413,7 +411,7 @@ function OnRequestRematch(eventSourceIndex, args)
     DebugPrintTable(args)
     rematch_requested[args.playerSide] = true
     if player_count == 1 or (rematch_requested[0] and rematch_requested[8]) then
-        OnNewGame(0, {})
+        NewGame()
     end
 end
 
@@ -490,7 +488,7 @@ function OnAcceptSwap(eventSourceIndex, args)
     player_sides[8] = temp
     ai_side = 1 - ai_side + 7
     
-    OnNewGame(0, {})
+    NewGame()
     
     local l_message = {getSideString(args.playerSide),"#event_accept_swap"}
     CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
