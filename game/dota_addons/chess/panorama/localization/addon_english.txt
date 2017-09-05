@@ -21,6 +21,7 @@
     "prompt_undo"                               "Accept takeback?"
     "side_white"                                "White"
     "side_black"                                "Black"
+    "computer"                                  "Computer"
     "event_game_started"                        "Game started."
     "event_request_draw"                        " offers draw."
     "event_accept_draw"                         " accepts draw."

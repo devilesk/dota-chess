@@ -1322,7 +1322,7 @@ function UpdatePlayerPanel() {
             $("#player-" + pos).steamid = 0;
             $("#player-" + pos).SetHasClass("hidden", true);
             if (isSolo()) {
-                $("#player-name-label-" + pos).text = "Computer" + " &ndash; " + (side == 0 ? $.Localize("side_black") : $.Localize("side_white"));
+                $("#player-name-label-" + pos).text = $.Localize("computer") + " &ndash; " + (side == 0 ? $.Localize("side_black") : $.Localize("side_white"));
             }
             else {
                 $("#player-name-label-" + pos).text = "";
