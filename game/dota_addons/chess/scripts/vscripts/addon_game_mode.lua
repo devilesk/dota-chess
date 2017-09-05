@@ -458,6 +458,8 @@ function TimeOut(side)
             playerSide = side
         })
         has_timed_out = true
+        local l_message = {getSideString(side),"#event_timeout"}
+        CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
     end
 end
 

@@ -13,6 +13,7 @@
 /* exported OnDeclineSwapPressed */
 /* exported OnRematchPressed */
 /* exported OnTogglePlayerPressed */
+/* exported GetPGN */
 
 "use strict";
 
@@ -31,8 +32,8 @@ var player_sides = {
     8: null,
     0: null
 };
-var mySide = Game.GetLocalPlayerInfo().player_team_id == DOTATeam_t.DOTA_TEAM_GOODGUYS ? 8 : 0;
-_.DebugMsg("mySide ", mySide);
+var isPlayer = (Game.GetLocalPlayerInfo().player_team_id == DOTATeam_t.DOTA_TEAM_GOODGUYS) || (Game.GetLocalPlayerInfo().player_team_id == DOTATeam_t.DOTA_TEAM_BADGUYS);
+var mySide = null;
 var moves;
 var lastMove;
 var selectedSquare;
@@ -145,7 +146,7 @@ function GetPGN() {
     var pgn = "";
     for (var i = 0; i < Math.ceil(sanHistory.length / 2); i++) {
         pgn += (i+1) + ". " + sanHistory[i*2] + " ";
-        if (i*2+1 < sanHistory.length) line += sanHistory[i*2+1] + " ";
+        if (i*2+1 < sanHistory.length) pgn += sanHistory[i*2+1] + " ";
     }
     return pgn.trim();
 }
@@ -353,15 +354,7 @@ function OnGameEnd(prompt) {
 }
 
 function OnDraw() {
-    OnGameEnd("Draw.");
-}
-
-function OnLose() {
-    OnGameEnd("Checkmate. You lose!");
-}
-
-function OnWin() {
-    OnGameEnd("Checkmate. You win!");
+    OnGameEnd($.Localize("gameover_draw"));
 }
 
 function CreateChatPanel() {
@@ -533,6 +526,7 @@ _.extend(Square.prototype, {
         //if (this.panel) this.panel.RemoveClass("highlight");
     },
     OnActivate: function() {
+        if (!isPlayer) return;
         if (Game.IsGamePaused()) return;
         if (selectedSquare && selectedSquare != this && selectedSquare.hasPiece()) {
             var data = {
@@ -579,6 +573,7 @@ _.extend(Square.prototype, {
         }
     },
     OnDragDrop: function(panelId, draggedPanel, square) {
+        if (!isPlayer) return;
         if (Game.IsGamePaused()) return;
         _.DebugMsg("Square OnDragDrop ", this.panel.id, ", ", GameUI.GetCursorPosition());
         var draggedSquare = draggedPanel.square;
@@ -602,6 +597,7 @@ _.extend(Square.prototype, {
         }
     },
     OnDragStart: function(panelId, dragCallbacks, square) {
+        if (!isPlayer) return;
         if (Game.IsGamePaused()) return;
         if (!this.draggable() || !this.panel) return;
         if (this.pieceOwner() != mySide) return;
@@ -755,6 +751,22 @@ function HighlightPlayerToMove(toMove) {
     $("#timer-top").SetHasClass("highlight", toMove != bottomSide);
 }
 
+function UpdateMySide() {
+    _.DebugMsg("UpdateMySide", mySide);
+    if (player_sides[0] == Players.GetLocalPlayer()) {
+        mySide = 0;
+        isPlayer = true;
+    }
+    else if (player_sides[8] == Players.GetLocalPlayer()) {
+        mySide = 8;
+        isPlayer = true;
+    }
+    else {
+        mySide = null;
+        isPlayer = false;
+    }
+}
+
 function OnBoardReset(data) {
     _.DebugMsg("OnBoardReset");
     _.DebugMsg(data.board);
@@ -796,21 +808,14 @@ function OnBoardReset(data) {
         0: new UIState(),
         8: new UIState()
     };
-    
-    if (data.player_sides[0] == Players.GetLocalPlayer()) {
-        mySide = 0;
-    }
-    else if (data.player_sides[8] == Players.GetLocalPlayer()) {
-        mySide = 8;
-    }
-    else {
-        mySide = null;
-    }
-    uiState = uiStates[mySide];
-    _.DebugMsg("mySide", mySide);
+
+    Update();
+}
+
+function Update() {
+    UpdateMySide();
     UpdateUI();
     UpdatePlayerPanel();
-    //UpdateTimePanel();
     UpdateTime();
 }
 
@@ -915,12 +920,9 @@ function OnBoardUpdate(data) {
 
     if (data.moves && Object.keys(data.moves).length == 0) {
         if (data.check) {
-            if (mySide != data.toMove) {
-                OnWin();
-            } else {
-                OnLose();
-            }
-        } else {
+            OnGameEnd($.Localize(data.toMove == 0 ? "checkmate_white_win" : "checkmate_black_win"));
+        }
+        else {
             OnDraw();
         }
     }
@@ -933,16 +935,6 @@ function OnBoardUpdate(data) {
     UpdateUI();
     
     if (timer == 0) UpdateTime();
-}
-
-function OnBoardCheckmate() {
-    _.DebugMsg("OnBoardCheckmate");
-    OnWin();
-}
-
-function OnBoardStalemate() {
-    _.DebugMsg("OnBoardStalemate");
-    OnDraw();
 }
 
 function UpdateTime() {
@@ -995,7 +987,7 @@ var uiStates = {
     8: new UIState()
 };
 
-var uiState = uiStates[mySide];
+var uiState;
 
 function UIState() {
     this.rematchPressed = false;
@@ -1010,6 +1002,7 @@ function UIState() {
 }
 
 function OnRematchPressed() {
+    if (!isPlayer) return;
     _.DebugMsg("OnRematchPressed", mySide, currentSide);
     if (!gameInProgress) {
         uiState.rematchPressed = !uiState.rematchPressed;
@@ -1024,6 +1017,7 @@ function OnRematchPressed() {
 }
 
 function OnSwapPressed() {
+    if (!isPlayer) return;
     _.DebugMsg("OnSwapPressed", mySide, currentSide);
     if (isSolo()) {
         AcceptSwap();
@@ -1037,6 +1031,7 @@ function OnSwapPressed() {
 }
 
 function OnUndoPressed() {
+    if (!isPlayer) return;
     _.DebugMsg("OnUndoPressed", mySide, currentSide);
     if (isSolo()) {
         AcceptUndo();
@@ -1050,6 +1045,7 @@ function OnUndoPressed() {
 }
 
 function OnOfferDrawPressed() {
+    if (!isPlayer) return;
     _.DebugMsg("OnOfferDrawPressed", mySide, currentSide);
     if (mySide == currentSide && numPly >= 2 && !uiState.pendingDraw) {
         uiState.drawPressed = true;
@@ -1058,11 +1054,13 @@ function OnOfferDrawPressed() {
 }
 
 function OnResignPressed() {
+    if (!isPlayer) return;
     uiState.resignPressed = true;
     UpdateUI();
 }
 
 function OnCancelActionPressed() {
+    if (!isPlayer) return;
     uiState.swapPressed = false;
     uiState.undoPressed = false;
     uiState.drawPressed = false;
@@ -1071,6 +1069,7 @@ function OnCancelActionPressed() {
 }
 
 function OnConfirmActionPressed() {
+    if (!isPlayer) return;
     if (uiState.swapPressed) {
         RequestSwap();
         uiState.swapPressed = false;
@@ -1087,18 +1086,21 @@ function OnConfirmActionPressed() {
 }
 
 function OnReceivedSwapOffer(data) {
+    if (!isPlayer) return;
     _.DebugMsg("OnReceivedSwapOffer", data);
     uiStates[1 - data.playerSide + 7].pendingSwap = true;
     UpdateUI();
 }
 
 function OnReceivedDrawOffer(data) {
+    if (!isPlayer) return;
     _.DebugMsg("OnReceivedDrawOffer", data);
     uiStates[1 - data.playerSide + 7].pendingDraw = true;
     UpdateUI();
 }
 
 function OnReceivedUndoOffer(data) {
+    if (!isPlayer) return;
     _.DebugMsg("OnReceivedUndoOffer", data);
     uiStates[1 - data.playerSide + 7].pendingUndo = true;
     UpdateUI();
@@ -1109,20 +1111,19 @@ function OnReceivedDrawClaimed() {
 }
 
 function OnReceivedResigned(data) {
-    var prompt = data.playerSide == 0 ? "Black" : "White";
-    prompt += " resigns. ";
-    prompt += mySide == data.playerSide ? "You lose!" : "You win!";
+    var prompt = data.playerSide == 0 ? $.Localize("side_black") : $.Localize("side_white");
+    prompt += $.Localize("event_resign");
     OnGameEnd(prompt);
 }
 
 function OnReceivedTimedOut(data) {
-    var prompt = data.playerSide == 0 ? "Black" : "White";
-    prompt += " timed out. ";
-    prompt += mySide == data.playerSide ? "You lose!" : "You win!";
+    var prompt = data.playerSide == 0 ? $.Localize("side_black") : $.Localize("side_white");
+    prompt += $.Localize("event_timeout");
     OnGameEnd(prompt);
 }
 
 function OnAcceptSwapPressed() {
+    if (!isPlayer) return;
     if (uiState.pendingSwap) {
         uiState.pendingSwap = false;
         AcceptSwap();
@@ -1131,11 +1132,13 @@ function OnAcceptSwapPressed() {
 }
 
 function OnDeclineSwapPressed() {
+    if (!isPlayer) return;
     DeclineSwap();
     UpdateUI();
 }
 
 function OnAcceptUndoPressed() {
+    if (!isPlayer) return;
     if (uiState.pendingUndo) {
         uiState.pendingUndo = false;
         AcceptUndo();
@@ -1144,11 +1147,13 @@ function OnAcceptUndoPressed() {
 }
 
 function OnDeclineUndoPressed() {
+    if (!isPlayer) return;
     DeclineUndo();
     UpdateUI();
 }
 
 function OnAcceptDrawPressed() {
+    if (!isPlayer) return;
     if (uiState.pendingDraw) {
         uiState.pendingDraw = false;
         GameEvents.SendCustomGameEventToServer("claim_draw", {
@@ -1160,11 +1165,13 @@ function OnAcceptDrawPressed() {
 }
 
 function OnDeclineDrawPressed() {
+    if (!isPlayer) return;
     DeclineDraw();
     UpdateUI();
 }
 
 function DeclineDraw() {
+    if (!isPlayer) return;
     if (uiState.pendingDraw) {
         uiState.pendingDraw = false;
         GameEvents.SendCustomGameEventToServer("decline_draw", {
@@ -1175,6 +1182,7 @@ function DeclineDraw() {
 }
 
 function DeclineUndo() {
+    if (!isPlayer) return;
     if (uiState.pendingUndo) {
         uiState.pendingUndo = false;
         GameEvents.SendCustomGameEventToServer("decline_undo", {
@@ -1185,6 +1193,7 @@ function DeclineUndo() {
 }
 
 function DeclineSwap() {
+    if (!isPlayer) return;
     if (uiState.pendingSwap) {
         uiState.pendingSwap = false;
         GameEvents.SendCustomGameEventToServer("decline_swap", {
@@ -1195,6 +1204,9 @@ function DeclineSwap() {
 }
 
 function UpdateUI() {
+    if (!isPlayer) return;
+    uiState = uiStates[mySide];
+    
     if (isSolo()) {
         $("#btn-undo").SetHasClass("disabled", mySide != currentSide || numPly < 2);
     }
@@ -1223,6 +1235,7 @@ function UpdateUI() {
 }
 
 function AcceptSwap() {
+    if (!isPlayer) return;
     GameEvents.SendCustomGameEventToServer("accept_swap", {
         playerId: Players.GetLocalPlayer(),
         playerSide: mySide
@@ -1230,6 +1243,7 @@ function AcceptSwap() {
 }
 
 function AcceptUndo() {
+    if (!isPlayer) return;
     GameEvents.SendCustomGameEventToServer("accept_undo", {
         playerId: Players.GetLocalPlayer(),
         playerSide: mySide
@@ -1237,6 +1251,7 @@ function AcceptUndo() {
 }
 
 function Resign() {
+    if (!isPlayer) return;
     GameEvents.SendCustomGameEventToServer("resign", {
         playerId: Players.GetLocalPlayer(),
         playerSide: mySide
@@ -1244,6 +1259,7 @@ function Resign() {
 }
 
 function RequestRematch() {
+    if (!isPlayer) return;
     GameEvents.SendCustomGameEventToServer("request_rematch", {
         playerId: Players.GetLocalPlayer(),
         playerSide: mySide
@@ -1251,6 +1267,7 @@ function RequestRematch() {
 }
 
 function DeclineRematch() {
+    if (!isPlayer) return;
     GameEvents.SendCustomGameEventToServer("decline_rematch", {
         playerId: Players.GetLocalPlayer(),
         playerSide: mySide
@@ -1258,6 +1275,7 @@ function DeclineRematch() {
 }
 
 function RequestSwap() {
+    if (!isPlayer) return;
     GameEvents.SendCustomGameEventToServer("request_swap", {
         playerId: Players.GetLocalPlayer(),
         playerSide: mySide
@@ -1265,6 +1283,7 @@ function RequestSwap() {
 }
 
 function RequestUndo() {
+    if (!isPlayer) return;
     GameEvents.SendCustomGameEventToServer("request_undo", {
         playerId: Players.GetLocalPlayer(),
         playerSide: mySide
@@ -1353,8 +1372,6 @@ function InitRequestPanel(parentPanel, id, text, acceptHandler, declineHandler) 
     _.DebugMsg("player_sides ", player_sides);
     
     GameEvents.Subscribe("board_update", OnBoardUpdate);
-    GameEvents.Subscribe("board_checkmate", OnBoardCheckmate);
-    GameEvents.Subscribe("board_stalemate", OnBoardStalemate);
     GameEvents.Subscribe("board_reset", OnBoardReset);
     GameEvents.Subscribe("swap_offer", OnReceivedSwapOffer);
     GameEvents.Subscribe("undo_offer", OnReceivedUndoOffer);
@@ -1371,8 +1388,7 @@ function InitRequestPanel(parentPanel, id, text, acceptHandler, declineHandler) 
         };
     }
     
-    //UpdatePlayerPanel();
-    //UpdateTimePanel();
+    Update();
     $("#timer-bottom").SetHasClass("highlight", true);
 
     _.DebugMsg("main.js");
