@@ -1,10 +1,7 @@
 require("libraries/util")
 require("libraries/timers")
---require("libraries/bit32")
 require("debugf")
 require("garbochess")
-print("debug", DebugPrint)
--- Generated from template
 
 if GameMode == nil then
     GameMode = class({})
@@ -14,7 +11,7 @@ local game_in_progress = false
 local rematch_requested = {}
 local player_count = 1
 local host_player_id = 0
-local INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+local INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" -- FEN for new game
 local move_history = {}
 local DEBUG = 0 -- initial value of chess_debug
 local DEBUG_PLAYER_COUNT = nil -- nil, 1, 2
@@ -32,8 +29,7 @@ local has_timed_out = false
 local ai_side = 0
 local player_sides
 local player_ready_count = 0
--- 0 = black
--- 8 = white
+-- 0 = black, 8 = white
 local max_ply_table = {1, 3, 88888}
 local ai_ply_difficulty = 1
 --local ai_max_think_time = 5
@@ -43,6 +39,14 @@ function toboolbit(value)
         return 1
     else
         return 0
+    end
+end
+
+function getSideString(side)
+    if side == 0 then
+        return "#side_black"
+    else
+        return "#side_white"
     end
 end
 
@@ -62,6 +66,16 @@ function InitPlayerSides()
         [0]=t2,
         [8]=t1
     }
+end
+
+function Precache( context )
+    PrecacheResource("soundfile", "soundevents/custom_sounds.vsndevts", context)
+end
+
+-- Create the game mode when we activate
+function Activate()
+    GameRules.AddonTemplate = GameMode()
+    GameRules.AddonTemplate:InitGameMode()
 end
 
 function GameMode:OnNPCSpawned(event)
@@ -133,17 +147,11 @@ function GameMode:OnGameRulesStateChange()
     end
 end
 
-function Precache( context )
-    PrecacheResource("soundfile", "soundevents/custom_sounds.vsndevts", context)
-end
-
--- Create the game mode when we activate
-function Activate()
-    GameRules.AddonTemplate = GameMode()
-    GameRules.AddonTemplate:InitGameMode()
-end
-
 function GameMode:InitGameMode()
+    if IsInToolsMode()	then
+        DEBUG = 1
+    end
+    
     DebugPrint("InitGameMode")
 
     GameRules:GetGameModeEntity():SetAnnouncerDisabled(true)
@@ -161,7 +169,6 @@ function GameMode:InitGameMode()
     CustomGameEventManager:RegisterListener( "claim_draw", OnClaimDraw )
     CustomGameEventManager:RegisterListener( "decline_draw", OnDeclineDraw )
     CustomGameEventManager:RegisterListener( "resign", OnResign )
-    CustomGameEventManager:RegisterListener( "time_out", OnTimeOut )
     CustomGameEventManager:RegisterListener( "request_rematch", OnRequestRematch )
     CustomGameEventManager:RegisterListener( "decline_rematch", OnDeclineRematch )
     CustomGameEventManager:RegisterListener( "request_undo", OnRequestUndo )
@@ -270,6 +277,7 @@ function OnSubmitFen(eventSourceIndex, args)
     has_timed_out = false
     local moves = GenerateValidMoves()
     rematch_requested = {}
+    
     clock_start = {}
     clock_remaining[0] = clock_time
     clock_remaining[8] = clock_time
@@ -280,6 +288,7 @@ function OnSubmitFen(eventSourceIndex, args)
     clock_timer = {}
     CustomNetTables:SetTableValue("time", "0", {remaining=clock_remaining[0]})
     CustomNetTables:SetTableValue("time", "8", {remaining=clock_remaining[8]})
+    
     CustomGameEventManager:Send_ServerToAllClients("board_reset", {
         player_sides=player_sides,
         board=g_board,
@@ -295,15 +304,15 @@ end
 function promotionCheck(move, promotionType)
     if (bit.band(move, moveflagPromotion) > 0 and promotionType ~= nil) then
         if (bit.band( move, moveflagPromoteBishop )>0 ) then
-            return promotionType == "bishop"
+            return promotionType == pieceBishop
         else
             if ( bit.band( move, moveflagPromoteKnight )>0 ) then
-                return promotionType == "knight"
+                return promotionType == pieceKnight
             else
                 if ( bit.band( move, moveflagPromoteQueen )>0 ) then
-                    return promotionType == "queen"
+                    return promotionType == pieceQueen
                 else
-                    return promotionType == "rook"
+                    return promotionType == pieceRook
                 end
             end
         end
@@ -311,14 +320,6 @@ function promotionCheck(move, promotionType)
         return true
     else
         return false
-    end
-end
-
-function getSideString(side)
-    if side == 0 then
-        return "#side_black"
-    else
-        return "#side_white"
     end
 end
 
@@ -452,13 +453,11 @@ function OnResign(eventSourceIndex, args)
     CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
 end
 
-function OnTimeOut(eventSourceIndex, args)
-    DebugPrint("OnTimeOut", eventSourceIndex)
-    DebugPrintTable(args)
+function TimeOut(side)
+    DebugPrint("TimeOut", side)
     if not has_timed_out then
         CustomGameEventManager:Send_ServerToAllClients("timeout_end", {
-            playerId = args.playerId,
-            playerSide = args.playerSide
+            playerSide = side
         })
         has_timed_out = true
     end
@@ -651,7 +650,7 @@ function EndTurn()
     DebugPrint("remaining", clock_remaining[side])
     
     if clock_remaining[side] == 0 then
-        OnTimeOut(0, {playerSide=side})
+        TimeOut(side)
     else
         if #move_history >= 3 then
             clock_remaining[side] = clock_remaining[side] + clock_increment
@@ -685,7 +684,7 @@ function StartTurn()
         CustomNetTables:SetTableValue("time", tostring(current_side), {remaining=clock_remaining[current_side]})
         
         if clock_remaining[current_side] == 0 then
-            OnTimeOut(0, {playerSide=current_side})
+            TimeOut(current_side)
             return nil
         end
         

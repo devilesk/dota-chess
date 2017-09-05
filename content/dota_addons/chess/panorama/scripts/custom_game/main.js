@@ -25,7 +25,7 @@ var capturedPieces = [];
 var timeControl = true;
 var timeRemaining = {};
 var timer = 0;
-var currentSide = 8; // 0 == black, 0 != white
+var currentSide = 8; // 0 == black, 8 == white
 var numPly = 0;
 var player_sides = {
     8: null,
@@ -158,7 +158,7 @@ function OnPromote(data) {
                     children: [{
                         events: {
                             OnActivate: function() {
-                                SendPromotionMove(data, "queen");
+                                SendPromotionMove(data, pieceQueen);
                                 this.root.close();
                             },
                             OnTabForward: function() {
@@ -187,7 +187,7 @@ function OnPromote(data) {
                     children: [{
                         events: {
                             OnActivate: function() {
-                                SendPromotionMove(data, "rook");
+                                SendPromotionMove(data, pieceRook);
                                 this.root.close();
                             },
                             OnTabForward: function() {
@@ -216,7 +216,7 @@ function OnPromote(data) {
                     children: [{
                         events: {
                             OnActivate: function() {
-                                SendPromotionMove(data, "bishop");
+                                SendPromotionMove(data, pieceBishop);
                                 this.root.close();
                             },
                             OnTabForward: function() {
@@ -245,7 +245,7 @@ function OnPromote(data) {
                     children: [{
                         events: {
                             OnActivate: function() {
-                                SendPromotionMove(data, "knight");
+                                SendPromotionMove(data, pieceKnight);
                                 this.root.close();
                             },
                             OnTabForward: function() {
@@ -273,8 +273,8 @@ function OnPromote(data) {
     });
 }
 
-function SendPromotionMove(data, promotionType) {
-    data.promotionType = promotionType;
+function SendPromotionMove(data, pieceType) {
+    data.promotionType = pieceType;
     OnDropPiece(data);
 }
 
@@ -894,27 +894,9 @@ function OnBoardUpdate(data) {
         }
     }
     $("#history").ScrollToBottom();
-    
-    /*if (isSolo()) {
-        mySide = data.toMove;
-        uiState = uiStates[data.toMove];
-    }*/
 
     currentSide = data.toMove;
     HighlightPlayerToMove(currentSide);
-    
-    /*if (timeControl) {
-        var otherSide = 1 - currentSide + 7;
-        if (numPly > 2) timeRemaining[otherSide] += increment;
-        $("#timer-label-" + (bottomSide != currentSide ? "top" : "bottom")).text = formatTime(timeRemaining[bottomSide != currentSide ? 0 : 8]);
-
-        OnPauseChanged(data);
-    }*/
-    
-    //if (timer) $.CancelScheduled(timer);
-    //timer = $.Schedule(1, UpdateTime);
-
-    //if (data.san.slice(-1) == "#") OnLose();
 
     if (data.moves && Object.keys(data.moves).length == 0) {
         if (data.check) {
@@ -1107,6 +1089,24 @@ function OnReceivedUndoOffer(data) {
     UpdateUI();
 }
 
+function OnReceivedDrawClaimed() {
+    OnDraw();
+}
+
+function OnReceivedResigned(data) {
+    var prompt = data.playerSide == 0 ? "Black" : "White";
+    prompt += " resigns. ";
+    prompt += mySide == data.playerSide ? "You lose!" : "You win!";
+    OnGameEnd(prompt);
+}
+
+function OnReceivedTimedOut(data) {
+    var prompt = data.playerSide == 0 ? "Black" : "White";
+    prompt += " timed out. ";
+    prompt += mySide == data.playerSide ? "You lose!" : "You win!";
+    OnGameEnd(prompt);
+}
+
 function OnAcceptSwapPressed() {
     if (uiState.pendingSwap) {
         uiState.pendingSwap = false;
@@ -1177,24 +1177,6 @@ function DeclineSwap() {
             playerSide: mySide
         });
     }
-}
-
-function OnReceivedDrawClaimed() {
-    OnDraw();
-}
-
-function OnReceivedResigned(data) {
-    var prompt = data.playerSide == 0 ? "Black" : "White";
-    prompt += " resigns. ";
-    prompt += mySide == data.playerSide ? "You lose!" : "You win!";
-    OnGameEnd(prompt);
-}
-
-function OnReceivedTimedOut(data) {
-    var prompt = data.playerSide == 0 ? "Black" : "White";
-    prompt += " timed out. ";
-    prompt += mySide == data.playerSide ? "You lose!" : "You win!";
-    OnGameEnd(prompt);
 }
 
 function UpdateUI() {
