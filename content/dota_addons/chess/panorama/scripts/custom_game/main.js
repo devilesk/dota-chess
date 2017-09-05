@@ -23,10 +23,7 @@ var m_Board = [];
 var g_board;
 var capturedPieces = [];
 var timeControl = true;
-var timeRemaining = {
-    8: 110,
-    0: 110
-};
+var timeRemaining = {};
 var timer = 0;
 var currentSide = 8; // 0 == black, 0 != white
 var numPly = 0;
@@ -754,6 +751,7 @@ function HighlightPlayerToMove(toMove) {
 }
 
 function OnBoardReset(data) {
+    _.DebugMsg("OnBoardReset");
     _.DebugMsg(data.board);
     _.DebugMsg("toMove", data.toMove);
     _.DebugMsg("san", data.san);
@@ -793,8 +791,15 @@ function OnBoardReset(data) {
         8: new UIState()
     };
     
-    if (data.player_sides[0] == Players.GetLocalPlayer()) mySide = 0;
-    if (data.player_sides[8] == Players.GetLocalPlayer()) mySide = 8;
+    if (data.player_sides[0] == Players.GetLocalPlayer()) {
+        mySide = 0;
+    }
+    else if (data.player_sides[8] == Players.GetLocalPlayer()) {
+        mySide = 8;
+    }
+    else {
+        mySide = null;
+    }
     uiState = uiStates[mySide];
     _.DebugMsg("mySide", mySide);
     UpdateUI();
@@ -1359,7 +1364,6 @@ function InitRequestPanel(parentPanel, id, text, acceptHandler, declineHandler) 
     GameEvents.Subscribe("board_checkmate", OnBoardCheckmate);
     GameEvents.Subscribe("board_stalemate", OnBoardStalemate);
     GameEvents.Subscribe("board_reset", OnBoardReset);
-    GameEvents.Subscribe("receive_moves", OnReceiveMoves);
     GameEvents.Subscribe("swap_offer", OnReceivedSwapOffer);
     GameEvents.Subscribe("undo_offer", OnReceivedUndoOffer);
     GameEvents.Subscribe("draw_offer", OnReceivedDrawOffer);
@@ -1369,12 +1373,15 @@ function InitRequestPanel(parentPanel, id, text, acceptHandler, declineHandler) 
 
     var gameSetup = CustomNetTables.GetTableValue( "game_setup", "options" );
     if (gameSetup) {
-        timeRemaining[0] = gameSetup.clock_time;
-        timeRemaining[8] = gameSetup.clock_time;
+        timeRemaining = {
+            0: gameSetup.clock_time,
+            8: gameSetup.clock_time
+        };
     }
     
-    UpdatePlayerPanel();
-    UpdateTimePanel();
+    //UpdatePlayerPanel();
+    //UpdateTimePanel();
     $("#timer-bottom").SetHasClass("highlight", true);
+
     _.DebugMsg("main.js");
 })();

@@ -116,8 +116,6 @@ function GameMode:OnGameRulesStateChange()
             ai_side = 8
         end
         DebugPrint("ai_side " .. ai_side)
-        
-        CustomGameEventManager:Send_ServerToPlayer(PlayerResource:GetPlayer(host_player_id), "game_setup_end", {})
     elseif nNewState == DOTA_GAMERULES_STATE_PRE_GAME then
         DebugPrint("DOTA_GAMERULES_STATE_PRE_GAME")
     elseif nNewState == DOTA_GAMERULES_STATE_GAME_IN_PROGRESS then
@@ -148,7 +146,6 @@ function GameMode:InitGameMode()
 
     CustomGameEventManager:RegisterListener( "game_setup_options", OnGameSetupOptions )
     CustomGameEventManager:RegisterListener( "send_chat_message", OnSendChatMessage )
-    CustomGameEventManager:RegisterListener( "get_moves", OnGetMoves )
     CustomGameEventManager:RegisterListener( "drop_piece", OnDropPiece )
     --CustomGameEventManager:RegisterListener( "new_game", OnNewGame )
     CustomGameEventManager:RegisterListener( "claim_draw", OnClaimDraw )
@@ -248,10 +245,6 @@ function OnSendChatMessage(eventSourceIndex, args)
     CustomGameEventManager:Send_ServerToAllClients("receive_chat_message", {message=args['message'], playerId=args['playerID']})
 end
 
-function OnGetMoves(eventSourceIndex, args)
-    CustomGameEventManager:Send_ServerToAllClients("receive_moves", {moves=GenerateValidMoves()})
-end
-
 function OnNewGame(eventSourceIndex, args)
     args.fen = INITIAL_FEN
     OnSubmitFen(eventSourceIndex, args)
@@ -277,7 +270,15 @@ function OnSubmitFen(eventSourceIndex, args)
     clock_timer = {}
     CustomNetTables:SetTableValue("time", "0", {remaining=clock_remaining[0]})
     CustomNetTables:SetTableValue("time", "8", {remaining=clock_remaining[8]})
-    CustomGameEventManager:Send_ServerToAllClients("board_reset", {player_sides=player_sides, board=g_board, toMove=g_toMove, moves=moves, clock_time=clock_time, clock_increment=clock_increment, time_control=time_control})
+    CustomGameEventManager:Send_ServerToAllClients("board_reset", {
+        player_sides=player_sides,
+        board=g_board,
+        toMove=g_toMove,
+        moves=moves,
+        clock_time=clock_time,
+        clock_increment=clock_increment,
+        time_control=time_control
+    })
     TryAIMove()
 end
 
