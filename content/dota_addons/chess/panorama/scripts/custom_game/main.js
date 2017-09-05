@@ -691,11 +691,6 @@ function MakeSquare(row, column) {
     return ((row + 2) << 4) | (column + 4);
 }
 
-function OnReceiveMoves(data) {
-    _.DebugMsg("OnReceiveMoves", data);
-    moves = data.moves;
-}
-
 function HighlightLastMove(_lastMove) {
     if (lastMove) {
         ToggleHighlight(lastMove, false, false);
