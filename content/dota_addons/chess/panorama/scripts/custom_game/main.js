@@ -1353,13 +1353,8 @@ function CreateSquarePanel(parentPanel, id) {
         } else {
             label.text = "";
         }
-        [8, 0].forEach(function(c) {
-            label.SetHasClass(c == 0 ? "black" : "white", color == c);
-        });
-    }
-    
-    panel.SetText = function (text) {
-        $("#square-label").text = text;
+        label.SetHasClass("white", color != 0);
+        label.SetHasClass("black", color == 0);
     }
     
     return panel;
