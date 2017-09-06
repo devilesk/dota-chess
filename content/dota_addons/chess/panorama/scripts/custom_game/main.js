@@ -466,8 +466,7 @@ function Square(options) {
         }
     });
     options.id = options.id || "square-" + options.file + options.rank;
-
-    options.layoutfile = options.layoutfile || "file://{resources}/layout/custom_game/square.xml";
+    options.panel = CreateSquarePanel(options.parentPanel, options.id);
     _.Panel.call(this, options);
     if (this.panel) {
         this.panel.SetHasClass(this.color(), true);
@@ -608,8 +607,7 @@ _.extend(Square.prototype, {
         if (!HighlightMoves(this)) return false;
 
         // create a temp panel that will be dragged around
-        var displayPanel = $.CreatePanel("Panel", this.panel, "dragImage");
-        displayPanel.BLoadLayout("file://{resources}/layout/custom_game/square.xml", false, false);
+        var displayPanel = CreateSquarePanel(this.panel, "dragImage");
         //displayPanel.SetHasClass(this.color(), true);
 
         displayPanel.SetPiece(this.piece(), this.pieceOwner());
@@ -728,8 +726,7 @@ function ToggleHighlight(move, value, animate) {
             _.DebugMsg("animating", fromPos, toPos);
             
             var ghost = new _.Panel({
-                parentPanel: GameUI.CustomUIConfig().BoardOverlay.contextPanel,
-                layoutfile: "file://{resources}/layout/custom_game/square.xml",
+                panel: CreateSquarePanel(GameUI.CustomUIConfig().BoardOverlay.contextPanel),
                 hittest: false,
                 cssClasses: ["animate"],
                 style: fromPos
@@ -1340,6 +1337,33 @@ function InitRequestPanel(parentPanel, id, text, acceptHandler, declineHandler) 
     requestPanel.SetText(text);
     requestPanel.AcceptHandler = acceptHandler;
     requestPanel.DeclineHandler = declineHandler;
+}
+
+function CreateSquarePanel(parentPanel, id) {
+    id = id || "";
+    var panel = $.CreatePanel("Panel", parentPanel, id);
+    panel.SetHasClass("square", true);
+    var label = $.CreatePanel("Label", panel, "");
+    label.SetHasClass("square-label", true);
+    label.html = true;
+    label.hittest = true;
+    
+    panel.SetPiece = function (piece, color) {
+        if (piece) {
+            label.text = pieceText[piece];
+        } else {
+            label.text = "";
+        }
+        [8, 0].forEach(function(c) {
+            label.SetHasClass(c == 0 ? "black" : "white", color == c);
+        });
+    }
+    
+    panel.SetText = function (text) {
+        $("#square-label").text = text;
+    }
+    
+    return panel;
 }
 
 (function() {
