@@ -539,7 +539,7 @@ _.extend(Square.prototype, {
                 offerDraw: uiState.drawPressed
             };
 
-            if (selectedSquare.piece() == "pawn" && this.row() % 7 == 0) {
+            if (selectedSquare.piece() == piecePawn && this.row() % 7 == 0) {
                 OnPromote(data);
             } else {
                 OnDropPiece(data);
@@ -590,7 +590,7 @@ _.extend(Square.prototype, {
             offerDraw: uiState.drawPressed
         };
 
-        if (draggedSquare.piece() == "pawn" && square.row() % 7 == 0) {
+        if (draggedSquare.piece() == piecePawn && square.row() % 7 == 0) {
             OnPromote(data);
         } else {
             OnDropPiece(data);
