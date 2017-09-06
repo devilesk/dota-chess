@@ -78,45 +78,6 @@ var pieceText = [
     "&#9818;", // king
 ];
 
-var initialPositions = {
-    8: {
-        a1: pieceRook,
-        b1: pieceKnight,
-        c1: pieceBishop,
-        d1: pieceQueen,
-        e1: pieceKing,
-        f1: pieceBishop,
-        g1: pieceKnight,
-        h1: pieceRook,
-        a2: piecePawn,
-        b2: piecePawn,
-        c2: piecePawn,
-        d2: piecePawn,
-        e2: piecePawn,
-        f2: piecePawn,
-        g2: piecePawn,
-        h2: piecePawn
-    },
-    0: {
-        a8: pieceRook,
-        b8: pieceKnight,
-        c8: pieceBishop,
-        d8: pieceQueen,
-        e8: pieceKing,
-        f8: pieceBishop,
-        g8: pieceKnight,
-        h8: pieceRook,
-        a7: piecePawn,
-        b7: piecePawn,
-        c7: piecePawn,
-        d7: piecePawn,
-        e7: piecePawn,
-        f7: piecePawn,
-        g7: piecePawn,
-        h7: piecePawn
-    }
-};
-
 //var moveflagPromotion = 0x10 << 16;
 //var moveflagPromoteKnight = 0x20 << 16;
 //var moveflagPromoteQueen = 0x40 << 16;
@@ -439,7 +400,7 @@ function RedrawBoard() {
 function RedrawCapturedPieces() {
     $("#captured-top").RemoveAndDeleteChildren();
     $("#captured-bottom").RemoveAndDeleteChildren();
-    
+    capturedPieces.length = 0;
     capturedPieces.forEach(function (data) {
         if (data) data[2] = RenderCapturedPiece(data[1], data[0]);
     });
@@ -458,13 +419,6 @@ function Square(options) {
     this.hasPiece = _.observable(false);
     this.piece = _.observable(null);
     this.pieceOwner = _.observable(null);
-    [8, 0].forEach(function(c) {
-        if (initialPositions[c].hasOwnProperty(self.file() + self.rank())) {
-            self.piece(initialPositions[c][self.file() + self.rank()]);
-            self.pieceOwner(c);
-            self.hasPiece(true);
-        }
-    });
     options.id = options.id || "square-" + options.file + options.rank;
     options.panel = CreateSquarePanel(options.parentPanel, options.id);
     _.Panel.call(this, options);
@@ -487,6 +441,7 @@ function Square(options) {
 _.inherits(Square, _.Panel);
 _.extend(Square.prototype, {
     render: function() {
+        _.DebugMsg("render", this.piece(), this.pieceOwner());
         this.panel.SetPiece(this.piece(), this.pieceOwner());
         this.hittest(true);
     },
@@ -788,7 +743,6 @@ function OnBoardReset(data) {
     HighlightLastMove();
     moves = data.moves;
     boardState = data.boardState;
-    capturedPieces.length = 0;
     RedrawBoard();
     sanHistory = [];
     $("#history").RemoveAndDeleteChildren();
@@ -1352,15 +1306,16 @@ function CreateSquarePanel(parentPanel, id) {
     label.html = true;
     label.hittest = false;
     
-    panel.SetPiece = function (piece, color) {
-        if (piece) {
-            label.text = pieceText[piece];
+    panel.SetPiece = function (pieceType, pieceOwner) {
+        _.DebugMsg("SetPiece", pieceType, pieceOwner, pieceText[pieceType]);
+        if (pieceType) {
+            label.text = pieceText[pieceType];
         }
         else {
             label.text = "";
         }
-        label.SetHasClass("white", color != 0);
-        label.SetHasClass("black", color == 0);
+        label.SetHasClass("white", pieceOwner != 0);
+        label.SetHasClass("black", pieceOwner == 0);
     }
     
     return panel;
