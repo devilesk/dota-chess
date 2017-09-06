@@ -133,7 +133,8 @@ function formatTime(t) {
     if (timeControl) {
         if (t < 100) {
             return " " +pad(Math.floor(t / 600), 2) + ":" + pad(Math.floor(t / 10) % 60, 2) + "." + Math.floor(t % 10);
-        } else {
+        }
+        else {
             return " " +pad(Math.floor(t / 600), 2) + ":" + pad(Math.floor(t / 10) % 60, 2);
         }
     }
@@ -539,7 +540,8 @@ _.extend(Square.prototype, {
 
             if (selectedSquare.piece() == piecePawn && this.row() % 7 == 0) {
                 OnPromote(data);
-            } else {
+            } 
+            else {
                 OnDropPiece(data);
             }
         }
@@ -550,7 +552,8 @@ _.extend(Square.prototype, {
         if (this.selected()) {
             if (this.hasPiece()) HighlightMoves(this);
             selectedSquare = this;
-        } else {
+        }
+        else {
             selectedSquare = null;
         }
     },
@@ -590,7 +593,8 @@ _.extend(Square.prototype, {
 
         if (draggedSquare.piece() == piecePawn && square.row() % 7 == 0) {
             OnPromote(data);
-        } else {
+        }
+        else {
             OnDropPiece(data);
         }
     },
@@ -970,7 +974,8 @@ function RedrawPieces(boardState) {
             if (pieceType != pieceEmpty) {
                 var pieceOwner = piece & 0x8;
                 td.setPiece(pieceType, pieceOwner);
-            } else {
+            }
+            else {
                 td.clearPiece();
             }
             td.render();
@@ -1350,7 +1355,8 @@ function CreateSquarePanel(parentPanel, id) {
     panel.SetPiece = function (piece, color) {
         if (piece) {
             label.text = pieceText[piece];
-        } else {
+        }
+        else {
             label.text = "";
         }
         label.SetHasClass("white", color != 0);
