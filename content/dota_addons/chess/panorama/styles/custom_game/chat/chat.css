@@ -37,3 +37,50 @@
 #chat-input-button:active {
     border: 1px solid #333;
 }
+
+.chat-message-row {
+    padding: 0;
+    margin: 0;
+    height:30px;
+}
+.chat-message-row:hover {
+    overflow: scroll squish;
+}
+.chat-message {
+    padding: 0;
+    margin: 0;
+    color: white;
+}
+.chat-name {
+    font-weight: bold;
+}
+.player-color-0 {
+    color: #4070ba;
+}
+.player-color-1 {
+    color: #72d6b0;
+}
+.player-color-2 {
+    color: #ab07a4;
+}
+.player-color-3 {
+    color: #ebec36;
+}
+.player-color-4 {
+    color: #e26e19;
+}
+.player-color-5 {
+    color: #ee8aae;
+}
+.player-color-6 {
+    color: #9daa58;
+}
+.player-color-7 {
+    color: #73dbf4;
+}
+.player-color-8 {
+    color: #06671a;
+}
+.player-color-9 {
+    color: #976c04;
+}
