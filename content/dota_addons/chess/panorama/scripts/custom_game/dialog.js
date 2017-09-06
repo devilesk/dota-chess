@@ -9,6 +9,8 @@ var _;
     function Dialog(options) {
         //$.Msg("Dialog constructor");
         this.controls = [];
+        options.cssClasses = options.cssClasses || [];
+        options.cssClasses.push("dialog-container");
         _.Panel.call(this, options);
         if (this.controls.length) this.controls[0].panel.SetFocus();
     }

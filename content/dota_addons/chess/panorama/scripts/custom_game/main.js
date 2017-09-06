@@ -155,7 +155,6 @@ function OnPromote(data) {
     _.DebugMsg("OnPromote");
     new DialogLibrary.Dialog({
         parentPanel: DialogLibrary.contextPanel,
-        layoutfile: "file://{resources}/layout/custom_game/dialog/dialog.xml",
         id: "dialog-container",
         hittest: true,
         children: [{
@@ -305,7 +304,6 @@ function OnGameEnd(prompt) {
     UpdateUI();
     new DialogLibrary.Dialog({
         parentPanel: DialogLibrary.contextPanel,
-        layoutfile: "file://{resources}/layout/custom_game/dialog/dialog.xml",
         id: "dialog-container",
         hittest: true,
         children: [{
