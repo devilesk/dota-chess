@@ -1350,7 +1350,7 @@ function CreateSquarePanel(parentPanel, id) {
     var label = $.CreatePanel("Label", panel, "");
     label.SetHasClass("square-label", true);
     label.html = true;
-    label.hittest = true;
+    label.hittest = false;
     
     panel.SetPiece = function (piece, color) {
         if (piece) {
