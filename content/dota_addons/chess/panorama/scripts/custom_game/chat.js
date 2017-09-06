@@ -74,16 +74,9 @@ function ReceiveChatEvent(msg) {
     $("#chat-message-container").ScrollToBottom();
 }
 
-function SetChatFocus() {
-    $.Msg("SetChatFocus");
-    $("#chat-input").SetFocus();
-}
-
 (function() {
     currentPlayerId = Players.GetLocalPlayer();
 
     GameEvents.Subscribe("receive_chat_message", ReceiveChatMessage);
     GameEvents.Subscribe("receive_chat_event", ReceiveChatEvent);
-
-    $.GetContextPanel().SetChatFocus = SetChatFocus;
 })();
