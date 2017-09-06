@@ -1,5 +1,6 @@
 /* exported OnChatMessageEntered */
 /* exported OnChatBlur */
+/* exported InstantiateChatPanel */
 
 "use strict";
 

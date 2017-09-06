@@ -14,6 +14,7 @@
 /* exported OnRematchPressed */
 /* exported OnTogglePlayerPressed */
 /* exported GetPGN */
+/* global InstantiateChatPanel */
 
 "use strict";
 
@@ -66,7 +67,7 @@ var pieceKnight = 0x02;
 var pieceBishop = 0x03;
 var pieceRook = 0x04;
 var pieceQueen = 0x05;
-var pieceKing = 0x06;
+//var pieceKing = 0x06;
 
 var pieceText = [
     "",
@@ -1293,8 +1294,8 @@ function CreateRequestPanel(parentPanel, id, text, acceptHandler, declineHandler
     var requestPanel = $.CreatePanel("Panel", parentPanel, id);
     requestPanel.BLoadLayoutSnippet("request-panel");
     requestPanel.FindChildTraverse("action-message").text = text;
-    requestPanel.FindChildTraverse("btn-accept").SetPanelEvent('onactivate', acceptHandler);
-    requestPanel.FindChildTraverse("btn-decline").SetPanelEvent('onactivate', declineHandler);
+    requestPanel.FindChildTraverse("btn-accept").SetPanelEvent("onactivate", acceptHandler);
+    requestPanel.FindChildTraverse("btn-decline").SetPanelEvent("onactivate", declineHandler);
 }
 
 function CreateSquarePanel(parentPanel, id) {
@@ -1316,7 +1317,7 @@ function CreateSquarePanel(parentPanel, id) {
         }
         label.SetHasClass("white", pieceOwner != 0);
         label.SetHasClass("black", pieceOwner == 0);
-    }
+    };
     
     return panel;
 }
