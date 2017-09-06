@@ -1,7 +1,6 @@
 <root>
     <styles>
         <include src="file://{resources}/styles/dotastyles.css" />
-        <include src="file://{resources}/styles/custom_game/common.css" />
         <include src="file://{resources}/styles/custom_game/main.css" />
         <include src="file://{resources}/styles/custom_game/chess.css" />
         <include src="file://{resources}/styles/custom_game/chat.css" />
