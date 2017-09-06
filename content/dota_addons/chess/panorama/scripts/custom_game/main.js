@@ -1331,12 +1331,12 @@ function UpdatePlayerPanel() {
     HighlightPlayerToMove(toMove);
 }
 
-function InitRequestPanel(parentPanel, id, text, acceptHandler, declineHandler) {
+function CreateRequestPanel(parentPanel, id, text, acceptHandler, declineHandler) {
     var requestPanel = $.CreatePanel("Panel", parentPanel, id);
-    requestPanel.BLoadLayout("file://{resources}/layout/custom_game/request_panel.xml", false, false);
-    requestPanel.SetText(text);
-    requestPanel.AcceptHandler = acceptHandler;
-    requestPanel.DeclineHandler = declineHandler;
+    requestPanel.BLoadLayoutSnippet("request-panel");
+    requestPanel.FindChildTraverse("action-message").text = text;
+    requestPanel.FindChildTraverse("btn-accept").SetPanelEvent('onactivate', acceptHandler);
+    requestPanel.FindChildTraverse("btn-decline").SetPanelEvent('onactivate', declineHandler);
 }
 
 function CreateSquarePanel(parentPanel, id) {
@@ -1383,9 +1383,9 @@ function CreateSquarePanel(parentPanel, id) {
     //CreateBoard();
     
     var requestContainer = $("#action-container");
-    InitRequestPanel(requestContainer, "undo-request-container", "#prompt_undo", OnAcceptUndoPressed, OnDeclineUndoPressed);
-    InitRequestPanel(requestContainer, "draw-request-container", "#prompt_draw", OnAcceptDrawPressed, OnDeclineDrawPressed);
-    InitRequestPanel(requestContainer, "swap-request-container", "#prompt_swap", OnAcceptSwapPressed, OnDeclineSwapPressed);
+    CreateRequestPanel(requestContainer, "undo-request-container", "#prompt_undo", OnAcceptUndoPressed, OnDeclineUndoPressed);
+    CreateRequestPanel(requestContainer, "draw-request-container", "#prompt_draw", OnAcceptDrawPressed, OnDeclineDrawPressed);
+    CreateRequestPanel(requestContainer, "swap-request-container", "#prompt_swap", OnAcceptSwapPressed, OnDeclineSwapPressed);
 
     if (Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_GOODGUYS).length) {
         player_sides[8] = Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_GOODGUYS)[0];

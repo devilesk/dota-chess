@@ -8,6 +8,21 @@
     <scripts>
         <include src="file://{resources}/scripts/custom_game/main.js" />
     </scripts>
+    <snippets>
+        <snippet name="request-panel">
+            <Panel class="action-message-container hidden">
+                <Label id="action-message" class="action-message" hittest="false" html="true" />
+                <Panel class="action-message-buttons">
+                    <Button id="btn-accept" class="btn btn-accept">
+                        <Label hittest="false" text="&#10004;" />
+                    </Button>
+                    <Button id="btn-decline" class="btn btn-decline">
+                        <Label hittest="false" text="&#10006;" />
+                    </Button>
+                </Panel>
+            </Panel>
+        </snippet>
+    </snippets>
     <Panel class="container" hittest="false">
         <Panel class="controls-container" hittest="false">
             <Button id="DashboardButton" hittest="false">
