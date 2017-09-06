@@ -4,11 +4,24 @@
         <include src="file://{resources}/styles/custom_game/common.css" />
         <include src="file://{resources}/styles/custom_game/main.css" />
         <include src="file://{resources}/styles/custom_game/chess.css" />
+        <include src="file://{resources}/styles/custom_game/chat.css" />
     </styles>
     <scripts>
+        <include src="file://{resources}/scripts/custom_game/chat.js" />
         <include src="file://{resources}/scripts/custom_game/main.js" />
     </scripts>
     <snippets>
+        <snippet name="chat-panel">
+            <Panel class="chat-container" hittest="false">
+                <Panel id="chat-message-container" hittest="false" />
+                <Panel id="chat-input-container" hittest="false">
+                    <TextEntry id="chat-input" placeholder="Enter message..." />
+                    <Button id="chat-input-button">
+                        <Label id="chat-input-button-label" text="Send" />
+                    </Button>
+                </Panel>
+            </Panel>
+        </snippet>
         <snippet name="request-panel">
             <Panel class="action-message-container hidden">
                 <Label id="action-message" class="action-message" hittest="false" html="true" />

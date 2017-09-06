@@ -6,6 +6,11 @@
 var m_ChatMessagePanels = [];
 var currentPlayerId;
 
+function InstantiateChatPanel(panel) {
+    panel.FindChildTraverse("chat-input").SetPanelEvent("oninputsubmit", OnChatMessageEntered);
+    panel.FindChildTraverse("chat-input-button").SetPanelEvent("onactivate", OnChatMessageEntered);
+}
+
 function CreateChatMessagePanel(message, playerID) {
     //$.Msg("ReceiveChatMessage", message, playerID);
     var parentPanel = $("#chat-message-container");
@@ -69,17 +74,8 @@ function ReceiveChatEvent(msg) {
 }
 
 function SetChatFocus() {
+    $.Msg("SetChatFocus");
     $("#chat-input").SetFocus();
-}
-
-function OnChatBlur() {
-    //$.Msg("OnChatBlur");
-    var root = $.GetContextPanel().GetParent().GetParent().GetParent();
-    root.hittest = true;
-    $.Schedule(2, function() {
-        //$.Msg("hittest = false");
-        root.hittest = false;
-    });
 }
 
 (function() {
