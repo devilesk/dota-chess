@@ -11,7 +11,6 @@
 --
 
 --require "bit"
---require("libraries/bit32")
 
 g_timeout = 3;		-- can set maximum seconds for analysing
 g_maxfinCnt = 100000;	-- can set limit of moves to analyse
