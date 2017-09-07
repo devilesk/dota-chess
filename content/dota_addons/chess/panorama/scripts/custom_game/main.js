@@ -113,8 +113,8 @@ function GetFEN() {
 function GetPGN() {
     var pgn = "";
     for (var i = 0; i < Math.ceil(sanHistory.length / 2); i++) {
-        pgn += (i+1) + ". " + sanHistory[i*2] + " ";
-        if (i*2+1 < sanHistory.length) pgn += sanHistory[i*2+1] + " ";
+        pgn += (i+1) + ". " + sanHistory[i*2].trim() + " ";
+        if (i*2+1 < sanHistory.length) pgn += sanHistory[i*2+1].trim() + " ";
     }
     return pgn.trim();
 }
