@@ -1236,34 +1236,38 @@ function DeclineSwap() {
 }
 
 function UpdateUI() {
-    if (!isPlayer) return;
-    uiState = uiStates[mySide];
-    
-    if (isSolo()) {
-        $("#btn-undo").SetHasClass("disabled", mySide != toMove || numPly < 2);
+    if (!isPlayer) {
+        $("#action-container").SetHasClass("hidden", true);
     }
     else {
-        $("#btn-undo").SetHasClass("disabled", mySide == toMove || uiState.undoPressed || numPly < 2);
+        uiState = uiStates[mySide];
+        
+        if (isSolo()) {
+            $("#btn-undo").SetHasClass("disabled", mySide != toMove || numPly < 2);
+        }
+        else {
+            $("#btn-undo").SetHasClass("disabled", mySide == toMove || uiState.undoPressed || numPly < 2);
+        }
+        
+        $("#btn-rematch").SetHasClass("disabled", uiState.rematchPressed);
+        $("#btn-rematch").SetHasClass("hidden", gameInProgress);
+        
+        $("#btn-swap").SetHasClass("disabled", uiState.swapPressed);
+        $("#btn-draw").SetHasClass("disabled", mySide != toMove || uiState.drawPressed || numPly < 2 || uiState.pendingDraw);
+        $("#btn-resign").SetHasClass("disabled", uiState.resignPressed);
+        
+        $("#btn-swap").SetHasClass("hidden", gameInProgress && (uiState.undoPressed || uiState.drawPressed || uiState.resignPressed || numPly >= 2));
+        $("#btn-undo").SetHasClass("hidden", uiState.swapPressed || uiState.drawPressed || uiState.resignPressed);
+        $("#btn-draw").SetHasClass("hidden", !gameInProgress || isSolo() || uiState.swapPressed || uiState.resignPressed || uiState.undoPressed);
+        $("#btn-resign").SetHasClass("hidden", !gameInProgress || uiState.swapPressed || uiState.drawPressed || uiState.undoPressed);
+        
+        $("#btn-confirm").SetHasClass("hidden", !uiState.swapPressed && !uiState.resignPressed && !uiState.undoPressed);
+        $("#btn-cancel").SetHasClass("hidden", !uiState.swapPressed && !uiState.drawPressed && !uiState.resignPressed && !uiState.undoPressed);
+        
+        $("#swap-request-container").SetHasClass("hidden", !uiState.pendingSwap);
+        $("#draw-request-container").SetHasClass("hidden", !uiState.pendingDraw);
+        $("#undo-request-container").SetHasClass("hidden", !uiState.pendingUndo);
     }
-    
-    $("#btn-rematch").SetHasClass("disabled", uiState.rematchPressed);
-    $("#btn-rematch").SetHasClass("hidden", gameInProgress);
-    
-    $("#btn-swap").SetHasClass("disabled", uiState.swapPressed);
-    $("#btn-draw").SetHasClass("disabled", mySide != toMove || uiState.drawPressed || numPly < 2 || uiState.pendingDraw);
-    $("#btn-resign").SetHasClass("disabled", uiState.resignPressed);
-    
-    $("#btn-swap").SetHasClass("hidden", gameInProgress && (uiState.undoPressed || uiState.drawPressed || uiState.resignPressed || numPly >= 2));
-    $("#btn-undo").SetHasClass("hidden", uiState.swapPressed || uiState.drawPressed || uiState.resignPressed);
-    $("#btn-draw").SetHasClass("hidden", !gameInProgress || isSolo() || uiState.swapPressed || uiState.resignPressed || uiState.undoPressed);
-    $("#btn-resign").SetHasClass("hidden", !gameInProgress || uiState.swapPressed || uiState.drawPressed || uiState.undoPressed);
-    
-    $("#btn-confirm").SetHasClass("hidden", !uiState.swapPressed && !uiState.resignPressed && !uiState.undoPressed);
-    $("#btn-cancel").SetHasClass("hidden", !uiState.swapPressed && !uiState.drawPressed && !uiState.resignPressed && !uiState.undoPressed);
-    
-    $("#swap-request-container").SetHasClass("hidden", !uiState.pendingSwap);
-    $("#draw-request-container").SetHasClass("hidden", !uiState.pendingDraw);
-    $("#undo-request-container").SetHasClass("hidden", !uiState.pendingUndo);
 }
 
 function AcceptSwap() {
