@@ -96,9 +96,25 @@ TextEntry:focus {
     height: 96px;
     margin: 5px;
 }
-.promotion-dialog .btn Label {
+
+.btn-promote {
     width: 100%;
-    text-align: center;
-    font-size: 64;
-    vertical-align: top;
+    height: 100%;
+    wash-color: #bbb;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 50% 50%;
+}
+
+.knight {
+    background-image: url("file://{images}/pieces/white_knight.png");
+}
+.bishop {
+    background-image: url("file://{images}/pieces/white_bishop.png");
+}
+.rook {
+    background-image: url("file://{images}/pieces/white_rook.png");
+}
+.queen {
+    background-image: url("file://{images}/pieces/white_queen.png");
 }

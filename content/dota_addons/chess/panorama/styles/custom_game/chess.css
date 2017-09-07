@@ -68,6 +68,7 @@
 
 .board {
     flow-children: down;
+    background-color: black;
 }
 
 .rank {
@@ -100,8 +101,13 @@
 .square-wrapper.black.last-move {
     background-color: #aaa23b;
 }
+
 .square.selected,
-.square-wrapper.selected {
+.square-wrapper.selected,
+.square.white.potential_drop_target.selected,
+.square-wrapper.white.potential_drop_target.selected,
+.square.black.potential_drop_target.selected,
+.square-wrapper.black.potential_drop_target.selected {
     background-color: #83976a;
 }
 .square.move-dest,
@@ -110,39 +116,58 @@
     background-position: center;
     background-repeat: no-repeat;
 }
-.square.white.potential_drop_target,
-.square-wrapper.white.potential_drop_target {
-    background-color: #FFF0D6;
+.square.move-dest.potential_drop_target,
+.square-wrapper.move-dest.potential_drop_target {
+    opacity: 0.4;
 }
-.square.black.potential_drop_target,
-.square-wrapper.black.potential_drop_target {
-    background-color: #92653f;
-}
-.square-label {
-    width: 100%;
-    text-align: center;
-    font-size: 64;
-    vertical-align: top;
-}
-.AspectRatio4x3 .square-label {
-    font-size: 48;
+.dragging_from {
+    opacity: 0.75;
 }
 
-.square-label.white {
-    color: white;
-    text-shadow: 0px 0px 2px 3.0 black;
+.square-piece {
+    width: 100%;
+    height: 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 80% 80%;
 }
-.square-label.black {
-    color: black;
-    text-shadow: 0px 0px 2px 1.0 #aaa;
+
+.white.pawn {
+    background-image: url("file://{images}/pieces/white_pawn.png");
 }
-.square:hover .square-label.white {
-    color: white;
-    text-shadow: 0px 0px 8px 6.0 green;
+.white.knight {
+    background-image: url("file://{images}/pieces/white_knight.png");
 }
-.square:hover .square-label.black {
-    color: black;
-    text-shadow: 0px 0px 8px 6.0 green;
+.white.bishop {
+    background-image: url("file://{images}/pieces/white_bishop.png");
+}
+.white.rook {
+    background-image: url("file://{images}/pieces/white_rook.png");
+}
+.white.queen {
+    background-image: url("file://{images}/pieces/white_queen.png");
+}
+.white.king {
+    background-image: url("file://{images}/pieces/white_king.png");
+}
+
+.black.pawn {
+    background-image: url("file://{images}/pieces/black_pawn.png");
+}
+.black.knight {
+    background-image: url("file://{images}/pieces/black_knight.png");
+}
+.black.bishop {
+    background-image: url("file://{images}/pieces/black_bishop.png");
+}
+.black.rook {
+    background-image: url("file://{images}/pieces/black_rook.png");
+}
+.black.queen {
+    background-image: url("file://{images}/pieces/black_queen.png");
+}
+.black.king {
+    background-image: url("file://{images}/pieces/black_king.png");
 }
 
 .animate {

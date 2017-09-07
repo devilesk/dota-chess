@@ -71,12 +71,12 @@ var pieceQueen = 0x05;
 
 var pieceText = [
     "",
-    "&#9823;", // pawn
-    "&#9822;", // knight
-    "&#9821;", // bishop
-    "&#9820;", // rook
-    "&#9819;", // queen
-    "&#9818;", // king
+    "pawn", // pawn
+    "knight", // knight
+    "bishop", // bishop
+    "rook", // rook
+    "queen", // queen
+    "king", // king
 ];
 
 //var moveflagPromotion = 0x10 << 16;
@@ -144,13 +144,9 @@ function OnPromote(data) {
                         },
                         cssClasses: ["btn"],
                         children: [{
-                            panelType: "Label",
-                            text: "&#9819;", // queen
-                            skipBindHandlers: true,
-                            html: true,
-                            init: function() {
-                                this.text("&#9819;");
-                            }
+                            cssClasses: ["btn-promote", "queen"],
+                            panelType: "Panel",
+                            skipBindHandlers: true
                         }]
                     }]
                 },
@@ -173,13 +169,9 @@ function OnPromote(data) {
                         },
                         cssClasses: ["btn"],
                         children: [{
-                            panelType: "Label",
-                            text: "&#9820;", // rook
-                            skipBindHandlers: true,
-                            html: true,
-                            init: function() {
-                                this.text("&#9820;");
-                            }
+                            cssClasses: ["btn-promote", "rook"],
+                            panelType: "Panel",
+                            skipBindHandlers: true
                         }]
                     }]
                 },
@@ -202,13 +194,9 @@ function OnPromote(data) {
                         },
                         cssClasses: ["btn"],
                         children: [{
-                            panelType: "Label",
-                            text: "&#9821;", // bishop
-                            skipBindHandlers: true,
-                            html: true,
-                            init: function() {
-                                this.text("&#9821;");
-                            }
+                            cssClasses: ["btn-promote", "bishop"],
+                            panelType: "Panel",
+                            skipBindHandlers: true
                         }]
                     }]
                 },
@@ -231,13 +219,9 @@ function OnPromote(data) {
                         },
                         cssClasses: ["btn"],
                         children: [{
-                            panelType: "Label",
-                            text: "&#9822;", // knight
-                            skipBindHandlers: true,
-                            html: true,
-                            init: function() {
-                                this.text("&#9822;");
-                            }
+                            cssClasses: ["btn-promote", "knight"],
+                            panelType: "Panel",
+                            skipBindHandlers: true
                         }]
                     }]
                 }
@@ -442,7 +426,7 @@ function Square(options) {
 _.inherits(Square, _.Panel);
 _.extend(Square.prototype, {
     render: function() {
-        _.DebugMsg("render", this.piece(), this.pieceOwner());
+        //_.DebugMsg("render", this.piece(), this.pieceOwner());
         this.panel.SetPiece(this.piece(), this.pieceOwner());
         this.hittest(true);
     },
@@ -483,6 +467,7 @@ _.extend(Square.prototype, {
     OnActivate: function() {
         if (!isPlayer) return;
         if (Game.IsGamePaused()) return;
+        _.DebugMsg("OnActivate", this.panel.id);
         if (selectedSquare && selectedSquare != this && selectedSquare.hasPiece()) {
             var data = {
                 startX: selectedSquare.col(),
@@ -567,15 +552,14 @@ _.extend(Square.prototype, {
 
         // create a temp panel that will be dragged around
         var displayPanel = CreateSquarePanel(this.panel, "dragImage");
-        //displayPanel.SetHasClass(this.color(), true);
 
         displayPanel.SetPiece(this.piece(), this.pieceOwner());
         displayPanel.square = this;
 
         // hook up the display panel, and specify the panel offset from the cursor
         dragCallbacks.displayPanel = displayPanel;
-        dragCallbacks.offsetX = 32;
-        dragCallbacks.offsetY = 32;
+        dragCallbacks.offsetX = (this.panel.GetParent().actuallayoutwidth || 32) / 2;
+        dragCallbacks.offsetY = (this.panel.GetParent().actuallayoutheight || 32) / 2;
 
         // grey out the source panel while dragging
         this.panel.AddClass("dragging_from");
@@ -610,7 +594,7 @@ function ParseMove(move) {
     var fromSq = lookupSquare[from];
     var to = (move >> 8) & 0xFF;
     var toSq = lookupSquare[to];
-    _.DebugMsg("ParseMove from: ", from, ", to: ", to, ", ", ", fromSq: ", fromSq, ", toSq: ", toSq);
+    //_.DebugMsg("ParseMove from: ", from, ", to: ", to, ", ", ", fromSq: ", fromSq, ", toSq: ", toSq);
     return {
         from: from,
         fromSq: fromSq,
@@ -780,9 +764,15 @@ function RenderCapturedPiece(pieceType, side) {
     capturedPiecePanel.SetHasClass("captured-piece", true);
     capturedPiecePanel.SetHasClass("white", side == 8);
     capturedPiecePanel.SetHasClass("black", side == 0);
-    var capturedPieceLabel = $.CreatePanel("Label", capturedPiecePanel, "");
-    capturedPieceLabel.html = true;
-    capturedPieceLabel.text = pieceText[pieceType];
+    var piece = $.CreatePanel("Panel", capturedPiecePanel, "");
+    piece.SetHasClass("square-piece", true);
+    piece.hittest = false;
+    for (var i = 1; i <= 6; i++) {
+        piece.SetHasClass(pieceText[i], pieceType == i);
+    }
+    piece.SetHasClass("white", side == 8);
+    piece.SetHasClass("black", side == 0);
+        
     return capturedPiecePanel;
 }
 
@@ -1302,21 +1292,17 @@ function CreateSquarePanel(parentPanel, id) {
     id = id || "";
     var panel = $.CreatePanel("Panel", parentPanel, id);
     panel.SetHasClass("square", true);
-    var label = $.CreatePanel("Label", panel, "");
-    label.SetHasClass("square-label", true);
-    label.html = true;
-    label.hittest = false;
+    var piece = $.CreatePanel("Panel", panel, "");
+    piece.SetHasClass("square-piece", true);
+    piece.hittest = false;
     
     panel.SetPiece = function (pieceType, pieceOwner) {
-        _.DebugMsg("SetPiece", pieceType, pieceOwner, pieceText[pieceType]);
-        if (pieceType) {
-            label.text = pieceText[pieceType];
+        //_.DebugMsg("SetPiece", pieceType, pieceOwner, pieceText[pieceType]);
+        for (var i = 1; i <= 6; i++) {
+            piece.SetHasClass(pieceText[i], pieceType == i);
         }
-        else {
-            label.text = "";
-        }
-        label.SetHasClass("white", pieceOwner != 0);
-        label.SetHasClass("black", pieceOwner == 0);
+        piece.SetHasClass("white", pieceOwner != 0);
+        piece.SetHasClass("black", pieceOwner == 0);
     };
     
     return panel;

@@ -195,14 +195,6 @@
 .btn-action.disabled > Image {
     opacity: 0.5;
 }
-#btn-cancel-label {
-    font-size: 30px;
-    color: #ce3030;
-}
-#btn-confirm-label {
-    font-size: 30px;
-    color: green;
-}
 #btn-toggle-player {
     width: 100%;
 }
@@ -283,4 +275,16 @@
     width: 50%;
     margin: 10px 0px;
     background-color: white;
+}
+
+.icon-decline {
+    background-image: url("file://{images}/decline.png");
+}
+.icon-accept {
+    background-image: url("file://{images}/accept.png");
+}
+.icon-accept, .icon-decline {
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 50% 50%;
 }
