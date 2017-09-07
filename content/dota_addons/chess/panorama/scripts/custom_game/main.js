@@ -292,6 +292,17 @@ function OnGameEnd(prompt) {
                             skipBindHandlers: true
                         }]
                     }]
+                },
+                {
+                    cssClasses: ["control", "horizontal-center"],
+                    id: "control-3",
+                    children: [{
+                        panelType: "TextEntry",
+                        init: function() {
+                            this.text(GetPGN());
+                        },
+                        cssClasses: ["pgn-output"]
+                    }]
                 }
             ]
         }]
