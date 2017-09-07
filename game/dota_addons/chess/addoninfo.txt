@@ -5,6 +5,6 @@
   "IsPlayable"  "1"
   "chess"
   {
-    "MaxPlayers"     "2"
+    "MaxPlayers"     "10"
   }
 }

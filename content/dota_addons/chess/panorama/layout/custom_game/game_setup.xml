@@ -23,10 +23,10 @@
                             <Image id="TeamListLockedIcon" src="file://{images}/control_icons/lock_small.png" />
                         </Panel>
                         <Panel id="TeamsListRoot" />
-                        <!--<Button id="ShuffleTeamAssignmentButton" onactivate="OnShufflePlayersPressed()">
+                        <Button id="ShuffleTeamAssignmentButton" onactivate="OnShufflePlayersPressed()">
                             <Label text="#custom_game_team_select_shuffle" />
                             <Image src="file://{images}/control_icons/shuffle.psd" />
-                        </Button>-->
+                        </Button>
                     </Panel>
                     <Panel id="TimeControlGroup" class="setup-group">
                         <Panel class="setup-header">
@@ -110,7 +110,7 @@
 				</Panel>
 				
 				<!--Start and lock button-->
-				<Button id="LockAndStartButton" class="PlayButton" onactivate="OnLockAndStartPressed()">
+				<Button id="LockAndStartButton" class="PlayButton" onactivate="OnCustomLockAndStartPressed()">
 					<Label text="#custom_game_team_select_lock_start" />
 				</Button>
 				<Button id="CancelAndUnlockButton" class="PlayButton" onactivate="OnCancelAndUnlockPressed()">
