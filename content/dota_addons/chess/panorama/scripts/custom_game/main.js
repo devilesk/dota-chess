@@ -359,17 +359,6 @@ function OnGameEnd(prompt) {
                     cssClasses: ["control", "horizontal-center"],
                     id: "control-2",
                     children: [{
-                        panelType: "TextEntry",
-                        init: function() {
-                            this.text(GetPGN());
-                        },
-                        cssClasses: ["pgn-output"]
-                    }]
-                },
-                {
-                    cssClasses: ["control", "horizontal-center"],
-                    id: "control-3",
-                    children: [{
                         events: {
                             OnActivate: function() {
                                 this.root.close();
