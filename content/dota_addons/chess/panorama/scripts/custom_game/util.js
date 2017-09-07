@@ -582,7 +582,7 @@ function UtilLibrary() {
 (function() {
     GameUI.CustomUIConfig().UtilLibrary = new UtilLibrary();
 
-    //$.Msg("util/util.js");
+    //$.Msg("util.js");
     /*var panel = $.CreatePanel( "Panel", $.GetContextPanel(), "idtest" );
     $.Msg("util/main.js ", panel.__proto__);
 

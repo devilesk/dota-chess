@@ -1,6 +1,6 @@
 <root>
     <scripts>
-        <include src="file://{resources}/scripts/custom_game/util/util.js" />
+        <include src="file://{resources}/scripts/custom_game/util.js" />
     </scripts>
     <Panel>
         <CustomUIElement type="GameSetup" layoutfile="file://{resources}/layout/custom_game/game_setup.xml" />
