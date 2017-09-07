@@ -110,7 +110,7 @@
 				</Panel>
 				
 				<!--Start and lock button-->
-				<Button id="LockAndStartButton" class="PlayButton" onactivate="OnCustomLockAndStartPressed()">
+				<Button id="LockAndStartButton" class="PlayButton" onactivate="OnLockAndStartPressed()">
 					<Label text="#custom_game_team_select_lock_start" />
 				</Button>
 				<Button id="CancelAndUnlockButton" class="PlayButton" onactivate="OnCancelAndUnlockPressed()">

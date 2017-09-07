@@ -1,5 +1,4 @@
 /* exported OnTimeControlChanged */
-/* exported OnCustomLockAndStartPressed */
 
 "use strict";
 
@@ -116,25 +115,6 @@ function InitGameSetupHost() {
         $("#AIDifficultySliderPanel").AddClass("hidden");
         UpdateValues();
     }
-}
-
-//--------------------------------------------------------------------------------------------------
-// Handler for when the Lock and Start button is pressed
-//--------------------------------------------------------------------------------------------------
-function OnCustomLockAndStartPressed()
-{
-    // Don't allow a forced start if both white and black players are missing
-    if ( Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_GOODGUYS).length + Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_BADGUYS).length === 0 )
-        return;
-
-    // Lock the team selection so that no more team changes can be made
-    Game.SetTeamSelectionLocked( true );
-	
-    // Disable the auto start count down
-    Game.SetAutoLaunchEnabled( false );
-
-    // Set the remaining time before the game starts
-    Game.SetRemainingSetupTime( 4 ); 
 }
 
 (function() {
