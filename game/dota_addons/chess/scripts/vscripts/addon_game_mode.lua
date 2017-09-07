@@ -284,6 +284,7 @@ function NewGame(fen)
     CustomNetTables:SetTableValue("time", "0", {remaining=clock_remaining[0]})
     CustomNetTables:SetTableValue("time", "8", {remaining=clock_remaining[8]})
     
+    CustomNetTables:SetTableValue("chess", "fen", {value=GetFen()})
     CustomGameEventManager:Send_ServerToAllClients("board_reset", {
         player_sides=player_sides,
         boardState=g_board,
@@ -403,6 +404,7 @@ function SendBoardUpdate(move, san, captured_piece, moves, undo)
         captured_piece=captured_piece,
         numPly=#move_history
     }
+    CustomNetTables:SetTableValue("chess", "fen", {value=GetFen()})
     CustomGameEventManager:Send_ServerToAllClients("board_update", data)
 end
 

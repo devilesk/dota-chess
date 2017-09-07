@@ -13,7 +13,7 @@
 /* exported OnDeclineSwapPressed */
 /* exported OnRematchPressed */
 /* exported OnTogglePlayerPressed */
-/* exported GetPGN */
+/* exported ShowInfoDialog */
 /* global InstantiateChatPanel */
 
 "use strict";
@@ -103,6 +103,11 @@ function formatTime(t) {
     else {
         return "";
     }
+}
+
+function GetFEN() {
+    var netTable = CustomNetTables.GetTableValue( "chess", "fen" );
+    return netTable ? netTable.value : "";
 }
 
 function GetPGN() {
@@ -246,6 +251,87 @@ function OnDropPiece(data) {
     UpdateUI();
 }
 
+function ShowInfoDialog() {
+    new DialogLibrary.Dialog({
+        parentPanel: DialogLibrary.contextPanel,
+        id: "dialog-container",
+        hittest: true,
+        children: [{
+            id: "contents-container",
+            cssClasses: ["contents-container"],
+            style: {
+                width: 400
+            },
+            children: [
+                {
+                    cssClasses: ["control", "horizontal-center"],
+                    id: "control-1",
+                    children: [{
+                        id: "label-1",
+                        panelType: "Label",
+                        text: "FEN"
+                    }]
+                },
+                {
+                    cssClasses: ["control", "horizontal-center"],
+                    id: "control-2",
+                    children: [{
+                        panelType: "TextEntry",
+                        init: function() {
+                            this.text(GetFEN());
+                        },
+                        cssClasses: ["fen-output"]
+                    }]
+                },
+                {
+                    cssClasses: ["control", "horizontal-center"],
+                    id: "control-3",
+                    children: [{
+                        id: "label-3",
+                        panelType: "Label",
+                        text: "PGN"
+                    }]
+                },
+                {
+                    cssClasses: ["control", "horizontal-center"],
+                    id: "control-4",
+                    children: [{
+                        panelType: "TextEntry",
+                        init: function() {
+                            this.text(GetPGN());
+                        },
+                        cssClasses: ["pgn-output"]
+                    }]
+                },
+                {
+                    cssClasses: ["control", "horizontal-center"],
+                    id: "control-5",
+                    children: [{
+                        events: {
+                            OnActivate: function() {
+                                this.root.close();
+                            },
+                            OnTabForward: function() {
+                                this.root.focusNextInput(this);
+                            }
+                        },
+                        panelType: "Button",
+                        init: function() {
+                            this.root.controls.push(this);
+                        },
+                        cssClasses: ["btn"],
+                        children: [{
+                            panelType: "Label",
+                            text: $.Localize("close"),
+                            skipBindHandlers: true
+                        }]
+                    }]
+                }
+            ]
+        }]
+    });
+}
+
 function OnGameEnd(prompt) {
     gameInProgress = false;
     UpdateUI();
@@ -273,6 +359,17 @@ function OnGameEnd(prompt) {
                     cssClasses: ["control", "horizontal-center"],
                     id: "control-2",
                     children: [{
+                        panelType: "TextEntry",
+                        init: function() {
+                            this.text(GetPGN());
+                        },
+                        cssClasses: ["pgn-output"]
+                    }]
+                },
+                {
+                    cssClasses: ["control", "horizontal-center"],
+                    id: "control-3",
+                    children: [{
                         events: {
                             OnActivate: function() {
                                 this.root.close();
@@ -288,20 +385,9 @@ function OnGameEnd(prompt) {
                         cssClasses: ["btn"],
                         children: [{
                             panelType: "Label",
-                            text: "Play again",
+                            text: $.Localize("close"),
                             skipBindHandlers: true
                         }]
-                    }]
-                },
-                {
-                    cssClasses: ["control", "horizontal-center"],
-                    id: "control-3",
-                    children: [{
-                        panelType: "TextEntry",
-                        init: function() {
-                            this.text(GetPGN());
-                        },
-                        cssClasses: ["pgn-output"]
                     }]
                 }
             ]

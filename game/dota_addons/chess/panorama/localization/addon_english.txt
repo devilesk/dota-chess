@@ -17,6 +17,7 @@
     "cancel"                                        "Cancel"
     "confirm"                                       "Confirm"
     "rematch"                                       "Rematch"
+    "close"                                         "Close"
     "prompt_swap"                                   "Accept side change?"
     "prompt_draw"                                   "Accept draw?"
     "prompt_undo"                                   "Accept takeback?"
@@ -38,4 +39,5 @@
     "gameover_draw"                                 "Draw."
     "checkmate_black_win"                           "Checkmate. Black wins!"
     "checkmate_white_win"                           "Checkmate. White wins!"
+    "tooltip_info"                                  "View match info"
 }

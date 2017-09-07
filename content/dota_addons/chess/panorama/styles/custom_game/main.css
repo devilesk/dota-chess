@@ -195,12 +195,18 @@
 .btn-action.disabled > Image {
     opacity: 0.5;
 }
+
 #btn-toggle-player {
     width: 100%;
 }
-#btn-flip {
+#options-container {
+    flow-children: right;
     horizontal-align: right;
 }
+#options-container .btn {
+    margin-left: 10px;
+}
+
 #btn-rematch {
     width: 100%;
     margin: 15px;

@@ -57,9 +57,14 @@
                 </Panel>
             </Panel>
             <Panel class="left-container" hittest="false">
-                <Button id="btn-flip" class="btn btn-action" onmouseover="DOTAShowTextTooltip('#flip_board')" onmouseout="DOTAHideTextTooltip()" onactivate="OnFlipBoardPressed()">
-                    <Image src="file://{images}/flip_board.png" />
-                </Button>
+                <Panel id="options-container">
+                    <Button id="btn-info" class="btn btn-action" onmouseover="DOTAShowTextTooltip('#tooltip_info')" onmouseout="DOTAHideTextTooltip()" onactivate="ShowInfoDialog()">
+                        <Image src="file://{images}/info.png" />
+                    </Button>
+                    <Button id="btn-flip" class="btn btn-action" onmouseover="DOTAShowTextTooltip('#flip_board')" onmouseout="DOTAHideTextTooltip()" onactivate="OnFlipBoardPressed()">
+                        <Image src="file://{images}/flip_board.png" />
+                    </Button>
+                </Panel>
                 <!--<Button id="btn-toggle-player" class="btn" text="toggle player" onactivate="OnTogglePlayerPressed()">
                     <Label id="btn-toggle-player-label" text="Toggle Player" />
                 </Button>-->
