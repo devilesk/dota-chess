@@ -52,25 +52,27 @@ function OnChatMessageEntered() {
     $("#chat-input").text = "";
 }
 
-function ReceiveChatMessage(msg) {
-    //$.Msg("ReceiveChatMessage", msg, $("#chat-message-container"));
-    CreateChatMessagePanel(msg.message, parseInt(msg.playerId));
-    $("#chat-message-container").ScrollToBottom();
-}
-
-function ReceiveChatEvent(msg) {
-    //$.Msg("ReceiveChatEvent", msg, $("#chat-message-container"));
-    var message;
+function ParseMsg(msg) {
     if (msg.l_message) {
-        message = Object.keys(msg.l_message).sort().map(function (o) {
+        return Object.keys(msg.l_message).sort().map(function (o) {
             var s = msg.l_message[o];
             return s.charAt(0) == "#" ? $.Localize(s) : s;
         }).join("");
     }
     else {
-        message = msg.message;
+        return msg.message.charAt(0) == "#" ? $.Localize(msg.message) : msg.message;
     }
-    CreateChatEventPanel(message, parseInt(msg.playerId));
+}
+
+function ReceiveChatMessage(msg) {
+    //$.Msg("ReceiveChatMessage", msg, $("#chat-message-container"));
+    CreateChatMessagePanel(ParseMsg(msg), parseInt(msg.playerId));
+    $("#chat-message-container").ScrollToBottom();
+}
+
+function ReceiveChatEvent(msg) {
+    //$.Msg("ReceiveChatEvent", msg, $("#chat-message-container"));
+    CreateChatEventPanel(ParseMsg(msg), parseInt(msg.playerId));
     $("#chat-message-container").ScrollToBottom();
 }
 
