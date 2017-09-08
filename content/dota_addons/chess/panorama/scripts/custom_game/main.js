@@ -322,7 +322,7 @@ function ShowInfoDialog() {
                         cssClasses: ["btn"],
                         children: [{
                             panelType: "Label",
-                            text: $.Localize("close"),
+                            text: $.Localize("#close"),
                             skipBindHandlers: true
                         }]
                     }]
