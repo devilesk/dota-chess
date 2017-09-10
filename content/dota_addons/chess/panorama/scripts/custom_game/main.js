@@ -474,6 +474,7 @@ function RedrawBoard() {
     CreateBoard();
     RedrawPieces(boardState);
     RedrawCapturedPieces();
+    DeselectSquare();
     $.Schedule(0.5, function () {
         HighlightLastMove();
     });
@@ -686,6 +687,7 @@ function ParseMove(move) {
 }
 
 function HighlightMoves(square) {
+    if (!square) return;
     var foundMove = false;
     for (var k in moves) {
         var move = moves[k];
@@ -859,7 +861,7 @@ function OnBoardUpdate(data) {
     // _.DebugMsg("numPly", data.numPly);
     gameInProgress = true;
     // numPly = data.numPly;
-    selectedSquare = null;
+    DeselectSquare();
     // moves = data.moves;
     // boardState = data.boardState;
     //RedrawPieces(boardState);
@@ -1234,6 +1236,13 @@ function RequestUndo() {
     });
 }
 
+function DeselectSquare() {
+    if (selectedSquare) {
+        ClearHighlight();
+        selectedSquare = null;
+    }
+}
+
 function OnFlipBoardPressed() {
     _.DebugMsg("OnFlipBoardPressed");
     bottomSide = 1 - bottomSide + 7;
@@ -1378,6 +1387,7 @@ function OnChessNetTableChange(tableName, key, data) {
             toMove = data.value;
             UpdatePlayerPanel();
             HighlightPlayerToMove(toMove);
+            DeselectSquare();
             break;
         case "moves":
             moves = data;
