@@ -2,6 +2,10 @@
 
 function UtilLibrary() {
     
+    function IsEmpty(o) {
+        return Object.keys(o).length === 0;
+    }
+    
     function IsDebug() {
         var netTable = CustomNetTables.GetTableValue( "debug", "log" );
         return netTable && netTable.value;
@@ -559,6 +563,7 @@ function UtilLibrary() {
     mixin(PanelCollection, mixInHandlers);
 
     return {
+        IsEmpty: IsEmpty,
         IsDebug: IsDebug,
         DebugMsg: DebugMsg,
         debounce: debounce,

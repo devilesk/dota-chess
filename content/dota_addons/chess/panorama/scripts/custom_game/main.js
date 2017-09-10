@@ -1361,7 +1361,7 @@ function OnMoveHistoryNetTableChange(tableName, key, data) {
     $.Msg( "Table ", tableName, " changed: '", key, "' = ", data, " ", JSON.stringify(data).length);
     if (tableName !== "move_history") return;
     var ply = parseInt(key);
-    if (Object.keys(data).length === 0) {
+    if (_.IsEmpty(data)) {
         RemoveHistory(ply - 1);
         
         var capturedPiecesToRemove = capturedPieces.splice(ply - 1);
