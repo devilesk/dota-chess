@@ -270,7 +270,7 @@ function ShowInfoDialog() {
             id: "contents-container",
             cssClasses: ["contents-container"],
             style: {
-                width: 400
+                width: 500
             },
             children: [
                 {
@@ -286,11 +286,11 @@ function ShowInfoDialog() {
                     cssClasses: ["control", "horizontal-center"],
                     id: "control-2",
                     children: [{
-                        panelType: "TextEntry",
+                        panelType: "Label",
                         init: function() {
                             this.text(GetFEN());
                         },
-                        cssClasses: ["fen-output"]
+                        cssClasses: ["fen-output", "output"]
                     }]
                 },
                 {
@@ -306,11 +306,11 @@ function ShowInfoDialog() {
                     cssClasses: ["control", "horizontal-center"],
                     id: "control-4",
                     children: [{
-                        panelType: "TextEntry",
+                        panelType: "Label",
                         init: function() {
                             this.text(GetPGN());
                         },
-                        cssClasses: ["pgn-output"]
+                        cssClasses: ["pgn-output", "output"]
                     }]
                 },
                 {

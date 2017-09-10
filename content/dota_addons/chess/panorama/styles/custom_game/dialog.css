@@ -115,3 +115,14 @@ TextEntry:focus {
 .queen {
     background-image: url("file://{images}/pieces/white_queen.png");
 }
+
+.output {
+    border: 1px solid #666;
+    padding: 10px;
+    max-height: 100px;
+    overflow: squish scroll;
+}
+
+.pgn-output {
+    max-height: 400px;
+}
