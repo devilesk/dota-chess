@@ -1407,36 +1407,36 @@ function OnChessNetTableChange(tableName, key, data) {
     switch (key) {
         case "game_in_progress":
             gameInProgress = data.value;
-        break;
+            break;
         case "numPly":
             numPly = data.value;
-        break;
+            break;
         case "boardState":
             boardState = data;
             RedrawPieces(boardState);
-        break;
+            break;
         case "toMove":
             toMove = data.value;
             UpdatePlayerPanel();
             HighlightPlayerToMove(toMove);
-        break;
+            break;
         case "moves":
             moves = data;
-        break;
+            break;
         case "player_sides":
             player_sides = data;
             UpdateMySide();
             UpdatePlayerPanel();
-        break;
+            break;
         case "clock":
             timeRemaining = {
                 8: data.time,
                 0: data.time
             };
-        break;
+            break;
         case "move":
             OnBoardUpdate(data);
-        break;
+            break;
         case "ui_states":
             [0,8].forEach(function (side) {
                 for (var prop in data[side]) {
@@ -1444,7 +1444,7 @@ function OnChessNetTableChange(tableName, key, data) {
                 }
             });
             UpdateUI();
-        break;
+            break;
     }
 }
 
