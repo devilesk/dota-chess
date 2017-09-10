@@ -967,12 +967,17 @@ function OnRematchPressed() {
     if (!isPlayer) return;
     _.DebugMsg("OnRematchPressed", mySide, toMove);
     if (!gameInProgress) {
-        uiState.rematchPressed = !uiState.rematchPressed;
-        if (uiState.rematchPressed) {
+        if (isSolo()) {
             RequestRematch();
         }
         else {
-            DeclineRematch();
+            uiState.rematchPressed = !uiState.rematchPressed;
+            if (uiState.rematchPressed) {
+                RequestRematch();
+            }
+            else {
+                DeclineRematch();
+            }
         }
         UpdateUI();
     }
@@ -1159,7 +1164,7 @@ function UpdateUI() {
             $("#btn-undo").SetHasClass("disabled", mySide == toMove || uiState.undoPressed || numPly < 2);
         }
         
-        $("#btn-rematch").SetHasClass("disabled", uiState.rematchPressed);
+        $("#btn-rematch").SetHasClass("disabled", !isSolo() && uiState.rematchPressed);
         $("#btn-rematch").SetHasClass("hidden", gameInProgress);
         
         $("#btn-swap").SetHasClass("disabled", uiState.swapPressed);
