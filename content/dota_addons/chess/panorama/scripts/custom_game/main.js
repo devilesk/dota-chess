@@ -38,12 +38,17 @@ var mySide = null;
 var moves;
 var lastMove;
 var selectedSquare;
-var lookupSquare = {};
 var bottomSide = 8;
 var gameInProgress = false;
 var sanHistory = [];
 
-function InitLookupSquare() {
+var lookupSquare = (function () {
+    function MakeSquare(row, column) {
+        return ((row + 2) << 4) | (column + 4);
+    }
+    
+    var lookupSquare = {};
+    
     for (var i = 0; i < 8; i++) {
         for (var j = 0; j < 8; j++) {
             //_.DebugMsg(i, ", ", j, " ", MakeSquare(i, j));
@@ -53,7 +58,8 @@ function InitLookupSquare() {
             };
         }
     }
-}
+    return lookupSquare;
+})();
 
 var ranks = [1, 2, 3, 4, 5, 6, 7, 8];
 var files = ["a", "b", "c", "d", "e", "f", "g", "h"];
@@ -463,15 +469,14 @@ function RedrawBoard() {
     CreateBoard();
     RedrawPieces(boardState);
     RedrawCapturedPieces();
-    $.Schedule(1, function () {
-        HighlightLastMove(lastMove);
+    $.Schedule(0.5, function () {
+        HighlightLastMove();
     });
 }
 
 function RedrawCapturedPieces() {
     $("#captured-top").RemoveAndDeleteChildren();
     $("#captured-bottom").RemoveAndDeleteChildren();
-    capturedPieces.length = 0;
     capturedPieces.forEach(function (data) {
         if (data) data[2] = RenderCapturedPiece(data[1], data[0]);
     });
@@ -529,7 +534,7 @@ _.extend(Square.prototype, {
     pos: function() {
         return [this.row(), this.col()];
     },
-    OnMouseOver: function() {
+    /*OnMouseOver: function() {
         // highlight this panel as a drop target
         //_.DebugMsg("Square OnMouseOver ", this.panel.id);
         if (this.panel) {
@@ -539,12 +544,12 @@ _.extend(Square.prototype, {
     },
     OnMouseOut: function() {
         // highlight this panel as a drop target
-        //_.DebugMsg("Square OnMouseOut ", this.panel.id);
+        _.DebugMsg("Square OnMouseOut ", this.panel.id);
         if (this.panel) {
             this.panel.SetHasClass("highlight", false);
             this.panel.GetParent().SetHasClass("highlight", false);
         }
-    },
+    },*/
     OnContextMenu: function() {
         // highlight this panel as a drop target
         _.DebugMsg("Square OnContextMenu ", this.panel.id);
@@ -720,23 +725,13 @@ function HighlightMoves(square) {
     return foundMove;
 }
 
-function MakeSquare(row, column) {
-    return ((row + 2) << 4) | (column + 4);
+function HighlightLastMove() {
+    if (lastMove) ToggleHighlight(lastMove, true, true);
 }
 
-function HighlightLastMove(_lastMove) {
-    if (lastMove) {
-        ToggleHighlight(lastMove, false, false);
-    }
-    if (_lastMove) {
-        lastMove = _lastMove;
-        ToggleHighlight(lastMove, true, true);
-    }
-}
-
-function ToggleHighlight(move, value, animate) {
-    _.DebugMsg("ToggleHighlight", move, value);
-    var moveData = ParseMove(move);
+function ToggleHighlight(data, value, animate) {
+    _.DebugMsg("ToggleHighlight", data, value);
+    var moveData = ParseMove(data.move);
     moveData.tdFrom.panel.SetHasClass("last-move", value);
     moveData.tdFrom.panel.GetParent().SetHasClass("last-move", value);
     moveData.tdTo.panel.SetHasClass("last-move", value);
@@ -760,7 +755,7 @@ function ToggleHighlight(move, value, animate) {
                 cssClasses: ["animate"],
                 style: fromPos
             });
-            ghost.panel.SetPiece(moveData.tdTo.piece(), moveData.tdTo.pieceOwner());
+            ghost.panel.SetPiece(data.pieceType, data.pieceOwner);
             ghost.style.x(toPos.x);
             ghost.style.y(toPos.y);
             $.Schedule(0.2, function () {
@@ -778,7 +773,7 @@ function HighlightPlayerToMove(toMove) {
 }
 
 function UpdateMySide() {
-    _.DebugMsg("UpdateMySide", mySide);
+    _.DebugMsg("UpdateMySide", mySide, player_sides);
     if (player_sides[0] == Players.GetLocalPlayer()) {
         mySide = 0;
         isPlayer = true;
@@ -811,7 +806,7 @@ function OnBoardReset(data) {
     timeControl = data.time_control;
     selectedSquare = null;
     lastMove = null;
-    HighlightLastMove();
+    //HighlightLastMove();
     moves = data.moves;
     boardState = data.boardState;
     RedrawBoard();
@@ -907,55 +902,44 @@ function AddHistory(numPly, san) {
 }
 
 function OnBoardUpdate(data) {
-    _.DebugMsg(data.boardState);
-    _.DebugMsg("toMove", data.toMove);
+    // _.DebugMsg(data.boardState);
+    // _.DebugMsg("toMove", data.toMove);
     _.DebugMsg("san", data.san);
-    _.DebugMsg("moves", data.moves);
+    // _.DebugMsg("moves", data.moves);
     _.DebugMsg("move", data.move);
     _.DebugMsg("check", data.check);
     _.DebugMsg("undo", data.undo);
     _.DebugMsg("repDraw", data.repDraw);
     _.DebugMsg("move50", data.move50);
     _.DebugMsg("captured_piece", data.captured_piece);
-    _.DebugMsg("numPly", data.numPly);
+    _.DebugMsg("checkmate", data.checkmate);
+    _.DebugMsg("stalemate", data.stalemate);
+    // _.DebugMsg("numPly", data.numPly);
     gameInProgress = true;
-    numPly = data.numPly;
+    // numPly = data.numPly;
     selectedSquare = null;
-    moves = data.moves;
-    boardState = data.boardState;
-    RedrawPieces(boardState);
-    HighlightLastMove(data.move);
-    
-    if (data.undo) {
-        RemoveHistory(data.numPly);
-        
-        var capturedPiecesToRemove = capturedPieces.splice(numPly);
-        capturedPiecesToRemove.forEach(function (capturedPieceToRemove) {
-            if (capturedPieceToRemove) capturedPieceToRemove[2].DeleteAsync(0);
-        });
+    // moves = data.moves;
+    // boardState = data.boardState;
+    //RedrawPieces(boardState);
+    lastMove = data.move;
+    HighlightLastMove();
+
+    // toMove = data.toMove;
+    //HighlightPlayerToMove(toMove);
+
+    if (data.checkmate) {
+        Game.EmitSound("Chess.Checkmate");
+        OnGameEnd($.Localize(toMove == 0 ? "checkmate_white_win" : "checkmate_black_win"));
+    }
+    else if (data.stalemate) {
+        Game.EmitSound("Chess.Stalemate");
+        OnDraw();
+    }
+    else if (data.check) {
+        Game.EmitSound("Chess.Check");
     }
     else {
-        AddHistory(data.numPly, data.san);
-        
-        if (data.captured_piece && data.captured_piece != pieceEmpty) {
-            capturedPieces.push([data.toMove, data.captured_piece, RenderCapturedPiece(data.captured_piece, data.toMove)]);
-        }
-        else {
-            capturedPieces.push(null);
-        }
-    }
-    $("#history").ScrollToBottom();
-
-    toMove = data.toMove;
-    HighlightPlayerToMove(toMove);
-
-    if (data.moves && Object.keys(data.moves).length == 0) {
-        if (data.check) {
-            OnGameEnd($.Localize(data.toMove == 0 ? "checkmate_white_win" : "checkmate_black_win"));
-        }
-        else {
-            OnDraw();
-        }
+        Game.EmitSound("Chess.Move");
     }
     
     if (data.move50 == 50 || data.repDraw) {
@@ -1010,6 +994,9 @@ function RedrawPieces(boardState) {
                 td.clearPiece();
             }
             td.render();
+            
+            td.panel.SetHasClass("last-move", false);
+            td.panel.GetParent().SetHasClass("last-move", false);
         }
     }
 }
@@ -1398,6 +1385,77 @@ function CreateSquarePanel(parentPanel, id) {
     return panel;
 }
 
+function OnMoveHistoryNetTableChange(tableName, key, data) {
+    $.Msg( "Table ", tableName, " changed: '", key, "' = ", data, " ", JSON.stringify(data).length);
+    if (tableName !== "move_history") return;
+    var ply = parseInt(key);
+    if (Object.keys(data).length === 0) {
+        RemoveHistory(ply - 1);
+        
+        var capturedPiecesToRemove = capturedPieces.splice(ply - 1);
+        capturedPiecesToRemove.forEach(function (capturedPieceToRemove) {
+            if (capturedPieceToRemove) capturedPieceToRemove[2].DeleteAsync(0);
+        });
+    }
+    else {
+        AddHistory(ply, data.san);
+        
+        var side = ply % 2 == 1 ? 0 : 8;
+        if (data.captured_piece && data.captured_piece != pieceEmpty) {
+            capturedPieces[ply - 1] = [side, data.captured_piece, RenderCapturedPiece(data.captured_piece, side)];
+        }
+        else {
+            capturedPieces[ply - 1] = null;
+        }
+    }
+    $("#history").ScrollToBottom();
+}
+
+function LoadChessNetTable() {
+    var table = CustomNetTables.GetAllTableValues("chess");
+    if (table) {
+        table.forEach(function (kv) {
+            OnChessNetTableChange("chess", kv.key, kv.value);
+        });
+    }
+}
+
+function OnChessNetTableChange(tableName, key, data) {
+    $.Msg( "Table ", tableName, " changed: '", key, "' = ", data, " ", JSON.stringify(data).length);
+    if (tableName !== "chess") return;
+    switch (key) {
+        case "numPly":
+            numPly = data.value;
+        break;
+        case "boardState":
+            boardState = data;
+            RedrawPieces(boardState);
+        break;
+        case "toMove":
+            toMove = data.value;
+            UpdatePlayerPanel();
+            HighlightPlayerToMove(toMove);
+        break;
+        case "moves":
+            moves = data;
+        break;
+        case "player_sides":
+            player_sides = data;
+            UpdateMySide();
+            UpdatePlayerPanel();
+        break;
+        case "clock":
+            timeRemaining = {
+                8: data.time,
+                0: data.time
+            };
+        break;
+        case "move":
+            OnBoardUpdate(data);
+        break;
+    }
+}
+
 (function() {
     GameUI.SetDefaultUIEnabled(DotaDefaultUIElement_t.DOTA_DEFAULT_UI_TOP_TIMEOFDAY, false);
     GameUI.SetDefaultUIEnabled(DotaDefaultUIElement_t.DOTA_DEFAULT_UI_TOP_HEROES, false);
@@ -1410,9 +1468,10 @@ function CreateSquarePanel(parentPanel, id) {
 
     DialogLibrary = GameUI.CustomUIConfig().DialogLibrary;
 
-    InitLookupSquare();
+    // InitLookupSquare();
     CreateChatPanel();
-    //CreateBoard();
+    CreateBoard();
+    LoadChessNetTable();
     
     var requestContainer = $("#action-container");
     CreateRequestPanel(requestContainer, "undo-request-container", "#prompt_undo", OnAcceptUndoPressed, OnDeclineUndoPressed);
@@ -1427,14 +1486,17 @@ function CreateSquarePanel(parentPanel, id) {
     }
     _.DebugMsg("player_sides ", player_sides);
     
-    GameEvents.Subscribe("board_update", OnBoardUpdate);
-    GameEvents.Subscribe("board_reset", OnBoardReset);
+    // GameEvents.Subscribe("board_update", OnBoardUpdate);
+    //GameEvents.Subscribe("board_reset", OnBoardReset);
     GameEvents.Subscribe("swap_offer", OnReceivedSwapOffer);
     GameEvents.Subscribe("undo_offer", OnReceivedUndoOffer);
     GameEvents.Subscribe("draw_offer", OnReceivedDrawOffer);
     GameEvents.Subscribe("draw_claimed", OnReceivedDrawClaimed);
     GameEvents.Subscribe("resigned", OnReceivedResigned);
     GameEvents.Subscribe("timeout_end", OnReceivedTimedOut);
+    
+    CustomNetTables.SubscribeNetTableListener("chess", OnChessNetTableChange);
+    CustomNetTables.SubscribeNetTableListener("move_history", OnMoveHistoryNetTableChange);
 
     var gameSetup = CustomNetTables.GetTableValue( "game_setup", "options" );
     if (gameSetup) {

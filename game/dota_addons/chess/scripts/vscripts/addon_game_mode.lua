@@ -12,6 +12,7 @@ local rematch_requested = {}
 local player_count = 1
 local host_player_id = 0
 local INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" -- FEN for new game
+local BOARD_STATE = {}
 local move_history = {}
 local DEBUG = 0 -- initial value of chess_debug
 local DEBUG_PLAYER_COUNT = nil -- nil, 1, 2
@@ -261,10 +262,17 @@ function OnSendChatMessage(eventSourceIndex, args)
     CustomGameEventManager:Send_ServerToAllClients("receive_chat_message", {message=args['message'], playerId=args['playerID']})
 end
 
+function ClearMoveHistory()
+    for i = #move_history, 1, -1 do
+        table.remove(move_history, i)
+        CustomNetTables:SetTableValue("move_history", tostring(i), nil)
+    end
+end
+
 function NewGame(fen)
     fen = fen or INITIAL_FEN
     
-    ClearMoves()
+    ClearMoveHistory()
     InitializeEval()
     ResetGame()
     InitializeFromFen(fen)
@@ -285,15 +293,14 @@ function NewGame(fen)
     CustomNetTables:SetTableValue("time", "8", {remaining=clock_remaining[8]})
     
     CustomNetTables:SetTableValue("chess", "fen", {value=GetFen()})
-    CustomGameEventManager:Send_ServerToAllClients("board_reset", {
-        player_sides=player_sides,
-        boardState=g_board,
-        toMove=g_toMove,
-        moves=moves,
-        clock_time=clock_time,
-        clock_increment=clock_increment,
-        time_control=time_control
-    })
+    
+    CustomNetTables:SetTableValue("chess", "numPly", {value=#move_history})
+    CustomNetTables:SetTableValue("chess", "boardState", g_board)
+    CustomNetTables:SetTableValue("chess", "toMove", {value=g_toMove})
+    CustomNetTables:SetTableValue("chess", "moves", moves)
+    CustomNetTables:SetTableValue("chess", "player_sides", player_sides)
+    CustomNetTables:SetTableValue("chess", "clock", {["time"]=clock_time,["increment"]=clock_increment})
+    CustomNetTables:SetTableValue("chess", "time_control", {value=time_control})
     
     TryAIMove()
     
@@ -343,7 +350,7 @@ function OnDropPiece(eventSourceIndex, args)
         
         local _, san, captured_piece, moves = DoMove(move)
         SendBoardUpdate(move, san, captured_piece, moves, false)
-        PlayEndMoveSound(#moves)
+        -- PlayEndMoveSound(#moves)
         EndTurn()
         StartTurn()
         
@@ -389,23 +396,47 @@ function TryAIMove()
     end
 end
 
+function ParseMove(move)
+    if move == nil then return nil end
+    local data = {
+        move=move,
+        from=bit.band(move, 0xFF),
+        to=bit.band(bit.rshift(move, 8), 0xFF)
+    }
+    data.pieceType = bit.band(g_board[1+data.to], 0x7)
+    data.pieceOwner = bit.band(g_board[1+data.to], 0x8)
+    
+    return data
+end
+
 function SendBoardUpdate(move, san, captured_piece, moves, undo)
     DebugPrint("SendBoardUpdate", move, san, captured_piece, moves, undo)
     local data = {
-        boardState=g_board,
-        toMove=g_toMove,
+        -- numPly=#move_history,
+        -- boardState=g_board,
+        -- toMove=g_toMove,
+        -- moves=moves,
         san=san,
-        moves=moves,
-        move=move,
+        move=ParseMove(move),
         check=g_inCheck,
         move50=g_move50,
         repDraw=Is3RepDraw(),
         undo=undo,
         captured_piece=captured_piece,
-        numPly=#move_history
+        checkmate=#moves==0 and g_inCheck,
+        stalemate=#moves==0 and not g_inCheck,
     }
+    
     CustomNetTables:SetTableValue("chess", "fen", {value=GetFen()})
-    CustomGameEventManager:Send_ServerToAllClients("board_update", data)
+    
+    CustomNetTables:SetTableValue("chess", "numPly", {value=#move_history})
+    CustomNetTables:SetTableValue("chess", "boardState", g_board)
+    CustomNetTables:SetTableValue("chess", "toMove", {value=g_toMove})
+    CustomNetTables:SetTableValue("chess", "moves", moves)
+    
+    CustomNetTables:SetTableValue("chess", "move", data)
+    
+    -- CustomGameEventManager:Send_ServerToAllClients("board_update", data)
 end
 
 function OnRequestRematch(eventSourceIndex, args)
@@ -563,6 +594,7 @@ function UndoMove()
     if #move_history == 0 then
         return nil
     end
+    CustomNetTables:SetTableValue("move_history", tostring(#move_history), nil)
     local move = table.remove(move_history)
     DebugPrint("UndoMove", move)
     UnmakeMove(move.move)
@@ -604,10 +636,7 @@ function RecordMove(move, san, captured_piece)
         }
     }
     table.insert(move_history, data)
-end
-
-function ClearMoves()
-    move_history = {}
+    CustomNetTables:SetTableValue("move_history", tostring(#move_history), data)
 end
 
 function PlayEndMoveSound(moveCount)
@@ -713,7 +742,7 @@ function finishMoveCallback(move, value, ply)
             SendBoardUpdate(move, san, captured_piece, moves, false)
             DebugPrint(FormatMove(move), g_moveTime, g_finCnt)
             --g_foundmove = move;
-            PlayEndMoveSound(#moves)
+            -- PlayEndMoveSound(#moves)
             EndTurn()
             StartTurn()
         end
