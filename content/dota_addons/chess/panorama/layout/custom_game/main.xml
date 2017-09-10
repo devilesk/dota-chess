@@ -100,6 +100,7 @@
                                 </Button>
                             </Panel>
                         </Panel>
+                        <Panel id="request-container" />
                         <Button id="btn-rematch" class="btn" onactivate="OnRematchPressed()">
                             <Label id="btn-rematch-label" hittest="false" text="#rematch" />
                         </Button>

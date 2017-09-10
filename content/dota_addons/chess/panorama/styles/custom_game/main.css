@@ -244,6 +244,11 @@
     transition-duration: 0.2s;
 }
 
+#request-container {
+    flow-children: down;
+    width: 100%;
+}
+        
 .action-message-container {
     width: 100%;
     flow-children: right;

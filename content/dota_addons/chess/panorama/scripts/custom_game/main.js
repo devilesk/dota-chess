@@ -1358,6 +1358,14 @@ function UpdatePlayerPanel() {
     HighlightPlayerToMove(toMove);
 }
 
+function CreateRequestPanels() {
+    var requestContainer = $("#request-container");
+    requestContainer.RemoveAndDeleteChildren();
+    CreateRequestPanel(requestContainer, "undo-request-container", "#prompt_undo", OnAcceptUndoPressed, OnDeclineUndoPressed);
+    CreateRequestPanel(requestContainer, "draw-request-container", "#prompt_draw", OnAcceptDrawPressed, OnDeclineDrawPressed);
+    CreateRequestPanel(requestContainer, "swap-request-container", "#prompt_swap", OnAcceptSwapPressed, OnDeclineSwapPressed);
+}
+
 function CreateRequestPanel(parentPanel, id, text, acceptHandler, declineHandler) {
     var requestPanel = $.CreatePanel("Panel", parentPanel, id);
     requestPanel.BLoadLayoutSnippet("request-panel");
@@ -1472,14 +1480,11 @@ function OnChessNetTableChange(tableName, key, data) {
     $("#btn-toggle-player").SetHasClass("hidden", !Game.IsInToolsMode() || (_.IsDebug() && isSolo()));
     
     // InitLookupSquare();
+    CreateRequestPanels();
     CreateChatPanel();
     CreateBoard();
     LoadChessNetTable();
     
-    var requestContainer = $("#action-container");
-    CreateRequestPanel(requestContainer, "undo-request-container", "#prompt_undo", OnAcceptUndoPressed, OnDeclineUndoPressed);
-    CreateRequestPanel(requestContainer, "draw-request-container", "#prompt_draw", OnAcceptDrawPressed, OnDeclineDrawPressed);
-    CreateRequestPanel(requestContainer, "swap-request-container", "#prompt_swap", OnAcceptSwapPressed, OnDeclineSwapPressed);
 
     if (Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_GOODGUYS).length) {
         player_sides[8] = Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_GOODGUYS)[0];
