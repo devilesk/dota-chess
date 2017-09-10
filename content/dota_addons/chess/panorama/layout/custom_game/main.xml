@@ -58,6 +58,9 @@
             </Panel>
             <Panel class="left-container" hittest="false">
                 <Panel id="options-container">
+                    <Button id="btn-toggle-player" class="btn btn-action hidden" text="toggle player" onactivate="OnTogglePlayerPressed()">
+                        <Image src="file://{images}/swap.png" />
+                    </Button>
                     <Button id="btn-info" class="btn btn-action" onmouseover="DOTAShowTextTooltip('#tooltip_info')" onmouseout="DOTAHideTextTooltip()" onactivate="ShowInfoDialog()">
                         <Image src="file://{images}/info.png" />
                     </Button>
@@ -65,9 +68,6 @@
                         <Image src="file://{images}/flip_board.png" />
                     </Button>
                 </Panel>
-                <!--<Button id="btn-toggle-player" class="btn" text="toggle player" onactivate="OnTogglePlayerPressed()">
-                    <Label id="btn-toggle-player-label" text="Toggle Player" />
-                </Button>-->
                 <Panel class="info-container" hittest="false">
                     <Panel class="player-name" hittest="false">
                         <Label id="player-name-label-top" html="true" hittest="false" />

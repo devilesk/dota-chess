@@ -196,9 +196,13 @@
     opacity: 0.5;
 }
 
-#btn-toggle-player {
-    width: 100%;
+#btn-toggle-player.white {
+    border: 5px solid white;
 }
+#btn-toggle-player.black {
+    border: 5px solid black;
+}
+
 #options-container {
     flow-children: right;
     horizontal-align: right;

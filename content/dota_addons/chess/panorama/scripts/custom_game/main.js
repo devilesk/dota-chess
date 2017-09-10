@@ -1323,7 +1323,8 @@ function OnFlipBoardPressed() {
 function OnTogglePlayerPressed() {
     mySide = 1 - mySide + 7;
     uiState = uiStates[mySide];
-    $("#btn-toggle-player-label").text = mySide == 0 ? "Black" : "White";
+    $("#btn-toggle-player").SetHasClass(mySide == 0 ? "black" : "white", true);
+    $("#btn-toggle-player").SetHasClass(mySide != 0 ? "black" : "white", false);
     UpdateUI();
     //RedrawBoard();
     //UpdatePlayerPanel();
@@ -1467,7 +1468,9 @@ function OnChessNetTableChange(tableName, key, data) {
     GameUI.SetDefaultUIEnabled(DotaDefaultUIElement_t.DOTA_DEFAULT_UI_TOP_MENU_BUTTONS, false);
 
     DialogLibrary = GameUI.CustomUIConfig().DialogLibrary;
-
+    
+    $("#btn-toggle-player").SetHasClass("hidden", !Game.IsInToolsMode() || (_.IsDebug() && isSolo()));
+    
     // InitLookupSquare();
     CreateChatPanel();
     CreateBoard();
