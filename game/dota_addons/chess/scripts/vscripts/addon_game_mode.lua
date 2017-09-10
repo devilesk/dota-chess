@@ -323,6 +323,8 @@ function NewGame(fen)
     CustomNetTables:SetTableValue("chess", "clock", {["time"]=clock_time,["increment"]=clock_increment})
     CustomNetTables:SetTableValue("chess", "time_control", {value=time_control})
     
+    CustomNetTables:SetTableValue("chess", "move", nil)
+    
     TryAIMove()
     
     CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message={"#event_game_started"}, playerId=-1})
