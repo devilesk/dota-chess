@@ -777,49 +777,6 @@ function UpdateMySide() {
     }
 }
 
-function OnBoardReset(data) {
-    _.DebugMsg("OnBoardReset");
-    _.DebugMsg(data.boardState);
-    _.DebugMsg("toMove", data.toMove);
-    _.DebugMsg("san", data.san);
-    _.DebugMsg("moves", data.moves);
-    _.DebugMsg("move", data.move);
-    _.DebugMsg("time_control", data.time_control);
-    _.DebugMsg("clock_time", data.clock_time);
-    _.DebugMsg("clock_increment", data.clock_increment);
-    _.DebugMsg("player_sides", data.player_sides);
-    
-    numPly = 0;
-    gameInProgress = true;
-    player_sides = data.player_sides;
-    timeControl = data.time_control;
-    selectedSquare = null;
-    lastMove = null;
-    //HighlightLastMove();
-    moves = data.moves;
-    boardState = data.boardState;
-    RedrawBoard();
-    $("#history").RemoveAndDeleteChildren();
-    toMove = data.toMove;
-    HighlightPlayerToMove(toMove);
-
-    timeRemaining = {
-        8: data.clock_time,
-        0: data.clock_time
-    };
-    if (timer != 0) {
-        _.DebugMsg("timer", timer);
-        $.CancelScheduled(timer);
-        timer = 0;
-    }
-    uiStates = {
-        0: new UIState(),
-        8: new UIState()
-    };
-
-    Update();
-}
-
 function Update() {
     UpdateMySide();
     UpdateUI();
