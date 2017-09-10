@@ -396,6 +396,7 @@ function OnDraw() {
 
 function CreateChatPanel() {
     var parentPanel = $("#chat-container");
+    parentPanel.RemoveAndDeleteChildren();
     m_ChatPanel = $.CreatePanel("Panel", parentPanel, "");
     m_ChatPanel.BLoadLayoutSnippet("chat-panel");
     InstantiateChatPanel(m_ChatPanel);
