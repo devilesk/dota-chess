@@ -843,6 +843,7 @@ function AddHistory(numPly, san) {
 }
 
 function OnBoardUpdate(data) {
+    _.DebugMsg("OnBoardUpdate");
     // _.DebugMsg(data.boardState);
     // _.DebugMsg("toMove", data.toMove);
     _.DebugMsg("san", data.san);
@@ -1146,6 +1147,7 @@ function UpdateUI() {
         $("#action-container").SetHasClass("hidden", true);
     }
     else {
+        _.DebugMsg("UpdateUI", mySide, uiStates[mySide]);
         uiState = uiStates[mySide];
         
         if (isSolo()) {
@@ -1233,6 +1235,7 @@ function RequestUndo() {
 }
 
 function OnFlipBoardPressed() {
+    _.DebugMsg("OnFlipBoardPressed");
     bottomSide = 1 - bottomSide + 7;
     UpdateUI();
     RedrawBoard();
@@ -1314,7 +1317,7 @@ function CreateSquarePanel(parentPanel, id) {
 }
 
 function OnMoveHistoryNetTableChange(tableName, key, data) {
-    $.Msg( "Table ", tableName, " changed: '", key, "' = ", data, " ", JSON.stringify(data).length);
+    _.DebugMsg( "Table ", tableName, " changed: '", key, "' = ", data, " ", JSON.stringify(data).length);
     if (tableName !== "move_history") return;
     var ply = parseInt(key);
     if (_.IsEmpty(data)) {
@@ -1358,7 +1361,7 @@ function LoadChessNetTable() {
 }
 
 function OnChessNetTableChange(tableName, key, data) {
-    $.Msg( "Table ", tableName, " changed: '", key, "' = ", data, " ", JSON.stringify(data).length);
+    _.DebugMsg( "Table ", tableName, " changed: '", key, "' = ", data, " ", JSON.stringify(data).length);
     if (tableName !== "chess") return;
     switch (key) {
         case "game_in_progress":
