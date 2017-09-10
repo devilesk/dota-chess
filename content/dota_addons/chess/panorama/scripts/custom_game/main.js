@@ -1496,8 +1496,11 @@ function OnChessNetTableChange(tableName, key, data) {
     CreateRequestPanels();
     CreateChatPanel();
     CreateBoard();
-    LoadChessNetTable();
     
+    player_sides = CustomNetTables.GetTableValue( "chess", "player_sides" );
+    UpdateMySide();
+    
+    LoadChessNetTable();
     LoadMoveHistoryNetTable();
 
     if (Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_GOODGUYS).length) {
