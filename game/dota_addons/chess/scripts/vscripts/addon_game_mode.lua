@@ -81,6 +81,7 @@ function InitPlayerSides()
         [0]=t2,
         [8]=t1
     }
+    CustomNetTables:SetTableValue("chess", "player_sides", player_sides)
 end
 
 function Precache( context )
