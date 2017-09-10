@@ -40,7 +40,6 @@ var lastMove;
 var selectedSquare;
 var bottomSide = 8;
 var gameInProgress = false;
-var sanHistory = [];
 
 var lookupSquare = (function () {
     function MakeSquare(row, column) {
@@ -118,9 +117,14 @@ function GetFEN() {
 
 function GetPGN() {
     var pgn = "";
-    for (var i = 0; i < Math.ceil(sanHistory.length / 2); i++) {
-        pgn += (i+1) + ". " + sanHistory[i*2].trim() + " ";
-        if (i*2+1 < sanHistory.length) pgn += sanHistory[i*2+1].trim() + " ";
+    for (var i = 1; i <= numPly; i++) {
+        var data = CustomNetTables.GetTableValue("move_history", i);
+        if (!data || _.IsEmpty(data)) break;
+        
+        if (i % 2 == 1) {
+            pgn += Math.ceil(i / 2) + ". "
+        }
+        pgn += data.san.trim() + " ";
     }
     return pgn.trim();
 }
@@ -795,7 +799,6 @@ function OnBoardReset(data) {
     moves = data.moves;
     boardState = data.boardState;
     RedrawBoard();
-    sanHistory = [];
     $("#history").RemoveAndDeleteChildren();
     toMove = data.toMove;
     HighlightPlayerToMove(toMove);
@@ -859,8 +862,6 @@ function RemoveHistory(numPly) {
             panelToRemove.DeleteAsync(0);
         }
     }
-    
-    sanHistory.splice(numPly);
 }
 
 function AddHistory(numPly, san) {
@@ -882,8 +883,6 @@ function AddHistory(numPly, san) {
     plyPanel.SetHasClass("white", numPly % 2 == 1);
     plyPanel.SetHasClass("black", numPly % 2 == 0);
     plyPanel.text = san;
-    
-    sanHistory.push(san);
 }
 
 function OnBoardUpdate(data) {
