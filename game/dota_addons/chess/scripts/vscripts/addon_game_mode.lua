@@ -521,6 +521,7 @@ function OnResign(eventSourceIndex, args)
         playerId = args.playerId,
         playerSide = args.playerSide
     })
+    SetGameInProgress(false)
     local l_message = {getSideString(args.playerSide),"#event_resign"}
     CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
 end
