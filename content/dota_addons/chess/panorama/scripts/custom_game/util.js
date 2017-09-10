@@ -2,11 +2,13 @@
 
 function UtilLibrary() {
     
-    function DebugMsg() {
+    function IsDebug() {
         var netTable = CustomNetTables.GetTableValue( "debug", "log" );
-        if (netTable && netTable.value) {
-            $.Msg.apply(this, arguments);
-        }
+        return netTable && netTable.value;
+    }
+    
+    function DebugMsg() {
+        if (IsDebug()) $.Msg.apply(this, arguments);
     }
 
     function debounce(func, wait, immediate) {
@@ -557,6 +559,7 @@ function UtilLibrary() {
     mixin(PanelCollection, mixInHandlers);
 
     return {
+        IsDebug: IsDebug,
         DebugMsg: DebugMsg,
         debounce: debounce,
         throttle: throttle,
