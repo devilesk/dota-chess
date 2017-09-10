@@ -122,7 +122,7 @@ function GetPGN() {
         if (!data || _.IsEmpty(data)) break;
         
         if (i % 2 == 1) {
-            pgn += Math.ceil(i / 2) + ". "
+            pgn += Math.ceil(i / 2) + ". ";
         }
         pgn += data.san.trim() + " ";
     }
