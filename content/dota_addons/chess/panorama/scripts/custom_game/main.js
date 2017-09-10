@@ -1491,7 +1491,5 @@ function OnChessNetTableChange(tableName, key, data) {
     }
     
     Update();
-    $("#timer-bottom").SetHasClass("highlight", true);
-
     _.DebugMsg("main.js");
 })();
