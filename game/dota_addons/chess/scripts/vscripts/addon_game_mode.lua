@@ -100,7 +100,7 @@ function GameMode:OnNPCSpawned(event)
         npc:RemoveSelf()
     end
     player_ready_count = player_ready_count + 1
-    if player_count == player_ready_count then
+    if DEBUG_PLAYER_COUNT or player_count == player_ready_count then
         NewGame()
     end
 end
