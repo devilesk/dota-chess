@@ -1421,6 +1421,15 @@ function OnMoveHistoryNetTableChange(tableName, key, data) {
     $("#history").ScrollToBottom();
 }
 
+function LoadMoveHistoryNetTable() {
+    var table = CustomNetTables.GetAllTableValues("move_history");
+    if (table) {
+        table.forEach(function (kv) {
+            if (parseInt(kv.key) <= numPly) OnMoveHistoryNetTableChange("move_history", kv.key, kv.value);
+        });
+    }
+}
+
 function LoadChessNetTable() {
     var table = CustomNetTables.GetAllTableValues("chess");
     if (table) {
@@ -1489,6 +1498,7 @@ function OnChessNetTableChange(tableName, key, data) {
     CreateBoard();
     LoadChessNetTable();
     
+    LoadMoveHistoryNetTable();
 
     if (Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_GOODGUYS).length) {
         player_sides[8] = Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_GOODGUYS)[0];
