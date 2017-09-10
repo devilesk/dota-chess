@@ -1434,6 +1434,9 @@ function OnChessNetTableChange(tableName, key, data) {
     $.Msg( "Table ", tableName, " changed: '", key, "' = ", data, " ", JSON.stringify(data).length);
     if (tableName !== "chess") return;
     switch (key) {
+        case "game_in_progress":
+            gameInProgress = data.value;
+        break;
         case "numPly":
             numPly = data.value;
         break;

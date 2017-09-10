@@ -277,7 +277,7 @@ function NewGame(fen)
     ResetGame()
     InitializeFromFen(fen)
     has_timed_out = false
-    game_in_progress = true
+    SetGameInProgress(true)
     local moves = GenerateValidMoves()
     rematch_requested = {}
     
@@ -294,6 +294,7 @@ function NewGame(fen)
     
     CustomNetTables:SetTableValue("chess", "fen", {value=GetFen()})
     
+    CustomNetTables:SetTableValue("chess", "game_in_progress", {value=game_in_progress})
     CustomNetTables:SetTableValue("chess", "numPly", {value=#move_history})
     CustomNetTables:SetTableValue("chess", "boardState", g_board)
     CustomNetTables:SetTableValue("chess", "toMove", {value=g_toMove})
@@ -437,6 +438,14 @@ function SendBoardUpdate(move, san, captured_piece, moves, undo)
     CustomNetTables:SetTableValue("chess", "move", data)
     
     -- CustomGameEventManager:Send_ServerToAllClients("board_update", data)
+    
+    SetGameInProgress(#moves > 0)
+end
+
+function SetGameInProgress(value)
+    game_in_progress = value
+    CustomNetTables:SetTableValue("chess", "game_in_progress", {value=value})
+end
 end
 
 function OnRequestRematch(eventSourceIndex, args)
@@ -461,6 +470,7 @@ function OnClaimDraw(eventSourceIndex, args)
         playerId = args.playerId,
         playerSide = args.playerSide
     })
+    SetGameInProgress(false)
     local l_message = {getSideString(args.playerSide),"#event_accept_draw"}
     CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
     EmitGlobalSound("Chess.Draw")
@@ -469,6 +479,8 @@ end
 function OnDeclineDraw(eventSourceIndex, args)
     DebugPrint("OnDeclineDraw", eventSourceIndex)
     DebugPrintTable(args)
+    SetUIState(args.playerSide, "pendingDraw", false)
+    
     local l_message = {getSideString(args.playerSide),"#event_decline_draw"}
     CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
 end
@@ -491,6 +503,7 @@ function TimeOut(side)
             playerSide = side
         })
         has_timed_out = true
+        SetGameInProgress(false)
         local l_message = {getSideString(side),"#event_timeout"}
         CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
     end
