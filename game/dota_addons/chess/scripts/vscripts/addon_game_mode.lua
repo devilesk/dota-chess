@@ -12,7 +12,6 @@ local rematch_requested = {}
 local player_count = 1
 local host_player_id = 0
 local INITIAL_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" -- FEN for new game
-local BOARD_STATE = {}
 local move_history = {}
 local DEBUG = 0 -- initial value of chess_debug
 local DEBUG_PLAYER_COUNT = nil -- nil, 1, 2
@@ -372,7 +371,6 @@ function OnDropPiece(eventSourceIndex, args)
         
         local _, san, captured_piece, moves = DoMove(move)
         SendBoardUpdate(move, san, captured_piece, moves, false)
-        -- PlayEndMoveSound(#moves)
         EndTurn()
         StartTurn()
         
@@ -690,24 +688,6 @@ function RecordMove(move, san, captured_piece)
     CustomNetTables:SetTableValue("move_history", tostring(#move_history), data)
 end
 
-function PlayEndMoveSound(moveCount)
-    if moveCount == 0 then
-        -- checkmate
-        if g_inCheck then
-            EmitGlobalSound("Chess.Checkmate")
-        -- stalemate
-        else
-            EmitGlobalSound("Chess.Stalemate")
-        end
-    else
-        if g_inCheck then
-            EmitGlobalSound("Chess.Check")
-        else
-            EmitGlobalSound("Chess.Move")
-        end
-    end
-end
-
 function EndTurn()
     DebugPrint("EndTurn")
     if #move_history < 2 then return end
@@ -793,7 +773,6 @@ function finishMoveCallback(move, value, ply)
             SendBoardUpdate(move, san, captured_piece, moves, false)
             DebugPrint(FormatMove(move), g_moveTime, g_finCnt)
             --g_foundmove = move;
-            -- PlayEndMoveSound(#moves)
             EndTurn()
             StartTurn()
         end

@@ -535,22 +535,6 @@ _.extend(Square.prototype, {
     pos: function() {
         return [this.row(), this.col()];
     },
-    /*OnMouseOver: function() {
-        // highlight this panel as a drop target
-        //_.DebugMsg("Square OnMouseOver ", this.panel.id);
-        if (this.panel) {
-            this.panel.SetHasClass("highlight", true);
-            this.panel.GetParent().SetHasClass("highlight", true);
-        }
-    },
-    OnMouseOut: function() {
-        // highlight this panel as a drop target
-        _.DebugMsg("Square OnMouseOut ", this.panel.id);
-        if (this.panel) {
-            this.panel.SetHasClass("highlight", false);
-            this.panel.GetParent().SetHasClass("highlight", false);
-        }
-    },*/
     OnContextMenu: function() {
         // highlight this panel as a drop target
         _.DebugMsg("Square OnContextMenu ", this.panel.id);
@@ -1015,7 +999,6 @@ function UIState() {
     this.undoPressed = false;
     this.drawPressed = false;
     this.resignPressed = false;
-    this.resignPressed = false;
     this.pendingSwap = false;
     this.pendingDraw = false;
     this.pendingUndo = false;
@@ -1102,27 +1085,6 @@ function OnConfirmActionPressed() {
         Resign();
         uiState.resignPressed = false;
     }
-    UpdateUI();
-}
-
-function OnReceivedSwapOffer(data) {
-    if (!isPlayer) return;
-    _.DebugMsg("OnReceivedSwapOffer", data);
-    uiStates[1 - data.playerSide + 7].pendingSwap = true;
-    UpdateUI();
-}
-
-function OnReceivedDrawOffer(data) {
-    if (!isPlayer) return;
-    _.DebugMsg("OnReceivedDrawOffer", data);
-    uiStates[1 - data.playerSide + 7].pendingDraw = true;
-    UpdateUI();
-}
-
-function OnReceivedUndoOffer(data) {
-    if (!isPlayer) return;
-    _.DebugMsg("OnReceivedUndoOffer", data);
-    uiStates[1 - data.playerSide + 7].pendingUndo = true;
     UpdateUI();
 }
 
@@ -1511,19 +1473,8 @@ function OnChessNetTableChange(tableName, key, data) {
     LoadChessNetTable();
     LoadMoveHistoryNetTable();
 
-    if (Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_GOODGUYS).length) {
-        player_sides[8] = Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_GOODGUYS)[0];
-    }
-    if (Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_BADGUYS).length) {
-        player_sides[0] = Game.GetPlayerIDsOnTeam(DOTATeam_t.DOTA_TEAM_BADGUYS)[0];
-    }
     _.DebugMsg("player_sides ", player_sides);
     
-    // GameEvents.Subscribe("board_update", OnBoardUpdate);
-    //GameEvents.Subscribe("board_reset", OnBoardReset);
-    GameEvents.Subscribe("swap_offer", OnReceivedSwapOffer);
-    GameEvents.Subscribe("undo_offer", OnReceivedUndoOffer);
-    GameEvents.Subscribe("draw_offer", OnReceivedDrawOffer);
     GameEvents.Subscribe("draw_claimed", OnReceivedDrawClaimed);
     GameEvents.Subscribe("resigned", OnReceivedResigned);
     GameEvents.Subscribe("timeout_end", OnReceivedTimedOut);
