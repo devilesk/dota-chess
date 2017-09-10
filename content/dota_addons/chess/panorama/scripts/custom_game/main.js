@@ -1475,6 +1475,14 @@ function OnChessNetTableChange(tableName, key, data) {
         case "move":
             OnBoardUpdate(data);
         break;
+        case "ui_states":
+            [0,8].forEach(function (side) {
+                for (var prop in data[side]) {
+                    uiStates[side][prop] = data[side][prop];
+                }
+            });
+            UpdateUI();
+        break;
     }
 }
 

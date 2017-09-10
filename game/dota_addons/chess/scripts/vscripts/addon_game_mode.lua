@@ -34,6 +34,20 @@ local player_ready_count = 0
 local max_ply_table = {1, 3, 88888}
 local ai_ply_difficulty = 1
 --local ai_max_think_time = 5
+local ui_states = {}
+
+function NewUIState()
+    return {
+        rematchPressed = false,
+        -- swapPressed = false,
+        -- undoPressed = false,
+        -- drawPressed = false,
+        -- resignPressed = false,
+        pendingSwap = false,
+        pendingDraw = false,
+        pendingUndo = false
+    }
+end
 
 function toboolbit(value)
     if value and value ~= "0" and value ~= 0 then
@@ -141,6 +155,10 @@ function GameMode:OnGameRulesStateChange()
             ai_side = 8
         end
         DebugPrint("ai_side " .. ai_side)
+        
+        ui_states[0]=NewUIState()
+        ui_states[8]=NewUIState()
+        
     elseif nNewState == DOTA_GAMERULES_STATE_PRE_GAME then
         DebugPrint("DOTA_GAMERULES_STATE_PRE_GAME")
     elseif nNewState == DOTA_GAMERULES_STATE_GAME_IN_PROGRESS then
@@ -280,6 +298,8 @@ function NewGame(fen)
     SetGameInProgress(true)
     local moves = GenerateValidMoves()
     rematch_requested = {}
+    SetUIState(0, "rematchPressed", false)
+    SetUIState(8, "rematchPressed", false)
     
     clock_start = {}
     clock_remaining[0] = clock_time
@@ -356,10 +376,11 @@ function OnDropPiece(eventSourceIndex, args)
         StartTurn()
         
         if args.offerDraw ~= 0 then
-            CustomGameEventManager:Send_ServerToAllClients("draw_offer", {
-                playerId = args.playerId,
-                playerSide = args.playerSide
-            })
+            -- CustomGameEventManager:Send_ServerToAllClients("draw_offer", {
+                -- playerId = args.playerId,
+                -- playerSide = args.playerSide
+            -- })
+            SetUIState(1 - args.playerSide + 7, "pendingDraw", true)
             local l_message = {getSideString(args.playerSide),"#event_request_draw"}
             CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
         end
@@ -446,12 +467,17 @@ function SetGameInProgress(value)
     game_in_progress = value
     CustomNetTables:SetTableValue("chess", "game_in_progress", {value=value})
 end
+
+function SetUIState(playerSide, prop, value)
+    ui_states[playerSide][prop] = value
+    CustomNetTables:SetTableValue("chess", "ui_states", ui_states)
 end
 
 function OnRequestRematch(eventSourceIndex, args)
     DebugPrint("OnRequestRematch", eventSourceIndex)
     DebugPrintTable(args)
     rematch_requested[args.playerSide] = true
+    SetUIState(args.playerSide, "rematchPressed", true)
     if player_count == 1 or (rematch_requested[0] and rematch_requested[8]) then
         NewGame()
     end
@@ -461,11 +487,14 @@ function OnDeclineRematch(eventSourceIndex, args)
     DebugPrint("OnRequestRematch", eventSourceIndex)
     DebugPrintTable(args)
     rematch_requested[args.playerSide] = false
+    SetUIState(args.playerSide, "rematchPressed", true)
 end
 
 function OnClaimDraw(eventSourceIndex, args)
     DebugPrint("OnClaimDraw", eventSourceIndex)
     DebugPrintTable(args)
+    SetUIState(args.playerSide, "pendingDraw", false)
+
     CustomGameEventManager:Send_ServerToAllClients("draw_claimed", {
         playerId = args.playerId,
         playerSide = args.playerSide
@@ -512,10 +541,11 @@ end
 function OnRequestSwap(eventSourceIndex, args)
     DebugPrint("OnRequestSwap", eventSourceIndex)
     DebugPrintTable(args)
-    CustomGameEventManager:Send_ServerToAllClients("swap_offer", {
-        playerId = args.playerId,
-        playerSide = args.playerSide
-    })
+    -- CustomGameEventManager:Send_ServerToAllClients("swap_offer", {
+        -- playerId = args.playerId,
+        -- playerSide = args.playerSide
+    -- })
+    SetUIState(1 - args.playerSide + 7, "pendingSwap", true)
     local l_message = {getSideString(args.playerSide),"#event_request_swap"}
     CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
 end
@@ -523,6 +553,7 @@ end
 function OnDeclineSwap(eventSourceIndex, args)
     DebugPrint("OnDeclineSwap", eventSourceIndex)
     DebugPrintTable(args)
+    SetUIState(args.playerSide, "pendingSwap", false)
     local l_message = {getSideString(args.playerSide),"#event_decline_swap"}
     CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
 end
@@ -530,6 +561,7 @@ end
 function OnAcceptSwap(eventSourceIndex, args)
     DebugPrint("OnAcceptSwap", eventSourceIndex)
     DebugPrintTable(args)
+    SetUIState(args.playerSide, "pendingSwap", false)
     
     local temp = player_sides[0]
     player_sides[0] = player_sides[8]
@@ -545,10 +577,11 @@ end
 function OnRequestUndo(eventSourceIndex, args)
     DebugPrint("OnRequestUndo", eventSourceIndex)
     DebugPrintTable(args)
-    CustomGameEventManager:Send_ServerToAllClients("undo_offer", {
-        playerId = args.playerId,
-        playerSide = args.playerSide
-    })
+    -- CustomGameEventManager:Send_ServerToAllClients("undo_offer", {
+        -- playerId = args.playerId,
+        -- playerSide = args.playerSide
+    -- })
+    SetUIState(1 - args.playerSide + 7, "pendingUndo", true)
     local l_message = {getSideString(args.playerSide),"#event_request_undo"}
     CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
 end
@@ -556,6 +589,7 @@ end
 function OnDeclineUndo(eventSourceIndex, args)
     DebugPrint("OnDeclineUndo", eventSourceIndex)
     DebugPrintTable(args)
+    SetUIState(args.playerSide, "pendingUndo", false)
     local l_message = {getSideString(args.playerSide),"#event_decline_undo"}
     CustomGameEventManager:Send_ServerToAllClients("receive_chat_event", {l_message=l_message, playerId=-1})
 end
@@ -563,6 +597,8 @@ end
 function OnAcceptUndo(eventSourceIndex, args)
     DebugPrint("OnAcceptUndo", eventSourceIndex, #move_history)
     DebugPrintTable(args)
+    SetUIState(args.playerSide, "pendingUndo", false)
+    
     if ai_thinking then return end
     if player_count == 1 and #move_history == 1 and ai_side == 8 then return end
     if player_count == 1 and g_toMove == ai_side then return end
