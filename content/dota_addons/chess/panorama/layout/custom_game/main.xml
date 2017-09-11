@@ -61,6 +61,8 @@
                     <Button id="btn-toggle-player" class="btn btn-action hidden" text="toggle player" onactivate="OnTogglePlayerPressed()">
                         <Image src="file://{images}/swap.png" />
                     </Button>
+                    <Button id="btn-theme" class="btn btn-action dota" onmouseover="DOTAShowTextTooltip('#toggle_theme')" onmouseout="DOTAHideTextTooltip()" onactivate="OnToggleTheme()">
+                    </Button>
                     <Button id="btn-info" class="btn btn-action" onmouseover="DOTAShowTextTooltip('#tooltip_info')" onmouseout="DOTAHideTextTooltip()" onactivate="ShowInfoDialog()">
                         <Image src="file://{images}/info.png" />
                     </Button>

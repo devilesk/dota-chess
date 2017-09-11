@@ -14,6 +14,7 @@
 /* exported OnRematchPressed */
 /* exported OnTogglePlayerPressed */
 /* exported ShowInfoDialog */
+/* exported OnToggleTheme */
 /* global InstantiateChatPanel */
 
 "use strict";
@@ -633,7 +634,7 @@ _.extend(Square.prototype, {
 
         // create a temp panel that will be dragged around
         var displayPanel = CreateSquarePanel(this.panel, "dragImage");
-
+        displayPanel.SetHasClass("dota", $.GetContextPanel().BHasClass("dota"));
         displayPanel.SetPiece(this.piece(), this.pieceOwner());
         displayPanel.square = this;
 
@@ -1254,6 +1255,12 @@ function OnFlipBoardPressed() {
     UpdateUI();
     RedrawBoard();
     UpdatePlayerPanel();
+}
+
+function OnToggleTheme() {
+    $("#btn-theme").ToggleClass("dota");
+    $.GetContextPanel().ToggleClass("dota");
+    GameUI.CustomUIConfig().BoardOverlay.contextPanel.ToggleClass("dota");
 }
 
 function OnTogglePlayerPressed() {

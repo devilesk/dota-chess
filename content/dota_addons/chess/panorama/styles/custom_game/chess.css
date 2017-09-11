@@ -132,6 +132,16 @@
     background-size: 80% 80%;
 }
 
+.dota .square-piece {
+    background-size: 85% 85%;
+}
+
+.dota .captured-piece .square-piece {
+    background-size: 100% 100%;
+}
+
+/* classic theme */
+
 .white.pawn {
     background-image: url("file://{images}/pieces/white_pawn.png");
 }
@@ -168,6 +178,46 @@
 }
 .black.king {
     background-image: url("file://{images}/pieces/black_king.png");
+}
+
+/* dota theme */
+
+.dota .white.pawn {
+    background-image: url("file://{images}/dota_pieces/white_pawn.png");
+}
+.dota .white.knight {
+    background-image: url("file://{images}/dota_pieces/white_knight.png");
+}
+.dota .white.bishop {
+    background-image: url("file://{images}/dota_pieces/white_bishop.png");
+}
+.dota .white.rook {
+    background-image: url("file://{images}/dota_pieces/white_rook.png");
+}
+.dota .white.queen {
+    background-image: url("file://{images}/dota_pieces/white_queen.png");
+}
+.dota .white.king {
+    background-image: url("file://{images}/dota_pieces/white_king.png");
+}
+
+.dota .black.pawn {
+    background-image: url("file://{images}/dota_pieces/black_pawn.png");
+}
+.dota .black.knight {
+    background-image: url("file://{images}/dota_pieces/black_knight.png");
+}
+.dota .black.bishop {
+    background-image: url("file://{images}/dota_pieces/black_bishop.png");
+}
+.dota .black.rook {
+    background-image: url("file://{images}/dota_pieces/black_rook.png");
+}
+.dota .black.queen {
+    background-image: url("file://{images}/dota_pieces/black_queen.png");
+}
+.dota .black.king {
+    background-image: url("file://{images}/dota_pieces/black_king.png");
 }
 
 .animate {

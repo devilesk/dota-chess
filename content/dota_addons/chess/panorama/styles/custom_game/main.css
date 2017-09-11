@@ -196,6 +196,18 @@
     opacity: 0.5;
 }
 
+
+#btn-theme {
+    background-image: url("file://{images}/pieces/white_queen.png");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 80% 80%;
+}
+#btn-theme.dota {
+    background-image: url("file://{images}/dota_pieces/white_queen.png");
+    background-size: 90% 90%;
+}
+
 #btn-toggle-player.white {
     border: 5px solid white;
 }

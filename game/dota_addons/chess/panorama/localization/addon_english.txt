@@ -40,4 +40,5 @@
     "checkmate_black_win"                           "Checkmate. Black wins!"
     "checkmate_white_win"                           "Checkmate. White wins!"
     "tooltip_info"                                  "View match info"
+    "toggle_theme"                                  "Change Theme"
 }
