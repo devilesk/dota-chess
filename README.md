@@ -1,6 +1,6 @@
 Dota Chess Custom Game
 
-[Demo video](https://youtu.be/Ih582bBb_dA)
+[Demo video](https://www.youtube.com/watch?v=3YnfN1YxtbA)
 
 Uses GarboChess engine
 
